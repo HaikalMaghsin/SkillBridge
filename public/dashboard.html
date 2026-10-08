@@ -36,43 +36,58 @@
         <!-- Left Column: 3 cards -->
         <div style="display: grid; gap: 20px">
           <!-- Card 1: Target Career -->
-          <article class="card-lg" style="gap: 18px">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start">
-              <h3>Target career</h3>
-              <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--tint-gray); display: grid; place-items: center">
-                <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1">
-                  <path d="M8.5 8.5h.007M11.334 4.25V2.833a1.417 1.417 0 0 0-1.417-1.417H7.083a1.417 1.417 0 0 0-1.417 1.417V4.25M15.584 9.208a11.333 11.333 0 0 1-14.168 0M2.833 4.25h11.334c.782 0 1.416.634 1.416 1.416v7.084c0 .782-.634 1.416-1.416 1.416H2.833a1.417 1.417 0 0 1-1.417-1.416V5.666c0-.782.634-1.416 1.417-1.416z"/>
-                </svg>
+          <a href="career.html" class="card-interactive">
+            <article class="card-lg" style="gap: 18px">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start">
+                <h3>Target career</h3>
+                <div class="card-icon-box">
+                  <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1">
+                    <path d="M8.5 8.5h.007M11.334 4.25V2.833a1.417 1.417 0 0 0-1.417-1.417H7.083a1.417 1.417 0 0 0-1.417 1.417V4.25M15.584 9.208a11.333 11.333 0 0 1-14.168 0M2.833 4.25h11.334c.782 0 1.416.634 1.416 1.416v7.084c0 .782-.634 1.416-1.416 1.416H2.833a1.417 1.417 0 0 1-1.417-1.416V5.666c0-.782.634-1.416 1.417-1.416z"/>
+                  </svg>
+                </div>
               </div>
-            </div>
-            <div id="card-target"></div>
-          </article>
+              <div id="card-target"></div>
+              <svg class="card-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M6 12l4-4-4-4"/>
+              </svg>
+            </article>
+          </a>
 
           <!-- Card 2: Skills Summary -->
-          <article class="card-lg" style="gap: 9px">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start">
-              <h3>Skills summary</h3>
-              <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--tint-gray); display: grid; place-items: center">
-                <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1">
-                  <path d="M9.088 1.544a1.417 1.417 0 0 0-1.176 0L1.841 4.307a.709.709 0 0 0 0 1.296l6.078 2.77a1.417 1.417 0 0 0 1.176 0l6.078-2.763a.708.708 0 0 0 0-1.296L9.088 1.544zM1.416 8.5c0 .135.038.268.111.382.072.115.177.206.3.263l6.092 2.77a1.417 1.417 0 0 0 1.169 0l6.078-2.763a.708.708 0 0 0 0-1.296M1.416 12.042c0 .135.038.268.111.382.072.114.177.205.3.262l6.092 2.77a1.417 1.417 0 0 0 1.169 0l6.078-2.763a.708.708 0 0 0 0-1.296"/>
-                </svg>
+          <a href="skills.html" class="card-interactive">
+            <article class="card-lg" style="gap: 9px">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start">
+                <h3>Skills summary</h3>
+                <div class="card-icon-box">
+                  <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1">
+                    <path d="M9.088 1.544a1.417 1.417 0 0 0-1.176 0L1.841 4.307a.709.709 0 0 0 0 1.296l6.078 2.77a1.417 1.417 0 0 0 1.176 0l6.078-2.763a.708.708 0 0 0 0-1.296L9.088 1.544zM1.416 8.5c0 .135.038.268.111.382.072.115.177.206.3.263l6.092 2.77a1.417 1.417 0 0 0 1.169 0l6.078-2.763a.708.708 0 0 0 0-1.296M1.416 12.042c0 .135.038.268.111.382.072.114.177.205.3.262l6.092 2.77a1.417 1.417 0 0 0 1.169 0l6.078-2.763a.708.708 0 0 0 0-1.296"/>
+                  </svg>
+                </div>
               </div>
-            </div>
-            <div id="card-skills"></div>
-          </article>
+              <div id="card-skills"></div>
+              <svg class="card-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M6 12l4-4-4-4"/>
+              </svg>
+            </article>
+          </a>
 
           <!-- Card 3: Simple Skill Gap -->
-          <article class="card-lg" style="gap: 18px">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start">
-              <h3>Simple skill gap</h3>
-              <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--tint-gray); display: grid; place-items: center">
-                <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1">
-                  <circle cx="8.5" cy="8.5" r="7.084"/>
-                </svg>
+          <a href="gap.html" class="card-interactive">
+            <article class="card-lg" style="gap: 18px">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start">
+                <h3>Simple skill gap</h3>
+                <div class="card-icon-box">
+                  <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1">
+                    <circle cx="8.5" cy="8.5" r="7.084"/>
+                  </svg>
+                </div>
               </div>
-            </div>
-            <div id="card-explore"></div>
-          </article>
+              <div id="card-explore"></div>
+              <svg class="card-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M6 12l4-4-4-4"/>
+              </svg>
+            </article>
+          </a>
         </div>
 
         <!-- Right Column: Evidence Summary -->

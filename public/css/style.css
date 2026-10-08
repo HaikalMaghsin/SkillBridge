@@ -863,6 +863,96 @@ small {
   margin: 0;
 }
 
+/* ============ 9f. Interactive Cards (Dashboard) ============ */
+.card-interactive {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.card-interactive article {
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.card-interactive:hover article,
+.card-interactive:focus-visible article {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 43, 0.08), 0 0 1px rgba(30, 58, 138, 0.2);
+  border-color: rgba(30, 58, 138, 0.15);
+}
+
+.card-interactive:focus-visible {
+  outline: none;
+}
+
+.card-interactive:focus-visible article {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.card-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--tint-gray);
+  display: grid;
+  place-items: center;
+  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+.card-interactive:hover .card-icon-box,
+.card-interactive:focus-visible .card-icon-box {
+  background: rgba(30, 58, 138, 0.08);
+  color: var(--primary);
+  transform: scale(1.05);
+}
+
+.card-arrow {
+  position: absolute;
+  bottom: 28px;
+  right: 28px;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: var(--primary);
+}
+
+.card-interactive:hover .card-arrow,
+.card-interactive:focus-visible .card-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-interactive article,
+  .card-icon-box,
+  .card-arrow {
+    transition: none;
+  }
+
+  .card-interactive:hover article,
+  .card-interactive:focus-visible article {
+    transform: none;
+  }
+
+  .card-interactive:hover .card-icon-box,
+  .card-interactive:focus-visible .card-icon-box {
+    transform: none;
+  }
+
+  .card-interactive:hover .card-arrow,
+  .card-interactive:focus-visible .card-arrow {
+    transform: none;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .card-arrow {
+    opacity: 0.6;
+  }
+}
+
 /* ============ 10. Utilities ============ */
 .toast {
   position: fixed;
