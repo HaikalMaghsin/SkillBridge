@@ -568,6 +568,127 @@ small {
   margin-bottom: 16px;
 }
 
+/* ============ 9b. Banner ============ */
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--tint-pink);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 28px;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.banner svg {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+/* ============ 9c. Career Grid ============ */
+.career-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.career-card {
+  display: grid;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.career-card.is-selected {
+  grid-column: span 2;
+  border: 1.5px solid #ffd0e2;
+  background: #fffbfd;
+}
+
+.career-card-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.career-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--tint-gray);
+  display: grid;
+  place-items: center;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.career-card.is-selected .career-card-icon {
+  background: var(--tint-pink);
+  color: var(--accent);
+}
+
+/* ============ 9d. Skill rows ============ */
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.skill-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  background: var(--primary);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* ============ 9e. Stat tiles ============ */
+.stat-tile {
+  background: var(--tint-gray);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  display: grid;
+  gap: 6px;
+}
+
+.stat-tile .stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  color: var(--text-light);
+}
+
+.stat-tile .stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.inset-box {
+  background: var(--tint-gray);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+}
+
 /* ============ 10. Utilities ============ */
 .toast {
   position: fixed;
@@ -615,6 +736,14 @@ small {
   .grid-3,
   .grid-cols-2 {
     grid-template-columns: 1fr;
+  }
+
+  .career-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .career-card.is-selected {
+    grid-column: span 1;
   }
 
   .page-head {
