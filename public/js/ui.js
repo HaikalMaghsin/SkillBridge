@@ -48,6 +48,71 @@ const UI = (() => {
     setTimeout(() => box.remove(), 2600);
   }
 
+  // modal({ title, body, submitLabel, onSubmit }) -> dialog dengan focus trap.
+  // onSubmit(close, form) dipanggil saat submit; kembalikan false untuk menahan dialog terbuka.
+  function modal({ title, body = [], submitLabel = "Save", cancelLabel = "Cancel", onSubmit }) {
+    const previouslyFocused = document.activeElement;
+
+    const form = el("form", { class: "modal-form", novalidate: "novalidate" }, body);
+    const cancelBtn = el("button", { type: "button", class: "btn", text: cancelLabel, onClick: () => close() });
+    const submitBtn = el("button", { type: "submit", class: "btn btn-accent", text: submitLabel });
+
+    const dialog = el("div", { class: "modal", role: "dialog", "aria-modal": "true", "aria-label": title }, [
+      el("h3", { class: "modal-title", text: title }),
+      form,
+      el("div", { class: "modal-actions" }, [cancelBtn, submitBtn]),
+    ]);
+
+    const overlay = el("div", { class: "modal-overlay" }, [dialog]);
+
+    function focusables() {
+      return [...dialog.querySelectorAll("button, input, select, textarea, a[href]")].filter(
+        (node) => !node.disabled
+      );
+    }
+
+    function onKeydown(event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const nodes = focusables();
+      if (nodes.length === 0) return;
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    function close() {
+      document.removeEventListener("keydown", onKeydown);
+      overlay.remove();
+      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
+    }
+
+    overlay.addEventListener("mousedown", (event) => {
+      if (event.target === overlay) close();
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (onSubmit && onSubmit(close, form) === false) return;
+      close();
+    });
+
+    document.addEventListener("keydown", onKeydown);
+    document.body.append(overlay);
+    (focusables()[0] || dialog).focus();
+    return close;
+  }
+
   function renderNavbar() {
     const active = document.body.dataset.nav || "";
     const navLinks = el("div", { class: "navbar-nav" },
@@ -91,7 +156,7 @@ const UI = (() => {
     return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
   }
 
-  return { el, clear, safeUrl, toast, formatDate };
+  return { el, clear, safeUrl, toast, formatDate, modal };
 })();
 
 window.UI = UI;
