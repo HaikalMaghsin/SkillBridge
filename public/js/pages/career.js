@@ -59,7 +59,6 @@
         el("button", {
           class: "btn btn-accent",
           style: "width: fit-content; gap: 7px; margin-top: 4px",
-          text: "Set as Target",
           disabled: true,
         }, [
           el("svg", { width: "16", height: "16", viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", "stroke-width": "1.5", innerHTML: `<circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2"/>` }),
@@ -75,7 +74,6 @@
             style: "gap: 6px",
             onClick: () => {
               API.setTarget(career.id);
-              UI.toast(`Target set to ${career.name}`);
               setTimeout(() => location.reload(), 800);
             },
           }, [
