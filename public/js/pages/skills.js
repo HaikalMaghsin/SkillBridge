@@ -26,7 +26,7 @@
   // Skills List
   const listEl = document.getElementById("skills-list");
   if (mine.length === 0) {
-    listEl.append(el("p", { style: "color: var(--text-muted); font-size: 15px", text: "No skills added yet. Click "Add skill" to start building your profile." }));
+    listEl.append(el("p", { style: "color: var(--text-muted); font-size: 15px", text: "No skills added yet. Use the Add skill button to start building your profile." }));
   } else {
     const skillRows = mine.map((s) => {
       const skill = catalog.find((c) => c.id === s.skill_id);
