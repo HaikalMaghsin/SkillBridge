@@ -1,22 +1,47 @@
 // career.js - Career Target page
 
 (async () => {
-  const { el } = UI;
+  const { el, clear } = UI;
   const [careers, catalog] = await Promise.all([API.getCareers(), API.getSkillCatalog()]);
 
   const mine = new Set(API.getMySkills().map((s) => s.skill_id));
-  const targetId = API.getTargetId();
-  const target = careers.find((c) => c.id === targetId) || careers[0];
 
-  // Banner
-  const matched = countMatched(target, mine, catalog);
-  document.getElementById("banner-text").textContent = `${target.name} is your current target. Required skills below are a practical starter list for this project.`;
-
-  // Grid
   const gridEl = document.getElementById("career-grid");
-  for (const career of careers) {
-    const isSelected = career.id === target.id;
-    gridEl.append(renderCareerCard(career, isSelected, mine, catalog));
+  const bannerText = document.getElementById("banner-text");
+
+  render();
+
+  function getTarget() {
+    const targetId = API.getTargetId();
+    return careers.find((c) => c.id === targetId) || careers[0];
+  }
+
+  // Target selalu di urutan teratas, career lain mengikuti urutan asli.
+  function sortedCareers() {
+    const target = getTarget();
+    const rest = careers.filter((c) => c.id !== target.id);
+    return [target, ...rest];
+  }
+
+  function render() {
+    const target = getTarget();
+    const list = sortedCareers();
+
+    bannerText.textContent = `${target.name} is your current target. Required skills below are a practical starter list for this project.`;
+
+    gridEl.classList.remove("career-grid--animated");
+    clear(gridEl);
+    for (const career of list) {
+      gridEl.append(renderCareerCard(career, career.id === target.id, mine, catalog));
+    }
+    // Re-trigger animasi fade-in pada setiap render ulang.
+    void gridEl.offsetWidth;
+    requestAnimationFrame(() => gridEl.classList.add("career-grid--animated"));
+  }
+
+  function selectTarget(career) {
+    API.setTarget(career.id);
+    render();
   }
 
   function renderCareerCard(career, isSelected, mine, catalog) {
@@ -28,54 +53,62 @@
     };
     const icon = iconMap[career.name] || iconMap["Backend Developer"];
 
-    const card = el("article", { class: isSelected ? "career-card is-selected" : "career-card" });
+    const card = el("article", {
+      class: isSelected ? "career-card is-selected" : "career-card",
+      "data-id": career.id,
+    });
 
-    // Head: icon + title + description
+    // Head: badge target (jika dipilih) + icon + title
     const head = el("div", { class: "career-card-head" }, [
       el("div", { class: "career-card-icon", innerHTML: icon }),
       el("div", { style: "flex: 1; min-width: 0" }, [
-        el("h3", { style: "font-size: 18px; font-weight: 700; line-height: 1.2; color: var(--text-primary)", text: career.name }),
+        el("h3", { class: "career-card-title", text: career.name }),
       ]),
     ]);
     card.append(head);
 
+    if (isSelected) {
+      card.append(
+        el("span", { class: "target-badge" }, [
+          el("svg", { width: "12", height: "12", viewBox: "0 0 12 12", fill: "none", stroke: "currentColor", "stroke-width": "1.6", innerHTML: `<circle cx="6" cy="6" r="4.5"/><circle cx="6" cy="6" r="1.5"/>` }),
+          document.createTextNode("Your Target"),
+        ])
+      );
+    }
+
     // Description
-    card.append(el("p", { style: "font-size: 14px; line-height: 1.5; color: var(--text-muted)", text: career.description }));
+    card.append(el("p", { class: "career-card-desc", text: career.description }));
 
     // Required skills
     const skillNames = career.skills.map((name) => catalog.find((s) => s.name === name)).filter(Boolean);
     const matched = skillNames.filter((s) => mine.has(s.id)).length;
 
     card.append(
-      el("div", { style: "display: grid; gap: 10px" }, [
-        el("p", { style: "font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.9px; color: var(--text-light)", text: "Required skills" }),
-        el("div", { style: "display: flex; flex-wrap: wrap; gap: 7px" }, skillNames.map((s) => renderSkillChip(s, mine.has(s.id)))),
+      el("div", { class: "career-card-skills" }, [
+        el("p", { class: "career-card-skills-label", text: "Required skills" }),
+        el("div", { class: "career-card-chips" }, skillNames.map((s) => renderSkillChip(s, mine.has(s.id)))),
       ])
     );
 
     if (isSelected) {
-      card.append(el("p", { style: "font-size: 13px; color: var(--text-muted); margin-top: 4px", text: `${matched} of ${skillNames.length} skills covered` }));
+      card.append(el("p", { class: "career-card-count", text: `${matched} of ${skillNames.length} skills covered` }));
       card.append(
         el("button", {
           class: "btn btn-accent",
-          style: "width: fit-content; gap: 7px; margin-top: 4px",
+          style: "width: fit-content; gap: 7px",
           disabled: true,
         }, [
           el("svg", { width: "16", height: "16", viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", "stroke-width": "1.5", innerHTML: `<circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2"/>` }),
-          document.createTextNode("Set as Target"),
+          document.createTextNode("Current Target"),
         ])
       );
     } else {
       card.append(
-        el("div", { style: "display: flex; justify-content: space-between; align-items: center; margin-top: 6px" }, [
-          el("p", { style: "font-size: 13px; color: var(--text-muted)", text: "Review this path" }),
+        el("div", { class: "career-card-foot" }, [
+          el("p", { class: "career-card-foot-text", text: "Review this path" }),
           el("button", {
             class: "btn btn-primary btn-sm",
-            style: "gap: 6px",
-            onClick: () => {
-              API.setTarget(career.id);
-              setTimeout(() => location.reload(), 800);
-            },
+            onClick: () => selectTarget(career),
           }, [
             el("svg", { width: "14", height: "14", viewBox: "0 0 14 14", fill: "none", stroke: "currentColor", "stroke-width": "1.5", innerHTML: `<circle cx="7" cy="7" r="5.5"/><circle cx="7" cy="7" r="1.8"/>` }),
             document.createTextNode("Set as Target"),
@@ -91,15 +124,11 @@
     const color = owned ? "var(--accent)" : "var(--primary)";
     const bg = owned ? "var(--tint-pink)" : "var(--tint-indigo)";
     return el("span", {
-      style: `display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; background: ${bg}; color: ${color}`,
+      class: "skill-chip",
+      style: `--chip-color: ${color}; --chip-bg: ${bg}`,
     }, [
       el("span", { style: `display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: ${color}` }),
       document.createTextNode(skill.name),
     ]);
-  }
-
-  function countMatched(career, mine, catalog) {
-    const skillNames = career.skills.map((name) => catalog.find((s) => s.name === name)).filter(Boolean);
-    return skillNames.filter((s) => mine.has(s.id)).length;
   }
 })();

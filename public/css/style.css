@@ -605,18 +605,37 @@ small {
 
 .career-card {
   display: grid;
-  gap: 16px;
+  gap: 14px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 20px;
   box-shadow: var(--shadow-sm);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.career-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(0, 0, 43, 0.06);
 }
 
 .career-card.is-selected {
-  grid-column: span 2;
-  border: 1.5px solid #ffd0e2;
-  background: #fffbfd;
+  grid-column: 1 / -1;
+  border: 1.5px solid var(--accent);
+  background: linear-gradient(135deg, #fffbfd 0%, var(--surface) 55%);
+  box-shadow: 0 18px 44px rgba(255, 19, 119, 0.12);
+  padding: 28px;
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.career-card.is-selected::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(255, 19, 119, 0.06), transparent 60%);
+  pointer-events: none;
 }
 
 .career-card-head {
@@ -634,12 +653,115 @@ small {
   place-items: center;
   color: var(--primary);
   flex-shrink: 0;
+  transition: background 0.25s ease, color 0.25s ease;
 }
 
 .career-card.is-selected .career-card-icon {
+  width: 52px;
+  height: 52px;
   background: var(--tint-pink);
   color: var(--accent);
 }
+
+.career-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.career-card.is-selected .career-card-title {
+  font-size: 22px;
+}
+
+.career-card-desc {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.career-card.is-selected .career-card-desc {
+  font-size: 15px;
+}
+
+.career-card-skills {
+  display: grid;
+  gap: 10px;
+}
+
+.career-card-skills-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  color: var(--text-light);
+}
+
+.career-card-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--chip-bg);
+  color: var(--chip-color);
+}
+
+.career-card-count {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.career-card-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.career-card-foot-text {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.target-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 5px 12px;
+  border-radius: var(--radius-round);
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  box-shadow: var(--shadow-btn-accent);
+}
+
+/* Animasi fade-in transisi setelah render ulang */
+.career-grid--animated .career-card {
+  animation: careerFadeIn 0.4s ease both;
+}
+
+@keyframes careerFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.career-grid--animated .career-card:nth-child(1) { animation-delay: 0.05s; }
+.career-grid--animated .career-card:nth-child(2) { animation-delay: 0.1s; }
+.career-grid--animated .career-card:nth-child(3) { animation-delay: 0.15s; }
+.career-grid--animated .career-card:nth-child(4) { animation-delay: 0.2s; }
+.career-grid--animated .career-card:nth-child(5) { animation-delay: 0.25s; }
 
 /* ============ 9d. Skill rows ============ */
 .skill-row {
@@ -897,6 +1019,11 @@ small {
 
   .career-card.is-selected {
     grid-column: span 1;
+    padding: 22px;
+  }
+
+  .career-card.is-selected .career-card-title {
+    font-size: 20px;
   }
 
   .page-head {
