@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Evidence · SkillBridge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body data-nav="evidence">
+    <main class="container">
+      <div class="page-head">
+        <div class="page-head-left">
+          <p class="eyebrow">Your career companion</p>
+          <h1>Evidence</h1>
+          <p style="margin-top: 8px; font-size: 15px; line-height: 1.45; color: var(--text-muted)">
+            Keep your strongest work visible, your skills clear, and your next step simple.
+          </p>
+        </div>
+        <button class="btn btn-accent btn-44" style="gap: 8px" id="btn-add-evidence">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M3.333 8h9.334M8 3.333v9.334"/>
+          </svg>
+          Add Evidence
+        </button>
+      </div>
+
+      <!-- Evidence Summary Card -->
+      <article class="card-lg" style="background: var(--bg); display: grid; gap: 24px">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <h3>Evidence summary</h3>
+          <p style="font-size: 15px; color: var(--text-muted); font-weight: 600" id="count-label">0 recent items</p>
+        </div>
+
+        <!-- Grid: 2x2 evidence cards -->
+        <div id="evidence-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px"></div>
+      </article>
+    </main>
+
+    <script src="js/ui.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/pages/evidence.js"></script>
+  </body>
+</html>
