@@ -18,41 +18,46 @@
         <div class="page-head-left">
           <p class="eyebrow">Target comparison</p>
           <h1>Skill Gap</h1>
-          <p>You already have a strong foundation. Here is the simple next step to help your portfolio feel complete.</p>
+          <p style="opacity: 0.85">You already have a strong foundation. Here is the simple next step to help your portfolio feel complete.</p>
         </div>
       </div>
 
-      <!-- Target Career Tile -->
-      <div class="card-lg" style="display: grid; gap: 18px; margin-bottom: 24px">
-        <p class="eyebrow">Target career</p>
-        <div id="target-info"></div>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px" id="stat-tiles"></div>
-      </div>
-
-      <!-- Two columns: have + explore -->
-      <div style="display: grid; grid-template-columns: 1fr 360px; gap: 24px">
-        <!-- Left: Skills You Already Have -->
-        <article class="card-lg" style="display: grid; gap: 18px">
-          <div style="display: flex; align-items: center; gap: 10px">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M7 10l2 2 4-4M18 10c0 4.4-3.6 8-8 8s-8-3.6-8-8 3.6-8 8-8 8 3.6 8 8z" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <h3 style="margin: 0">Skills You Already Have</h3>
+      <!-- Two columns: left (target + have) + right (explore) -->
+      <div style="display: grid; grid-template-columns: 1fr 400px; gap: 24px; align-items: start">
+        <!-- Left column -->
+        <div style="display: grid; gap: 24px">
+          <!-- Target Career Tile -->
+          <div class="card-lg" style="display: grid; gap: 20px">
+            <div style="display: grid; gap: 8px">
+              <p class="eyebrow">Target career</p>
+              <div id="target-info"></div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px" id="stat-tiles"></div>
           </div>
-          <p style="font-size: 14px; color: var(--text-muted)">These are the skills already recorded in My Skills and matched to this target.</p>
-          <div id="have-list"></div>
-        </article>
 
-        <!-- Right: What to Explore Next -->
+          <!-- Skills You Already Have -->
+          <article class="card-lg" style="display: grid; gap: 18px">
+            <div class="section-heading">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="10" stroke-linecap="round"/>
+                <path d="M6 11l3 3 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <h3>Skills You Already Have</h3>
+            </div>
+            <p style="font-size: 14px; color: var(--text-muted); opacity: 0.85">These are the skills already recorded in My Skills and matched to this target.</p>
+            <div id="have-list"></div>
+          </article>
+        </div>
+
+        <!-- Right column: What to Explore Next -->
         <article class="card-lg" style="display: grid; gap: 18px; align-content: start">
-          <div style="display: flex; align-items: center; gap: 10px">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-              <circle cx="10" cy="10" r="8"/>
-              <path d="M10 6v4l3 1.5" stroke-linecap="round"/>
+          <div class="section-heading">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="10" stroke-linecap="round" stroke-dasharray="3 3"/>
             </svg>
-            <h3 style="margin: 0">What to Explore Next</h3>
+            <h3>What to Explore Next</h3>
           </div>
-          <p style="font-size: 14px; color: var(--text-muted)">Focus on one skill at a time. Once you add Express.js and attach evidence, your portfolio will feel much stronger.</p>
+          <p style="font-size: 14px; color: var(--text-muted); opacity: 0.85">Focus on one skill at a time. Once you add Express.js and attach evidence, your portfolio will feel much stronger.</p>
           <div id="explore-list"></div>
           <div class="inset-box" id="next-step-box"></div>
         </article>
