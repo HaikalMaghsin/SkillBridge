@@ -14,7 +14,7 @@
     gridEl.append(
       el("div", { style: "text-align: center; padding: 48px 20px; color: var(--text-muted)" }, [
         el("p", { style: "font-size: 18px; font-weight: 600; margin-bottom: 8px", text: "No evidence yet" }),
-        el("p", { style: "font-size: 15px", text: "Click "Add Evidence" to start documenting your work." }),
+        el("p", { style: "font-size: 15px", text: "Use the Add Evidence button to start documenting your work." }),
       ])
     );
   } else {
