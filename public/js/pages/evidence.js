@@ -22,9 +22,159 @@
     gridEl.append(...cards);
   }
 
-  // Add evidence button
+  // Modal elements
+  const modal = document.getElementById("modal-add-evidence");
+  const form = document.getElementById("form-add-evidence");
+  const typeInput = document.getElementById("input-type");
+  const skillsInput = document.getElementById("input-skills");
+  const skillsContainer = document.getElementById("skills-container");
+
+  // Skills list
+  const availableSkills = ["JavaScript", "Node.js", "SQL", "REST APIs", "Git", "Express.js", "Testing", "Deployment", "HTML", "CSS", "React", "TypeScript", "Excel", "Python", "Data visualisation", "Statistics", "User research", "Wireframing", "Figma", "Prototyping", "User Experience", "User Interface", "Communication", "AI Design", "Laravel", "PHP", "Docker", "Unit testing", "Data analysis", "UI design"];
+  let selectedSkills = [];
+
+  // Render skill chips
+  availableSkills.forEach((skill) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.textContent = skill;
+    chip.style.cssText = "padding: 6px 12px; border: 1px solid #E2E8F0; background: #F1F5F9; color: #475569; border-radius: 16px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s";
+    chip.dataset.skill = skill;
+
+    chip.onclick = () => {
+      if (selectedSkills.includes(skill)) {
+        selectedSkills = selectedSkills.filter((s) => s !== skill);
+        chip.style.border = "1px solid #E2E8F0";
+        chip.style.background = "#F1F5F9";
+        chip.style.color = "#475569";
+      } else if (selectedSkills.length < 6) {
+        selectedSkills.push(skill);
+        chip.style.border = "2px solid #6366F1";
+        chip.style.background = "#F3F0FF";
+        chip.style.color = "#6366F1";
+      }
+      skillsInput.value = JSON.stringify(selectedSkills);
+    };
+
+    skillsContainer.appendChild(chip);
+  });
+
+  // Type selection
+  document.querySelectorAll(".type-option").forEach((btn) => {
+    btn.onclick = () => {
+      document.querySelectorAll(".type-option").forEach((b) => {
+        b.style.border = "2px solid #E2E8F0";
+        b.style.background = "#FFFFFF";
+        b.querySelector("span").style.color = "#475569";
+        const svg = b.querySelector("svg");
+        if (svg) svg.setAttribute("stroke", "#475569");
+      });
+
+      btn.style.border = "2px solid #6366F1";
+      btn.style.background = "#F3F0FF";
+      btn.querySelector("span").style.color = "#6366F1";
+      const svg = btn.querySelector("svg");
+      if (svg && svg.hasAttribute("stroke")) svg.setAttribute("stroke", "#6366F1");
+
+      typeInput.value = btn.dataset.value;
+    };
+  });
+
+  // Demo banner auto-fill
+  document.getElementById("demo-banner").onclick = () => {
+    document.getElementById("input-title").value = "CV Full Stack Developer - 2024";
+    document.getElementById("input-attachment").value = "CV_Demo_Fullstack.pdf";
+    document.getElementById("input-summary").value = "Pengalaman 3+ tahun dalam pengembangan web full-stack menggunakan React, Node.js, dan PostgreSQL. Membangun aplikasi e-commerce dengan performa tinggi dan UI/UX yang responsif.";
+
+    // Auto-select demo skills
+    selectedSkills = ["JavaScript", "React", "Node.js", "SQL", "Git"];
+    skillsInput.value = JSON.stringify(selectedSkills);
+    skillsContainer.querySelectorAll("button").forEach((chip) => {
+      if (selectedSkills.includes(chip.dataset.skill)) {
+        chip.style.border = "2px solid #6366F1";
+        chip.style.background = "#F3F0FF";
+        chip.style.color = "#6366F1";
+      }
+    });
+
+    UI.toast("Form diisi dengan contoh CV");
+  };
+
+  // Open modal
   document.getElementById("btn-add-evidence").addEventListener("click", () => {
-    UI.toast("Feature coming soon: Add evidence form");
+    modal.style.display = "flex";
+  });
+
+  // Close modal
+  const closeModal = () => {
+    modal.style.display = "none";
+    form.reset();
+    selectedSkills = [];
+    skillsInput.value = "";
+    typeInput.value = "cv";
+
+    // Reset all chips
+    skillsContainer.querySelectorAll("button").forEach((chip) => {
+      chip.style.border = "1px solid #E2E8F0";
+      chip.style.background = "#F1F5F9";
+      chip.style.color = "#475569";
+    });
+
+    // Reset type selection
+    document.querySelectorAll(".type-option").forEach((b, i) => {
+      if (i === 0) {
+        b.style.border = "2px solid #6366F1";
+        b.style.background = "#F3F0FF";
+        b.querySelector("span").style.color = "#6366F1";
+        const svg = b.querySelector("svg");
+        if (svg) svg.setAttribute("stroke", "#6366F1");
+      } else {
+        b.style.border = "2px solid #E2E8F0";
+        b.style.background = "#FFFFFF";
+        b.querySelector("span").style.color = "#475569";
+        const svg = b.querySelector("svg");
+        if (svg) svg.setAttribute("stroke", "#475569");
+      }
+    });
+  };
+
+  document.getElementById("btn-close-modal").addEventListener("click", closeModal);
+  document.getElementById("btn-cancel").addEventListener("click", closeModal);
+  modal.addEventListener("click", closeModal);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.style.display === "flex") closeModal();
+  });
+
+  // Form submit
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (selectedSkills.length === 0 || selectedSkills.length > 6) {
+      UI.toast("Pilih 1-6 skill", "error");
+      return;
+    }
+
+    const formData = new FormData(form);
+    const payload = {
+      title: formData.get("title"),
+      description: formData.get("summary") || "",
+      source_type: typeInput.value,
+      file_url: formData.get("attachment") || null,
+      metadata: {
+        date: new Date().toISOString().split("T")[0],
+        level: formData.get("level"),
+        skills: selectedSkills,
+      },
+    };
+
+    try {
+      await API.createEvidence(payload);
+      UI.toast("Bukti berhasil disimpan!");
+      closeModal();
+      location.reload();
+    } catch (err) {
+      UI.toast(`Error: ${err.message}`, "error");
+    }
   });
 
   function renderEvidenceCard(ev) {

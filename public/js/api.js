@@ -9,6 +9,7 @@ const API = (() => {
     skills: "sb.mySkills",
     evidence: "sb.myEvidence",
     target: "sb.targetCareer",
+    customSkills: "sb.customSkills",
   };
 
   // GET api/careers.php
@@ -17,10 +18,27 @@ const API = (() => {
     return res.json();
   }
 
-  // GET api/skills.php
+  // GET api/skills.php  -> katalog bawaan + skill baru buatan pengguna
   async function getSkillCatalog() {
     const res = await fetch("../data/skills.json");
-    return res.json();
+    const seeded = await res.json();
+    return [...seeded, ...readCustomSkills()];
+  }
+
+  // POST api/skills.php  { name, category }  -> skill baru, id dibuat di server
+  async function addCustomSkill(name, category) {
+    const custom = readCustomSkills();
+    const existing = custom.find((s) => s.name.toLowerCase() === name.toLowerCase());
+    if (existing) return existing;
+
+    // id lanjutan dari katalog bawaan agar tidak bentrok
+    const seeded = await fetch("../data/skills.json").then((res) => res.json());
+    const maxId = [...seeded, ...custom].reduce((max, s) => Math.max(max, s.id), 0);
+
+    const skill = { id: maxId + 1, name, category };
+    custom.push(skill);
+    localStorage.setItem(LS.customSkills, JSON.stringify(custom));
+    return skill;
   }
 
   // POST api/target.php  { career_id }
@@ -110,6 +128,10 @@ const API = (() => {
     return raw === null ? [] : JSON.parse(raw);
   }
 
+  function readCustomSkills() {
+    return readIds(LS.customSkills);
+  }
+
   function seedEvidence() {
     localStorage.setItem(LS.evidence, JSON.stringify([]));
     return [];
@@ -134,6 +156,7 @@ const API = (() => {
   return {
     getCareers,
     getSkillCatalog,
+    addCustomSkill,
     setTarget,
     getTargetId,
     getMySkills,
