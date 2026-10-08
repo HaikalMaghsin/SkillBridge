@@ -1,73 +1,69 @@
-# CLAUDE.md - SkillBridge (PHP Native + Supabase PostgreSQL)
+# CLAUDE.md - SkillBridge (Front End)
 
 ## Konteks
-SkillBridge adalah proyek PjBL mata kuliah Desain dan Pemrograman Web: aplikasi web dinamis end-to-end tanpa framework.
-**Sebelum mengerjakan apa pun, baca `docs/PRD.md` dan lihat screenshot terkait di `docs/design/`.** PRD adalah sumber kebenaran; mockup hanya referensi visual (data contoh di mockup diabaikan).
+SkillBridge adalah proyek PjBL kelompok mata kuliah Desain dan Pemrograman Web. Aplikasi web dinamis tanpa framework. Backend (PHP native + Supabase PostgreSQL) dikerjakan anggota tim lain.
+**Sebelum mengerjakan apa pun, baca `docs/PRD.md`, `docs/API.md` (jika ada), dan lihat screenshot terkait di `docs/design/`.** PRD adalah sumber kebenaran fitur; mockup hanya acuan visual.
+
+## Peran: FRONT END ONLY
+- **Boleh diubah:** `public/css/`, `public/js/`, markup halaman di `public/`, `data/*.json` (data dummy), `docs/API.md`.
+- **Dilarang diubah:** `src/`, `database/`, `.env`, `.env.example`, logika auth/query/CSRF di sisi server, `docs/PRD.md`, `CLAUDE.md`. Jika butuh perubahan di area itu, jelaskan kebutuhannya dan tulis di `docs/API.md` sebagai permintaan ke backend.
+- Jika PRD, mockup, atau instruksi saling bertentangan, sampaikan konfliknya sebelum lanjut.
 
 ## Tech Stack
-- Front-End: HTML5 semantik, CSS3 native (Flexbox/Grid, CSS variables), JavaScript vanilla (DOM, Fetch API).
-- Back-End: PHP native 8.x, prosedural/modular rapi.
-- Database: Supabase PostgreSQL via `PDO_PGSQL` (port 5432 atau 6543), kredensial dari `.env`.
+- HTML5 semantik, CSS3 native (Flexbox/Grid, CSS variables), JavaScript vanilla (DOM, Event, Fetch API).
+- Dilarang: framework/library eksternal (React, Vue, Tailwind, Bootstrap, jQuery, ikon/font dari CDN pihak ketiga selain Google Fonts Inter), bundler, npm package.
 
-## Larangan
-- Tidak ada framework/library eksternal: Laravel, React, Next.js, Tailwind, Bootstrap, jQuery, ORM, Composer package.
-- Tidak memakai Supabase JS/PHP SDK. Hanya PDO.
-- Jangan menambah fitur non-scope: skor kesiapan, persentase/match rate, analisis GitHub, lowongan kerja.
-- Jangan mengubah `CLAUDE.md` atau `docs/PRD.md` tanpa izin. Jika menemukan konflik atau kekurangan di PRD, tanyakan dulu.
-- Jangan membaca, mencetak, atau commit isi `.env`.
-
-## Struktur Folder
+## Struktur Folder (area front end)
 ```
-skillbridge/
-├── CLAUDE.md
-├── README.md
-├── .env                 # rahasia, di .gitignore
-├── .env.example
-├── .gitignore
-├── docs/                # PRD.md, design/*.jpg
-├── database/            # schema.sql, seed.sql, demo.sql
-├── src/
-│   ├── config/db.php    # koneksi PDO
-│   ├── helpers/         # auth.php, csrf.php, escape.php, flash.php
-│   ├── models/          # fungsi query per entitas (user, skill, career, evidence)
-│   └── views/           # header.php, footer.php, partial komponen
-└── public/              # document root (php -S localhost:8000 -t public)
-    ├── *.php            # halaman (login, dashboard, skills, ...)
-    ├── api/             # endpoint JSON untuk Fetch
-    ├── css/style.css
-    └── js/
+public/
+├── *.html atau *.php     # halaman (lihat "Keputusan tim")
+├── css/style.css         # tokens + komponen
+├── js/
+│   ├── api.js            # SATU-SATUNYA tempat pengambilan data
+│   ├── ui.js             # helper DOM (render list, toast, modal)
+│   └── pages/            # satu file JS per halaman (career.js, skills.js, ...)
+data/                     # data dummy: careers.json, skills.json, evidence.json
+docs/                     # PRD.md, API.md, design/*.jpg
 ```
-Hanya `public/` yang boleh diakses web. Logika dan kredensial berada di luar `public/`.
 
-## Aturan Keamanan (Wajib, tiap kode baru)
-1. **SQL Injection:** semua query memakai prepared statement: `$stmt = $pdo->prepare($sql); $stmt->execute([...]);`. Dilarang menyambung variabel ke string SQL. Set `PDO::ATTR_ERRMODE => ERRMODE_EXCEPTION` dan `ATTR_EMULATE_PREPARES => false`.
-2. **XSS:** semua output ke HTML lewat `e($v)` = `htmlspecialchars($v, ENT_QUOTES, 'UTF-8')`.
-3. **CSRF:** token sesi di setiap form POST (input hidden) dan request Fetch (header `X-CSRF-Token`); verifikasi dengan `hash_equals`.
-4. **Sesi:** `session_regenerate_id(true)` saat login berhasil; cookie `HttpOnly` dan `SameSite=Lax`; logout menghancurkan sesi.
-5. **Password:** `password_hash(..., PASSWORD_DEFAULT)` dan `password_verify`.
-6. **Otorisasi:** halaman dan endpoint privat memanggil `require_login()`; setiap query data pengguna memfilter `user_id` dari `$_SESSION`, bukan dari input.
-7. **Upload:** validasi ekstensi, MIME (`finfo`), ukuran maks 2 MB; nama file diacak; jangan simpan di folder publik.
-8. **Error:** jangan tampilkan pesan error DB ke pengguna; catat ke log, tampilkan pesan umum.
-9. **URL evidence:** hanya terima skema `http`/`https`; link keluar memakai `rel="noopener noreferrer"`.
+## Keputusan tim (default, ubah jika backend meminta)
+- Halaman: `.html` statis yang memanggil `api.js`. Jika tim memutuskan `.php`, markup tetap sama dan bagian dinamis diserahkan ke backend.
+- Nama halaman: `login`, `register`, `dashboard`, `skills`, `evidence`, `career`, `gap`, `profile`, `cv`, `cv-review`.
+- Navbar: Dashboard, My Skills, Evidence, Career Target, Skill Gap, Profile.
+- Teks antarmuka Bahasa Inggris seperti mockup.
 
-## Gaya Kode
-- Nama tabel/kolom snake_case huruf kecil. Nama fungsi dan variabel PHP: snake_case.
-- Satu tanggung jawab per file; query di `src/models/`, bukan di file halaman.
-- Pola halaman: `require` bootstrap → cek auth → proses POST (verifikasi CSRF, validasi, query, redirect/flash) → render view. Gunakan pola Post/Redirect/Get.
-- Validasi input di server (wajib); validasi di JS hanya pelengkap UX.
-- CSS: design tokens di `:root` (warna navy, pink, abu, radius, shadow), font Inter dengan fallback sans-serif, komponen reusable (`.card`, `.pill`, `.btn`, `.btn-primary`, `.btn-accent`, `.tag`). Responsif dengan media query.
+## Lapisan Data (`public/js/api.js`)
+- Semua pengambilan/pengiriman data **hanya** lewat fungsi di `api.js`. Halaman dan komponen tidak boleh memanggil `fetch` langsung.
+- Fungsi: `getCareers()`, `setTarget(id)`, `getMySkills()`, `addSkill()`, `removeSkill()`, `getEvidence()`, `addEvidence()`, `removeEvidence()`, `getSkillGap()`, dan lainnya sesuai `docs/API.md`.
+- Mode dummy: baca `data/*.json` dan simpan perubahan di `localStorage`. Saat backend siap, hanya isi `api.js` yang diganti ke endpoint asli (`api/*.php`); halaman tidak berubah.
+- Setiap fungsi diberi komentar satu baris berisi endpoint asli yang akan menggantikannya.
+- Request ke server (mode asli) menyertakan header `X-CSRF-Token` yang dibaca dari `<meta name="csrf-token">`; form `POST` memuat `<input type="hidden" name="csrf_token">` (nilai diisi backend).
+- Bentuk data mengikuti `docs/API.md`. Jika butuh field baru, tambahkan ke `docs/API.md` dan beri tahu pengguna.
+
+## Aturan Kode
+- **XSS:** data dinamis dirender dengan `textContent`/`createElement`. Jangan memakai `innerHTML` dengan data dari pengguna atau API. Atribut URL hanya boleh skema `http`/`https`; link keluar memakai `target="_blank" rel="noopener noreferrer"`.
+- **CSS:** semua warna, radius, shadow, spacing di `:root` sebagai variabel. Font Inter dengan fallback `system-ui, sans-serif`. Komponen reusable: `.navbar`, `.nav-pill`, `.card`, `.btn`, `.btn-primary`, `.btn-accent`, `.tag`, `.badge`. Penamaan kelas kebab-case; hindari selector ID untuk styling.
+- **Responsif:** mobile-first dengan media query; uji di 375px, 768px, 1280px.
+- **Aksesibilitas:** elemen semantik (`header`, `nav`, `main`, `section`), `<label>` untuk setiap input, `alt` pada gambar, `aria-label` pada tombol ikon, fokus keyboard terlihat, kontras teks cukup.
+- **JS:** `const`/`let`, fungsi kecil, tanpa variabel global kecuali yang di-export lewat satu namespace; event handling dengan `addEventListener`. Validasi form di JS hanya pelengkap UX (server tetap memvalidasi).
+- Satu file JS per halaman; logika bersama di `ui.js`.
 - Komentar hanya untuk logika yang tidak jelas.
 
-## Cara Kerja
-1. Kerjakan **satu fitur per sesi**. Jangan menyentuh fitur lain.
-2. Untuk tugas besar, buat rencana singkat dulu dan tunggu persetujuan.
-3. Setelah selesai, laporkan: file yang dibuat/diubah, cara mengujinya (langkah klik/URL), dan hal yang belum selesai.
-4. Setelah mengerjakan fitur, periksa ulang kode baru terhadap checklist keamanan di atas.
-5. Jangan refactor kode yang tidak diminta.
-6. Jika instruksi pengguna bertentangan dengan PRD atau larangan di sini, sampaikan konfliknya sebelum lanjut.
+## Fitur Non-Scope (jangan dibuat)
+Skor kesiapan karier, persentase kecocokan/match rate, progress bar persentase, teks "x of y skills covered", analisis GitHub, lowongan kerja. Skill gap hanya dua daftar: *Skills You Already Have* dan *What to Explore Next*; boleh menampilkan jumlah, bukan persentase atau rasio.
 
-## Menjalankan Proyek
-- Server lokal: `php -S localhost:8000 -t public`
-- Cek ekstensi: `php -m | grep pdo_pgsql`
-- Skema dan seed dijalankan manual di Supabase SQL Editor (`database/schema.sql`, lalu `seed.sql`).
-- `.env` berisi: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`. Sediakan `.env.example` tanpa nilai asli.
+## Aturan Tampilan dari Mockup
+- Tiru layout, warna, tipografi, dan komponen dari `docs/design/`.
+- **Abaikan data contoh di mockup** (Node.js, Express.js, "Product Designer", angka, tanggal). Pakai data dari `data/*.json` sesuai seed di PRD bagian 7.
+- Label skill: **Strong** jika ≥ 2 evidence, **Growing** jika kurang (dihitung di JS dari data).
+
+## Cara Kerja
+1. Satu halaman/fitur per sesi. Jangan menyentuh halaman lain.
+2. Untuk tugas besar, buat rencana singkat dulu dan tunggu persetujuan.
+3. Setelah selesai, laporkan: file yang dibuat/diubah, cara mengujinya (URL/langkah klik), dan hal yang belum selesai.
+4. Setelah selesai, periksa kode baru terhadap "Aturan Kode" dan "Fitur Non-Scope".
+5. Jangan refactor atau memformat ulang kode yang tidak diminta.
+6. Kerja di branch `frontend`; jangan commit langsung ke `main`.
+
+## Menjalankan
+- Preview: ekstensi **Live Server** di VS Code (agar `fetch` ke file JSON berjalan), atau `php -S localhost:8000 -t public` jika memakai halaman `.php`.
