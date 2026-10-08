@@ -331,9 +331,9 @@ small {
 
 .card-lg {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 24px;
+  border: 1px solid var(--border-gap);
+  border-radius: var(--radius-xl);
+  padding: 28px;
   box-shadow: var(--shadow-sm);
 }
 
@@ -410,10 +410,21 @@ small {
 .badge-info {
   background: var(--tint-indigo);
   border: 1px solid var(--badge-border);
-  color: var(--accent);
+  color: var(--primary);
   font-size: 11px;
   padding: 5px 10px;
-  letter-spacing: 0.22px;
+  letter-spacing: 0;
+  border-radius: var(--radius-round);
+}
+
+.badge-not-added {
+  background: var(--primary-dark);
+  border: 1px solid var(--primary-dark);
+  color: var(--bg);
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: var(--radius-round);
+  font-weight: 700;
 }
 
 /* ============ 7. Forms ============ */
@@ -456,7 +467,7 @@ small {
 
 /* ============ 8. Layout ============ */
 .container {
-  max-width: 1040px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 40px 48px;
 }
@@ -767,19 +778,21 @@ small {
 .skill-row {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
+  gap: 13px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-gap);
+  min-height: 66px;
+}
+
+.skill-row:last-child {
+  border-bottom: none;
 }
 
 .skill-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 11px;
-  background: var(--primary);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--primary-dark);
   color: #fff;
   display: grid;
   place-items: center;
@@ -788,11 +801,19 @@ small {
   flex-shrink: 0;
 }
 
+.skill-avatar svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
 /* ============ 9e. Stat tiles ============ */
 .stat-tile {
   background: var(--tint-gray);
-  border-radius: var(--radius);
-  padding: 16px 18px;
+  border: 1px solid var(--border-gap);
+  border-radius: 16px;
+  padding: 16px;
   display: grid;
   gap: 6px;
 }
@@ -801,23 +822,45 @@ small {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.9px;
+  letter-spacing: 1.2px;
   color: var(--text-light);
+  opacity: 0.8;
 }
 
 .stat-tile .stat-value {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.1;
   color: var(--text-primary);
 }
 
 .inset-box {
   background: var(--tint-gray);
-  border-radius: var(--radius);
+  border: 1px solid var(--border-gap);
+  border-radius: 16px;
   padding: 18px;
   display: grid;
-  gap: 12px;
+  gap: 10px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-heading svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.section-heading h3 {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin: 0;
 }
 
 /* ============ 10. Utilities ============ */
