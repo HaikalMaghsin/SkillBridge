@@ -126,7 +126,8 @@ const UI = (() => {
       )
     );
 
-    const brand = el("div", { class: "navbar-brand" }, [
+    // Klik logo/nama mengembalikan ke landing page.
+    const brand = el("a", { class: "navbar-brand", href: "index.html", "aria-label": "SkillBridge home" }, [
       el("div", { class: "navbar-logo", text: "S" }),
       el("div", { class: "navbar-brand-text" }, [
         el("div", { class: "navbar-brand-name", text: "SkillBridge" }),
