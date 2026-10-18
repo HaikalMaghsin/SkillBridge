@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Target Role &amp; Kebutuhan Skill · SkillBridge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/recruiter.css" />
+  </head>
+  <body class="rec-body" data-rec-page="roles">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="rec-sidebar">
+      <div class="rec-brand">
+        <div class="rec-brand-mark">S</div>
+        <div class="rec-brand-copy">
+          <span class="rec-brand-name">SkillBridge</span>
+          <span class="rec-brand-type">RECRUITER CONSOLE</span>
+        </div>
+      </div>
+
+      <nav class="rec-nav" aria-label="Navigasi recruiter">
+        <p class="rec-nav-label">PERUSAHAAN &amp; RECRUITER</p>
+        <a href="recruiter.html" class="rec-nav-item">Profil Perusahaan</a>
+        <a href="recruiter-team.html" class="rec-nav-item">Manajemen Recruiter / Tim</a>
+        <a href="recruiter-roles.html" class="rec-nav-item active">Target Role &amp; Kebutuhan Skill</a>
+        <a href="recruiter-candidates.html" class="rec-nav-item">Pipeline Kandidat</a>
+        <a href="recruiter-activity.html" class="rec-nav-item">Log Aktivitas Recruiter</a>
+        <a href="recruiter-settings.html" class="rec-nav-item">Pengaturan Akun</a>
+      </nav>
+
+      <div class="rec-sidebar-spacer"></div>
+
+      <div class="rec-context">
+        <div class="rec-context-head">
+          <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 1.5L2.5 4v4.5c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8.5 1.5z"/><path d="M6 8.5l2 2 3.5-3.5"/></svg>
+          <span>Akses Perusahaan</span>
+        </div>
+        <p>Kelola informasi profil perusahaan, anggota tim recruiter, dan kebutuhan role.</p>
+      </div>
+
+      <div class="rec-logout-footer">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.75 15.75H3.375A1.125 1.125 0 012.25 14.625V3.375A1.125 1.125 0 013.375 2.25h3.375M12.375 12.375L15.75 9l-3.375-3.375M15.75 9H6.75"/></svg>
+        <a href="index.html">Logout</a>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <div class="rec-workspace">
+
+      <header class="rec-header">
+        <div class="rec-header-left">
+          <div class="rec-workspace-title">
+            <svg width="18" height="18" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 1.5L2.5 4v4.5c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8.5 1.5z"/><path d="M6 8.5l2 2 3.5-3.5"/></svg>
+            <span>Perusahaan Partner</span>
+          </div>
+          <span class="rec-role-pill">Company Admin</span>
+        </div>
+        <div class="rec-header-right">
+          <div class="rec-header-profile-text">
+            <span class="rec-header-name">Aditya Pratama</span>
+            <span class="rec-header-role">Admin Perusahaan · PT Tech Indonesia</span>
+          </div>
+          <div class="rec-avatar">AP</div>
+        </div>
+      </header>
+
+      <main class="rec-page-content">
+
+        <!-- Page heading -->
+        <div>
+          <div class="rec-page-context">
+            <p class="rec-breadcrumb">A &ndash; PERUSAHAAN / TARGET ROLE &amp; SKILL</p>
+            <div class="rec-date">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="14" height="12.5" rx="1.5"/><path d="M3 8.5h14M7 3v3M13 3v3"/></svg>
+              <span id="rec-today">18 Oktober 2026</span>
+            </div>
+          </div>
+          <h1 class="rec-page-title">Target Role &amp; Kebutuhan Skill</h1>
+          <p class="rec-page-desc">
+            Kelola target role yang dibuka perusahaan serta kebutuhan skill terkait untuk menyaring kandidat.
+          </p>
+        </div>
+
+        <!-- Kartu target role -->
+        <section class="rec-card">
+          <div class="rec-card-head">
+            <h2 class="rec-card-title">Ringkasan Lowongan</h2>
+            <span class="rec-card-count" id="roles-summary">—</span>
+          </div>
+          <div class="rec-role-cards" id="rec-role-cards">
+            <!-- diisi js/pages/recruiter-roles.js -->
+          </div>
+        </section>
+
+        <!-- Workspace mapping dua panel -->
+        <section>
+          <h2 class="rec-section-title">Mapping Skill ke Target Role</h2>
+          <p class="rec-section-sub">Pilih target role di atas, lalu tentukan skill yang menjadi kebutuhan role tersebut.</p>
+          <div class="rec-mapping-grid" id="rec-mapping-panel" style="margin-top: 16px">
+            <!-- diisi js/pages/recruiter-roles.js -->
+          </div>
+        </section>
+
+        <div class="rec-save-bar">
+          <span class="rec-save-note">Simpan perubahan untuk menerapkan mapping baru ke pipeline kandidat.</span>
+          <div class="rec-save-actions">
+            <button type="button" class="btn" id="btn-cancel-mapping">Batal</button>
+            <button type="button" class="btn btn-primary" id="btn-save-mapping">Simpan Mapping</button>
+          </div>
+        </div>
+
+      </main>
+    </div>
+
+    <script src="js/ui.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/pages/recruiter-roles.js"></script>
+  </body>
+</html>
