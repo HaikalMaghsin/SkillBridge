@@ -1,4 +1,4 @@
-// admin-settings.js - halaman pengaturan sistem (Owner Console)
+// admin-settings.js - halaman pengaturan sistem (Admin Console)
 
 document.addEventListener("DOMContentLoaded", () => {
   const formProfile = document.getElementById("form-admin-profile");

@@ -1,4 +1,4 @@
-// admin.js - render dashboard admin (Owner Console)
+// admin.js - render dashboard admin (Admin Console)
 // Data dari API.getAdminStats / API.getAdminUsers dst. Saat ini memakai JSON dummy.
 
 (async () => {
@@ -12,7 +12,7 @@
       UI.clear(grid);
       const cards = [
         { label: "Total pengguna", value: 1248, context: "986 mahasiswa · 262 fresh graduate" },
-        { label: "Administrator", value: 12, context: "1 Owner · 7 SkillBridge · 4 Job" },
+        { label: "Administrator", value: 12, context: "1 Admin · 7 SkillBridge · 4 Job" },
         { label: "Keterampilan", value: 48, context: "Record keterampilan master" },
         { label: "Target karier", value: 8, context: "Record target karier master" },
         { label: "Relasi mapping", value: 64, context: "Relasi karier–keterampilan" },
@@ -60,7 +60,7 @@
   // ---- Admin activity ----
   const adminRows = [
     {
-      actor: "Aditya Pratama · Owner",
+      actor: "Aditya Pratama · Admin",
       detail: "Menambahkan Dimas Saputra · Admin Job",
       time: "10.12",
     },
@@ -70,7 +70,7 @@
       time: "09.58",
     },
     {
-      actor: "Aditya Pratama · Owner",
+      actor: "Aditya Pratama · Admin",
       detail: "Menonaktifkan akun Bima Santoso",
       time: "Kemarin",
     },
