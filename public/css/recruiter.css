@@ -1,35 +1,35 @@
 /* ============ SkillBridge — Panel Recruiter ============ */
-/* Layout & komponen memakai token :root dari style.css + override admin.css.
+/* Layout & komponen memakai token :root dari style.css (dimuat lebih dulu).
    Class berawalan rec- agar tidak bentrok dengan .admin-* (Owner Console). */
 
-/* ---- tokens khusus recruiter (selaras desain Figma) ---- */
+/* ---- tokens recruiter: alias ke palet style.css ---- */
 :root {
-  --rec-bg: #f6f7fb;
   --rec-surface: var(--surface);
-  --rec-border: #e8eaf0;
-  --rec-row-hover: #f7f8fc;
-  --rec-tint-indigo: #eef2ff;
-  --rec-tint-indigo-border: #dfe6fa;
-  --rec-ink: #17172b;
-  --rec-muted: #6f7082;
-  --rec-light: #7b8198;
-  --rec-primary: #1e3a8a;
-  --rec-primary-soft: #1d3a8a;
-  --rec-purple-bg: #f1edfc;
-  --rec-purple-text: #6451a5;
-  --rec-green-bg: #ecf8f2;
-  --rec-green-text: #157a58;
-  --rec-amber-bg: #fff7e7;
-  --rec-amber-text: #9a681b;
-  --rec-gray-bg: #f2f4f8;
-  --rec-pink-bg: #fff0f6;
-  --rec-pink-text: #ff1377;
+  --rec-bg: var(--bg);
+  --rec-border: var(--border);
+  --rec-ink: var(--text-primary);
+  --rec-muted: var(--text-muted);
+  --rec-light: var(--text-light);
+  --rec-primary: var(--primary);
+  --rec-primary-soft: var(--primary);
+  --rec-tint-indigo: var(--tint-indigo);
+  --rec-tint-indigo-border: var(--badge-border);
+  --rec-gray-bg: var(--tint-gray);
+  --rec-row-hover: var(--row-hover);
+  --rec-nav-hover: var(--nav-hover);
+  --rec-pink-bg: var(--tint-pink);
+  --rec-pink-text: var(--accent);
+  --rec-pink-border: var(--pink-border);
+  --rec-pink-muted: var(--pink-muted);
+  --rec-amber-bg: var(--amber-bg);
+  --rec-amber-text: var(--amber-text);
 }
 
 .rec-body {
   background: var(--rec-bg);
   min-height: 100vh;
   font-family: var(--font-family);
+  font-size: 15px;
 }
 
 /* ===== Sidebar (selaras .admin-sidebar dari Panel Admin) ===== */
@@ -91,44 +91,106 @@
 .rec-nav {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 4px;
 }
 
-.rec-nav-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  color: var(--rec-muted);
-  padding: 0 14px;
-  margin-bottom: 2px;
+/* kategori nav (sub-heading) */
+.rec-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.rec-nav-item {
-  position: relative;
-  height: 46px;
-  padding: 0 14px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--rec-muted);
-  background: var(--rec-surface);
-  border: 1px solid var(--border);
+.rec-nav-group[open] > .rec-nav-group-body,
+.rec-nav-group-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 0 2px 20px;
+}
+
+.rec-nav-group-head {
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  gap: 10px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rec-ink);
+  cursor: pointer;
+  list-style: none;
+  transition: background-color 0.18s ease;
+}
+
+.rec-nav-group-head::-webkit-details-marker {
+  display: none;
+}
+
+.rec-nav-group-head:hover {
+  background: var(--rec-nav-hover);
+}
+
+.rec-nav-group-head:focus-visible {
+  outline: 2px solid var(--rec-primary);
+  outline-offset: 2px;
+}
+
+.rec-nav-cat-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--rec-primary);
+}
+
+.rec-nav-group-title {
+  flex: 1;
+  text-align: left;
+}
+
+.rec-nav-chevron {
+  flex-shrink: 0;
+  color: var(--rec-light);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.rec-nav-group[open] > .rec-nav-group-head .rec-nav-chevron,
+.rec-nav-group[open] .rec-nav-chevron {
+  transform: rotate(90deg);
+  color: var(--rec-primary);
+}
+
+/* item nav */
+.rec-nav-item {
+  position: relative;
+  height: 38px;
+  padding: 0 12px 0 30px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--rec-muted);
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.18s ease, color 0.18s ease;
 }
 
 .rec-nav-item:hover {
-  background: var(--rec-gray-bg);
+  background: var(--rec-nav-hover);
   color: var(--rec-ink);
 }
 
 .rec-nav-item.active {
-  background: var(--rec-primary);
-  border-color: var(--rec-primary);
-  color: #fff;
-  font-weight: 800;
+  background: var(--rec-tint-indigo);
+  color: var(--rec-primary-soft);
+  font-weight: 600;
+}
+
+.rec-nav-item:focus-visible {
+  outline: 2px solid var(--rec-primary);
+  outline-offset: 2px;
 }
 
 .rec-sidebar-spacer {
@@ -183,6 +245,11 @@
 
 .rec-logout-footer a:hover {
   color: var(--rec-pink-text);
+}
+
+.rec-logout-footer a:focus-visible {
+  outline: 2px solid var(--rec-primary);
+  outline-offset: 2px;
 }
 
 /* ===== Workspace (kanan sidebar) ===== */
@@ -398,8 +465,8 @@
 }
 
 .rec-badge-verified {
-  background: var(--rec-purple-bg);
-  color: var(--rec-purple-text);
+  background: var(--rec-primary);
+  color: #fff;
   font-size: 11px;
   font-weight: 800;
   padding: 5px 10px;
@@ -414,7 +481,7 @@
 /* ===== Stat cards (recruiter) ===== */
 .rec-stats-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
 }
 
@@ -426,18 +493,18 @@
   display: flex;
   flex-direction: column;
   gap: 13px;
-  height: 146px;
-  overflow: hidden;
+  min-height: 146px;
+  align-content: space-between;
 }
 
 .rec-stat-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--rec-muted);
 }
 
 .rec-stat-value {
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 800;
   line-height: 1.1;
   color: var(--rec-ink);
@@ -446,11 +513,11 @@
 
 .rec-stat-value--primary {
   color: var(--rec-primary-soft);
-  font-size: 28px;
+  font-size: 30px;
 }
 
 .rec-stat-context {
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.45;
   color: var(--rec-muted);
 }
@@ -467,13 +534,13 @@
 }
 
 .rec-card-title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--rec-ink);
 }
 
 .rec-card-sub {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--rec-muted);
   margin-top: 4px;
 }
@@ -621,17 +688,120 @@
   flex-shrink: 0;
 }
 
+.rec-role-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rec-ink);
+}
+
 .rec-row-status {
   width: 90px;
   flex-shrink: 0;
 }
 
+/* Wadah tombol aksi baris tabel.
+   Dipakai dua konteks: .rec-row dashboard (div) dan <td> tabel asli. */
 .rec-row-actions {
   width: 118px;
   flex-shrink: 0;
   display: flex;
   gap: 12px;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Tombol/link di dalamnya jangan menyusut atau terpotong;
+   kalau kolom sempit, wadah yang membungkus ke baris berikutnya. */
+.rec-row-actions > * {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Di pager bawah halaman .rec-pager-link tampil sebagai teks, tapi di
+   dalam wadah aksi baris tabel ia jadi tombol — beri padding, tinggi,
+   dan background agar terbaca sebagai tombol (selaras .rec-row-action). */
+.rec-row-actions .rec-pager-link {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: var(--rec-gray-bg);
+  border: 1px solid var(--border);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.rec-row-actions .rec-pager-link:hover {
+  background: var(--rec-row-hover);
+  border-color: var(--rec-primary);
+  text-decoration: none;
+}
+
+.rec-row-actions .rec-pager-link:focus-visible {
+  outline: 2px solid var(--rec-primary);
+  outline-offset: 2px;
+}
+
+/* Di tabel asli, lebar kolom ditentukan <th> — wadah mengikuti kolom. */
+table.rec-native-table .rec-row-actions {
+  width: auto;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Di tabel tim, kolom "Nama & Email" dibatasi lebarnya — sebelumnya ia
+   menyerap seluruh sisa tabel (~680px di layar 1280) sehingga tampak
+   kosong. Sisa lebar diserap kolom aksi dan tombolnya diratakan kanan,
+   jadi ruang kosong terbaca sebagai jeda yang disengaja. */
+table.rec-native-table .rec-col-name {
+  width: 320px;
+}
+
+table.rec-native-table .rec-col-actions {
+  width: auto;
+  text-align: right;
+}
+
+/* Tombol aksi baris tabel */
+.rec-row-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--rec-gray-bg);
+  color: var(--rec-primary-soft);
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.rec-row-action:hover {
+  background: var(--rec-row-hover);
+  border-color: var(--rec-primary);
+  color: var(--rec-primary);
+}
+
+.rec-row-action:focus-visible {
+  outline: 2px solid var(--rec-primary);
+  outline-offset: 2px;
+}
+
+.rec-row-action--danger {
+  color: var(--rec-pink-text);
+}
+
+.rec-row-action--danger:hover {
+  background: var(--rec-pink-bg);
+  border-color: var(--rec-pink-text);
+  color: var(--rec-pink-text);
 }
 
 /* ===== Badge pill (status/role) ===== */
@@ -644,11 +814,11 @@
   font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
+  background: var(--rec-gray-bg);
+  color: var(--rec-muted);
 }
 
 .rec-badge--indigo { background: var(--rec-tint-indigo); color: var(--rec-primary-soft); }
-.rec-badge--purple { background: var(--rec-purple-bg); color: var(--rec-purple-text); }
-.rec-badge--green { background: var(--rec-green-bg); color: var(--rec-green-text); }
 .rec-badge--amber { background: var(--rec-amber-bg); color: var(--rec-amber-text); }
 .rec-badge--gray { background: var(--rec-gray-bg); color: var(--rec-muted); }
 .rec-badge--pink { background: var(--rec-pink-bg); color: var(--rec-pink-text); }
@@ -689,95 +859,63 @@
 }
 
 .rec-chip--gap {
-  background: var(--rec-purple-bg);
-  border-color: var(--border);
-  color: var(--rec-purple-text);
-}
-
-/* ===== Kandidat table (recruiter-candidates) ===== */
-.rec-cand-table-wrap {
-  overflow-x: auto;
-}
-
-.rec-cand-table {
-  display: flex;
-  flex-direction: column;
-}
-
-.rec-cand-head {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  height: 42px;
-  padding: 0 16px;
   background: var(--rec-gray-bg);
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 600;
+  border-color: var(--border);
   color: var(--rec-muted);
 }
 
-.rec-cand-body {
-  display: flex;
-  flex-direction: column;
-}
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  min-height: 100px;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
+/* ===== Kandidat table (recruiter-candidates) ===== */
+
+/* Baris lebih tinggi dari tabel biasa karena chip skill bisa membungkus.
+   min-height diabaikan pada <tr>, jadi tinggi dipasang di sel. */
+table.rec-native-table tbody tr.rec-cand-row > td {
+  height: 92px;
 }
 
-.rec-cand-row:hover {
-  background: var(--rec-row-hover);
-}
-
+/* Kolom tabel kandidat. Dengan table-layout: fixed, lebar di bawah ini
+   dipakai apa adanya; kolom skill dibiarkan tanpa lebar agar menyerap
+   sisa ruang, sehingga kolom identitas tidak melar. */
 .rec-cand-id {
-  width: 430px;
-  max-width: 38%;
-  flex-shrink: 0;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  min-width: 0;
+  width: 280px;
 }
 
 .rec-cand-role {
-  width: 155px;
-  flex-shrink: 0;
-}
-
-.rec-cand-skills {
-  flex: 1;
-  min-width: 140px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  width: 150px;
 }
 
 .rec-cand-gaps {
-  width: 125px;
-  flex-shrink: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-content: flex-start;
+  width: 130px;
 }
 
 .rec-cand-evidence {
-  width: 90px;
-  flex-shrink: 0;
+  width: 96px;
   font-size: 13px;
   font-weight: 600;
   color: var(--rec-primary-soft);
 }
 
 .rec-cand-actions {
-  width: 206px;
-  flex-shrink: 0;
+  width: 200px;
+}
+
+/* Isi sel dibungkus .rec-cell agar flex tidak merusak layout tabel. */
+.rec-cell {
   display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.rec-cell--wrap {
+  flex-wrap: wrap;
+  gap: 6px;
+  align-content: flex-start;
+  align-items: flex-start;
+}
+
+.rec-cand-actions .rec-cell {
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 /* Tombol aksi kecil kandidat */
@@ -792,13 +930,22 @@
   font-size: 12px;
   font-weight: 600;
   border: 1px solid var(--border);
-  background: var(--rec-surface);
+  background: var(--rec-gray-bg);
   color: var(--rec-primary-soft);
   cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .rec-cand-btn:hover {
   background: var(--rec-row-hover);
+  border-color: var(--rec-primary);
+}
+
+.rec-cand-btn:focus-visible {
+  outline: 2px solid var(--rec-primary);
+  outline-offset: 2px;
 }
 
 .rec-cand-btn--primary {
@@ -811,9 +958,6 @@
   opacity: 0.9;
   background: var(--rec-primary);
 }
-
-/* ===== Responsive ===== */
-@media (max-width: 1279px) {
 
 /* Info strip varian indigo */
 .rec-info-strip--indigo {
@@ -990,7 +1134,7 @@
 
 .rec-info-strip--pink {
   background: var(--rec-pink-bg);
-  border-color: #ffd9e8;
+  border-color: var(--rec-pink-border);
 }
 
 .rec-info-strip--pink svg {
@@ -998,7 +1142,7 @@
 }
 
 .rec-info-strip--pink .rec-info-strip-sub {
-  color: #a34a72;
+  color: var(--rec-pink-muted);
 }
 
 .rec-info-strip svg {
@@ -1102,19 +1246,41 @@
   font-weight: 700;
 }
 
+/* Dipakai untuk <a> maupun <button>, jadi reset gaya tombol bawaan.
+   font-size: inherit agar ukuran mengikuti konteks (pager 11px, kartu 12px). */
 .rec-pager-link {
   cursor: pointer;
   color: var(--rec-primary);
   font-weight: 600;
+  font-size: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.rec-pager-link:hover {
+  text-decoration: underline;
+}
+
+.rec-pager-link:focus-visible {
+  outline: 2px solid var(--rec-primary);
+  outline-offset: 2px;
 }
 
 .rec-pager-link:disabled {
   opacity: 0.4;
   cursor: default;
+  text-decoration: none;
 }
 
 .rec-pager-link--danger {
   color: var(--accent);
+}
+
+.rec-pager-link--danger:hover {
+  color: var(--rec-pink-text);
 }
 
 .rec-col-date {
@@ -1129,24 +1295,37 @@
 
 table.rec-native-table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
+  /* Lebar kolom dipakai apa adanya; sisa ruang tidak dibagi ke kolom
+     terlebar sehingga kolom nama/email tidak melar. */
+  table-layout: fixed;
+  /* Di layar sempit tabel menggulir di .rec-table-wrap, tidak menggencet. */
+  min-width: 880px;
 }
 
 table.rec-native-table thead th {
   text-align: left;
   padding: 12px 16px;
   background: var(--rec-gray-bg);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--rec-muted);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
   white-space: nowrap;
+  vertical-align: middle;
+}
+
+table.rec-native-table thead th:first-child {
+  border-top-left-radius: 6px;
+}
+
+table.rec-native-table thead th:last-child {
+  border-top-right-radius: 6px;
 }
 
 table.rec-native-table tbody td {
   padding: 13px 16px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--rec-ink);
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
@@ -1156,7 +1335,7 @@ table.rec-native-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-table.rec-native-table tbody tr:hover td {
+table.rec-native-table tbody tr:hover {
   background: var(--rec-row-hover);
 }
 
@@ -1684,7 +1863,7 @@ table.rec-native-table tbody tr:hover td {
   }
 
   .rec-brand-copy,
-  .rec-nav-label,
+  .rec-nav-group-head,
   .rec-sidebar-spacer,
   .rec-context {
     display: none;
@@ -1692,11 +1871,23 @@ table.rec-native-table tbody tr:hover td {
 
   .rec-nav {
     flex-direction: row;
-    gap: 8px;
+    gap: 6px;
+  }
+
+  /* Chip-bar mobile: kategori diratakan, accordion dimatikan. */
+  .rec-nav-group,
+  .rec-nav-group-body,
+  .rec-nav-group:not([open]) > .rec-nav-group-body {
+    display: contents;
+  }
+
+  .rec-nav-group::details-content {
+    content-visibility: visible;
   }
 
   .rec-nav-item {
     height: 40px;
+    padding: 0 12px;
     white-space: nowrap;
   }
 

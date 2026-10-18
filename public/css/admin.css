@@ -1,26 +1,20 @@
 /* ============ Admin SkillBridge — Owner Console ============ */
 /* Layout + komponen admin. Warna & radius memakai token :root dari style.css. */
 
-/* ---- tokens tambahan khusus admin ---- */
+/* ---- tokens admin: alias ke palet style.css ---- */
 :root {
-  --admin-bg: #f6f7fb;
   --admin-surface: var(--surface);
-  --admin-card-border: #e8eaf0;
-  --admin-row-hover: #f7f8fc;
+  --admin-bg: var(--bg);
+  --admin-card-border: var(--border);
   --admin-pill-bg: var(--tint-indigo);
-  --admin-pill-text: var(--primary);
-  --admin-table-head-bg: #f2f4f8;
-  --admin-nav-head-hover: #f4f5f8;
-
-  /* aksen per kategori sidebar */
-  --admin-nav-accent-1: #4f46e5;
-  --admin-nav-tint-1: #eef0ff;
-  --admin-nav-accent-2: #0284c7;
-  --admin-nav-tint-2: #e6f5fd;
-  --admin-nav-accent-3: #d97706;
-  --admin-nav-tint-3: #fef3e2;
-  --admin-nav-accent-4: #64748b;
-  --admin-nav-tint-4: #eef1f5;
+  --admin-table-head-bg: var(--tint-gray);
+  --admin-row-hover: var(--row-hover);
+  --admin-nav-head-hover: var(--nav-hover);
+  --admin-pink-bg: var(--tint-pink);
+  --admin-pink-text: var(--accent);
+  --admin-pink-border: var(--pink-border);
+  --admin-amber-bg: var(--amber-bg);
+  --admin-amber-text: var(--amber-text);
 }
 
 /* ---- layout root ---- */
@@ -28,6 +22,7 @@
   background: var(--admin-bg);
   min-height: 100vh;
   font-family: var(--font-family);
+  font-size: 15px;
 }
 
 /* ===== Sidebar ===== */
@@ -107,7 +102,7 @@
   height: 44px;
   padding: 0 14px;
   border-radius: 12px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
   cursor: pointer;
@@ -164,7 +159,7 @@
   height: 38px;
   padding: 0 12px 0 18px;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-muted);
   background: transparent;
@@ -180,8 +175,8 @@
 }
 
 .admin-nav-item.active {
-  background: var(--admin-nav-tint-4);
-  color: var(--text-primary);
+  background: var(--tint-indigo);
+  color: var(--primary);
   font-weight: 600;
 }
 
@@ -238,7 +233,7 @@
 }
 
 .admin-logout-footer a:hover {
-  color: var(--accent);
+  color: var(--admin-pink-text);
 }
 
 /* ===== Workspace (right of sidebar) ===== */
@@ -323,26 +318,21 @@
   height: 26px;
   padding: 0 10px;
   border-radius: 999px;
-  background: var(--admin-pill-bg);
-  color: var(--admin-pill-text);
+  background: var(--primary);
+  color: #fff;
   font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
 }
 
-.admin-badge-green {
-  background: #e7f8ef;
-  color: #0f9d58;
-}
-
 .admin-badge-warn {
-  background: #fff4e5;
-  color: #b76e00;
+  background: var(--admin-amber-bg);
+  color: var(--admin-amber-text);
 }
 
 .admin-badge-danger {
-  background: var(--tint-pink);
-  color: var(--accent);
+  background: var(--admin-pink-bg);
+  color: var(--admin-pink-text);
 }
 
 /* ===== Page content ===== */
@@ -365,7 +355,7 @@
 }
 
 .admin-eyebrow {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.2px;
   text-transform: uppercase;
@@ -373,7 +363,7 @@
 }
 
 .admin-page-title {
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 700;
   letter-spacing: -0.3px;
   margin-top: 8px;
@@ -381,7 +371,7 @@
 }
 
 .admin-page-desc {
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.5;
   color: var(--text-muted);
   margin-top: 8px;
@@ -392,19 +382,19 @@
 .admin-welcome-strip {
   display: flex;
   align-items: center;
-  gap: 16px;
-  background: var(--admin-surface);
-  border: 1px solid var(--admin-card-border);
-  border-radius: 14px;
-  padding: 20px 24px;
+  gap: 12px;
+  background: var(--tint-indigo);
+  border: 1px solid var(--badge-border);
+  border-radius: 12px;
+  padding: 20px;
 }
 
 .admin-welcome-icon {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: #e7f8ef;
-  color: #0f9d58;
+  background: var(--primary);
+  color: #fff;
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -414,18 +404,18 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
 }
 
 .admin-welcome-text strong {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--primary);
 }
 
 .admin-welcome-text span {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 
@@ -458,13 +448,13 @@
 }
 
 .admin-stat-label {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-light);
   opacity: 0.8;
 }
 
 .admin-stat-value {
-  font-size: 30px;
+  font-size: 34px;
   font-weight: 800;
   line-height: 1.1;
   color: var(--text-primary);
@@ -473,7 +463,7 @@
 
 .admin-stat-context {
   padding: 0 16px 14px;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
   color: var(--text-muted);
 }
@@ -505,7 +495,7 @@
 }
 
 .admin-card-title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -536,7 +526,7 @@ table.admin-table thead th {
   text-align: left;
   padding: 12px 16px;
   background: var(--admin-table-head-bg);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text-muted);
   border-bottom: 1px solid var(--admin-card-border);
@@ -549,7 +539,7 @@ table.admin-table thead th[colspan]:not([colspan="1"]) {
 
 table.admin-table tbody td {
   padding: 13px 16px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-primary);
   border-bottom: 1px solid var(--admin-card-border);
   vertical-align: middle;
@@ -568,7 +558,10 @@ table.admin-table>tbody td {
   text-align: left;
 }
 
-.admin-text-end,
+/* Sel dan <th>-nya harus di-scope ke .admin-table: aturan
+   `table.admin-table > thead th` (0,1,3) mengalahkan `.admin-text-end` polos (0,1,0),
+   sehingga header "Aksi" tetap rata kiri walau selnya rata kanan. */
+table.admin-table th.admin-text-end,
 table.admin-table td.admin-text-end {
   text-align: right;
 }
@@ -647,7 +640,7 @@ table.admin-table td.admin-text-end {
 }
 
 .admin-row-text {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-primary);
   line-height: 1.45;
 }
@@ -655,7 +648,7 @@ table.admin-table td.admin-text-end {
 .admin-row-time {
   width: 62px;
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-primary);
 }
 
@@ -690,7 +683,7 @@ table.admin-table td.admin-text-end {
 }
 
 .admin-admin-actor {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-primary);
   line-height: 1.5;
 }
@@ -705,7 +698,7 @@ table.admin-table td.admin-text-end {
   width: 60px;
   flex-shrink: 0;
   text-align: right;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-primary);
 }
 
@@ -729,13 +722,13 @@ table.admin-table td.admin-text-end {
   color: var(--primary);
   display: grid;
   place-items: center;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   flex-shrink: 0;
 }
 
 .admin-user-name {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -770,15 +763,15 @@ table.admin-table td.admin-text-end {
 }
 
 .admin-icon-btn-danger:hover {
-  background: var(--tint-pink);
-  color: var(--accent);
-  border-color: #ffd1e4;
+  background: var(--admin-pink-bg);
+  color: var(--admin-pink-text);
+  border-color: var(--admin-pink-border);
 }
 
 .admin-empty {
   padding: 40px 16px;
   text-align: center;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 
@@ -910,7 +903,7 @@ table.admin-table td.admin-text-end {
 
   .admin-nav-item span,
   .admin-nav-item {
-    font-size: 12px;
+    font-size: 13px;
   }
 }
 

@@ -6,7 +6,7 @@
   const ROLE_LABEL = {
     job_admin: "Admin Job",
     skillbridge_admin: "Admin SkillBridge",
-    owner: "Owner",
+    owner: "Admin",
   };
 
   function initials(name) {
@@ -66,7 +66,7 @@
           el("td", { text: String(a.active_vacancies ?? 0) }),
           el("td", {}, [
             el("span", {
-              class: `admin-badge-pill ${active ? "admin-badge-green" : ""}`,
+              class: "admin-badge-pill",
               text: active ? "Aktif" : "Non-aktif",
             }),
           ]),

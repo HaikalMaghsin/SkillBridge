@@ -1,10 +1,10 @@
-// admin-vacancies.js - manajemen lowongan kerja (Owner Console)
+// admin-vacancies.js - manajemen lowongan kerja (Admin Console)
 
 (async () => {
   const { el, clear } = UI;
 
   const STATUS = {
-    open: { cls: "admin-badge-green", label: "Dibuka" },
+    open: { cls: "", label: "Dibuka" },
     closed: { cls: "admin-badge-danger", label: "Ditutup" },
     draft: { cls: "", label: "Draft" },
   };
