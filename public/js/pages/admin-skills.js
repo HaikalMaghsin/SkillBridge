@@ -1,4 +1,4 @@
-// admin-skills.js - manajemen keterampilan master (Owner Console)
+// admin-skills.js - manajemen keterampilan master (Admin Console)
 
 (async () => {
   const { el, clear } = UI;

@@ -72,24 +72,32 @@ function render() {
     body.append(
       el("tr", { class: "rec-cand-row" }, [
         el("td", { class: "rec-cand-id" }, [
-          el("span", { class: "rec-avatar-sm", text: initials(c.name) }),
-          el("div", { class: "rec-row-name-text" }, [
-            el("span", { class: "rec-row-name-main", text: c.name }),
-            el("span", { class: "rec-row-name-sub", text: c.email }),
+          el("div", { class: "rec-cell" }, [
+            el("span", { class: "rec-avatar-sm", text: initials(c.name) }),
+            el("div", { class: "rec-row-name-text" }, [
+              el("span", { class: "rec-row-name-main", text: c.name }),
+              el("span", { class: "rec-row-name-sub", text: c.email }),
+            ]),
           ]),
         ]),
         el("td", { class: "rec-cand-role" }, [
           el("span", { class: "rec-badge rec-badge--indigo", text: c.target_role }),
         ]),
-        el("td", { class: "rec-cand-skills" }, (c.matched_skills || []).map((s) => chip(s))),
-        el("td", { class: "rec-cand-gaps" }, (c.gap_skills || []).map((s) => chip(s, "rec-chip--gap"))),
+        el("td", { class: "rec-cand-skills" }, [
+          el("div", { class: "rec-cell rec-cell--wrap" }, (c.matched_skills || []).map((s) => chip(s))),
+        ]),
+        el("td", { class: "rec-cand-gaps" }, [
+          el("div", { class: "rec-cell rec-cell--wrap" }, (c.gap_skills || []).map((s) => chip(s, "rec-chip--gap"))),
+        ]),
         el("td", { class: "rec-cand-evidence", text: `${c.evidence_count} Items` }),
         el("td", { class: "rec-cand-actions" }, [
-          el("button", { type: "button", class: "rec-cand-btn", text: "Lihat Detail", onClick: () => UI.toast(`Riwayat ${c.name} belum tersedia.`) }),
-          el("button",
-            { type: "button", class: "rec-cand-btn rec-cand-btn--primary", text: "Undang",
-              onClick: () => UI.toast(`Undangan dikirim ke ${c.name}.`),
-            }),
+          el("div", { class: "rec-cell" }, [
+            el("button", { type: "button", class: "rec-cand-btn", text: "Lihat Detail", onClick: () => UI.toast(`Riwayat ${c.name} belum tersedia.`) }),
+            el("button",
+              { type: "button", class: "rec-cand-btn rec-cand-btn--primary", text: "Undang",
+                onClick: () => UI.toast(`Undangan dikirim ke ${c.name}.`),
+              }),
+          ]),
         ]),
       ])
     );

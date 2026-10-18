@@ -1,16 +1,10 @@
 // Manajemen Recruiter / Tim — tabel anggota tim + filter + pagination.
 const { el, clear } = UI;
 
-const ROLE_BADGE = {
-  lead: "rec-badge--purple",
-  hiring_manager: "rec-badge--purple",
-  recruiter: "rec-badge--indigo",
-};
-
 const STATUS_BADGE = {
-  active: "rec-badge--green",
+  active: "rec-badge--indigo",
   inactive: "rec-badge--gray",
-  pending: "rec-badge--amber",
+  pending: "rec-badge--pink",
 };
 
 const STATUS_LABEL = { active: "Aktif", inactive: "Nonaktif", pending: "Pending Invite" };
@@ -155,7 +149,7 @@ function render() {
             ]),
           ]),
           el("td", {}, [
-            el("span", { class: `rec-badge ${ROLE_BADGE[m.role] || "rec-badge--indigo"}`, text: m.role_label }),
+            el("span", { class: "rec-role-text", text: m.role_label }),
           ]),
           el("td", {}, [
             el("span", {

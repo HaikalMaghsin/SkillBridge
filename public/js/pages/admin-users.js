@@ -1,10 +1,10 @@
-// admin-users.js - manajemen pengguna (Owner Console)
+// admin-users.js - manajemen pengguna (Admin Console)
 
 document.addEventListener("DOMContentLoaded", () => {
   const { el, clear } = UI;
 
   const STATUS = {
-    active: { cls: "admin-badge-green", label: "Aktif" },
+    active: { cls: "", label: "Aktif" },
     inactive: { cls: "", label: "Non-aktif" },
     suspended: { cls: "admin-badge-danger", label: "Suspended" },
   };
