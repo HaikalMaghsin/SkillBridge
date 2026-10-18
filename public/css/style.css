@@ -13,6 +13,13 @@
   --tint-indigo: #eef2ff;
   --tint-gray: #f2f2f2;
   --badge-border: #dce4f5;
+  /* Panel admin & recruiter — dipakai bersama, tanpa nilai lokal di panelnya */
+  --row-hover: #f7f8fc;
+  --nav-hover: #f4f5f8;
+  --pink-border: #ffd9e8;
+  --pink-muted: #a34a72;
+  --amber-bg: #fff7e7;
+  --amber-text: #9a681b;
   --surface: #ffffff;
   --bg: #fafafa;
 
@@ -284,13 +291,13 @@ small {
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: var(--accent);
   color: #fff;
-  box-shadow: var(--shadow-btn);
+  box-shadow: var(--shadow-btn-accent);
 }
 
 .btn-primary:hover {
-  background: #172e6e;
+  background: #d90f66;
 }
 
 .btn-accent {

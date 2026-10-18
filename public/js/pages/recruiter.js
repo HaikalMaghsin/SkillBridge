@@ -2,16 +2,10 @@
 const { el, clear } = UI;
 
 // Map status/role tim ke badge pill (selaras desain Figma)
-const ROLE_BADGE = {
-  lead: "rec-badge--purple",
-  hiring_manager: "rec-badge--purple",
-  recruiter: "rec-badge--indigo",
-};
-
 const STATUS_BADGE = {
-  active: "rec-badge--green",
+  active: "rec-badge--indigo",
   inactive: "rec-badge--gray",
-  pending: "rec-badge--amber",
+  pending: "rec-badge--pink",
 };
 
 const STATUS_LABEL = {
@@ -81,8 +75,8 @@ async function renderTeam() {
     let action;
     if (m.status === "pending") {
       action = el("button", {
-        class: "rec-pager-link",
         type: "button",
+        class: "rec-row-action",
         text: "Kirim Ulang",
         onClick: () => {
           UI.toast(`Undangan untuk ${m.name} dikirim ulang.`);
@@ -90,8 +84,8 @@ async function renderTeam() {
       });
     } else if (m.status === "inactive") {
       action = el("button", {
-        class: "rec-pager-link",
         type: "button",
+        class: "rec-row-action",
         text: "Aktifkan",
         onClick: async () => {
           await API.setRecruiterStatus(m.id, "active");
@@ -101,9 +95,9 @@ async function renderTeam() {
       });
     } else {
       action = el("a", {
-        class: "rec-pager-link",
+        class: "rec-row-action",
         href: "recruiter-team.html",
-        text: "Edit",
+        text: "Kelola",
       });
     }
 
@@ -117,7 +111,7 @@ async function renderTeam() {
           ]),
         ]),
         el("div", { class: "rec-row-role" }, [
-          el("span", { class: `rec-badge ${ROLE_BADGE[m.role] || "rec-badge--indigo"}`, text: m.role_label }),
+          el("span", { class: "rec-role-text", text: m.role_label }),
         ]),
         el("div", { class: "rec-row-status" }, [
           el("span", { class: `rec-badge ${STATUS_BADGE[m.status] || "rec-badge--gray"}`, text: STATUS_LABEL[m.status] || m.status }),
