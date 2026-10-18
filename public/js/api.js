@@ -121,6 +121,218 @@ const API = (() => {
     };
   }
 
+  // ============ Admin SkillBridge ============
+  // Semua fungsi admin di bawah ini memakai data dummy di data/admin-*.json.
+  // Saat backend siap, ganti tiap isi fungsi dengan fetch ke endpoint asli.
+
+  const ADMIN_LS = {
+    users: "sb.admin.users",
+    jobs: "sb.admin.jobs",
+    vacancies: "sb.admin.vacancies",
+    content: "sb.admin.content",
+  };
+
+  // GET api/admin/users.php
+  async function getAdminUsers() {
+    return readAdminCollection("users", "../data/admin-users.json");
+  }
+
+  // GET api/admin/jobs.php  -> daftar akun Admin Job
+  async function getJobAdmins() {
+    return readAdminCollection("jobs", "../data/admin-jobs.json");
+  }
+
+  // GET api/admin/vacancies.php
+  async function getVacancies() {
+    return readAdminCollection("vacancies", "../data/admin-vacancies.json");
+  }
+
+  // GET api/admin/content.php
+  async function getAdminContent() {
+    return readAdminCollection("content", "../data/admin-content.json");
+  }
+
+  // GET api/skills.php?admin=1 -> katalog skill master (sumber: skills.json)
+  async function getMasterSkills() {
+    const res = await fetch("../data/skills.json");
+    return res.json();
+  }
+
+  // GET api/careers.php?admin=1 -> daftar target karier master
+  async function getMasterCareers() {
+    return getCareers();
+  }
+
+  // GET api/admin/mapping.php -> relasi career <-> skill
+  async function getCareerSkillMapping() {
+    const [careers, skills] = await Promise.all([getMasterCareers(), getMasterSkills()]);
+    const byName = new Map(skills.map((s) => [s.name, s]));
+    const rows = [];
+    let id = 1;
+    for (const career of careers) {
+      for (const name of career.skills || []) {
+        const skill = byName.get(name);
+        rows.push({
+          id: id++,
+          career_id: career.id,
+          career_name: career.name,
+          skill_id: skill ? skill.id : null,
+          skill_name: name,
+          skill_category: skill ? skill.category : "—",
+        });
+      }
+    }
+    return rows;
+  }
+
+  // GET api/admin/users.php
+  async function getAdminUsers() {
+    return readAdminCollection("users", "../data/admin-users.json");
+  }
+
+  // GET api/admin/jobs.php  -> daftar akun Admin Job
+  async function getJobAdmins() {
+    return readAdminCollection("jobs", "../data/admin-jobs.json");
+  }
+
+  // GET api/admin/vacancies.php
+  async function getVacancies() {
+    return readAdminCollection("vacancies", "../data/admin-vacancies.json");
+  }
+
+  // GET api/admin/content.php
+  async function getAdminContent() {
+    return readAdminCollection("content", "../data/admin-content.json");
+  }
+
+  // PATCH api/admin/users.php  { id, status }
+  async function setAdminRecordStatus(collection, id, status) {
+    const key = ADMIN_LS[collection];
+    const list = await readAdminCollection(collection, `../data/admin-${collection}.json`);
+    const item = list.find((row) => row.id === id);
+    if (!item) return list;
+    item.status = status;
+    localStorage.setItem(key, JSON.stringify(list));
+    return list;
+  }
+
+  // DELETE api/admin/<collection>.php  { id }
+  async function removeAdminRecord(collection, id) {
+    const key = ADMIN_LS[collection];
+    const list = (await readAdminCollection(collection, `../data/admin-${collection}.json`)).filter(
+      (row) => row.id !== id
+    );
+    localStorage.setItem(key, JSON.stringify(list));
+    return list;
+  }
+
+  // GET api/admin/stats.php  -> angka ringkasan dashboard
+  async function getAdminStats() {
+    const [users, jobs, vacancies, content] = await Promise.all([
+      getAdminUsers(),
+      getJobAdmins(),
+      getVacancies(),
+      getAdminContent(),
+    ]);
+    return {
+      users: users.length,
+      jobAdmins: jobs.length,
+      openVacancies: vacancies.filter((v) => v.status === "open").length,
+      publishedContent: content.filter((c) => c.status === "published").length,
+    };
+  }
+
+  // ============ Recruiter / Perusahaan ============
+
+  const REC_LS = {
+    company: "sb.rec.company",
+    team: "sb.rec.team",
+    roles: "sb.rec.roles",
+    activity: "sb.rec.activity",
+    candidates: "sb.rec.candidates",
+  };
+
+  // GET api/recruiter/company.php
+  async function getRecruiterCompany() {
+    return readRecCollection("company", "../data/recruiter-company.json");
+  }
+
+  // GET api/recruiter/team.php
+  async function getRecruiterTeam() {
+    return readRecCollection("team", "../data/recruiter-team.json");
+  }
+
+  // GET api/recruiter/roles.php
+  async function getRecruiterRoles() {
+    return readRecCollection("roles", "../data/recruiter-roles.json");
+  }
+
+  // GET api/recruiter/activity.php
+  async function getRecruiterActivity() {
+    return readRecCollection("activity", "../data/recruiter-activity.json");
+  }
+
+  // GET api/recruiter/candidates.php
+  async function getRecruiterCandidates() {
+    return readRecCollection("candidates", "../data/recruiter-candidates.json");
+  }
+
+  // PATCH api/recruiter/team.php  { id, status }
+  async function setRecruiterStatus(id, status) {
+    const list = await getRecruiterTeam();
+    const item = list.find((r) => r.id === id);
+    if (!item) return list;
+    item.status = status;
+    localStorage.setItem(REC_LS.team, JSON.stringify(list));
+    return list;
+  }
+
+  // DELETE api/recruiter/team.php  { id }
+  async function removeRecruiterRecord(id) {
+    const list = (await getRecruiterTeam()).filter((r) => r.id !== id);
+    localStorage.setItem(REC_LS.team, JSON.stringify(list));
+    return list;
+  }
+
+  // GET api/recruiter/stats.php
+  async function getRecruiterStats() {
+    const [team, roles, candidates] = await Promise.all([
+      getRecruiterTeam(),
+      getRecruiterRoles(),
+      getRecruiterCandidates(),
+    ]);
+    return {
+      teamSize: team.length,
+      activeRecruiters: team.filter((t) => t.status === "active").length,
+      openRoles: roles.length,
+      totalPositions: roles.reduce((s, r) => s + (r.positions || 0), 0),
+      pipelineCandidates: candidates.length,
+    };
+  }
+
+  // ---- helper internal recruiter ----
+
+  async function readRecCollection(name, url) {
+    const raw = localStorage.getItem(REC_LS[name]);
+    if (raw !== null) return JSON.parse(raw);
+    const res = await fetch(url);
+    const seeded = await res.json();
+    localStorage.setItem(REC_LS[name], JSON.stringify(seeded));
+    return seeded;
+  }
+
+  // ---- helper internal admin ----
+
+  // Ambil koleksi admin: localStorage kalau sudah pernah diubah, jika belum dari JSON seed.
+  async function readAdminCollection(name, url) {
+    const raw = localStorage.getItem(ADMIN_LS[name]);
+    if (raw !== null) return JSON.parse(raw);
+    const res = await fetch(url);
+    const seeded = await res.json();
+    localStorage.setItem(ADMIN_LS[name], JSON.stringify(seeded));
+    return seeded;
+  }
+
   // ---- helper internal ----
 
   function readIds(key) {
@@ -167,6 +379,26 @@ const API = (() => {
     removeEvidence,
     getSkillGap,
     csrfToken,
+    // admin
+    getAdminUsers,
+    getJobAdmins,
+    getVacancies,
+    getAdminContent,
+    getAdminStats,
+    getMasterSkills,
+    getMasterCareers,
+    getCareerSkillMapping,
+    setAdminRecordStatus,
+    removeAdminRecord,
+    // recruiter
+    getRecruiterCompany,
+    getRecruiterTeam,
+    getRecruiterRoles,
+    getRecruiterActivity,
+    getRecruiterCandidates,
+    setRecruiterStatus,
+    removeRecruiterRecord,
+    getRecruiterStats,
   };
 })();
 
