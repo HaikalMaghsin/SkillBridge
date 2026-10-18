@@ -242,6 +242,85 @@ const API = (() => {
     };
   }
 
+  // ============ Recruiter / Perusahaan ============
+
+  const REC_LS = {
+    company: "sb.rec.company",
+    team: "sb.rec.team",
+    roles: "sb.rec.roles",
+    activity: "sb.rec.activity",
+    candidates: "sb.rec.candidates",
+  };
+
+  // GET api/recruiter/company.php
+  async function getRecruiterCompany() {
+    return readRecCollection("company", "../data/recruiter-company.json");
+  }
+
+  // GET api/recruiter/team.php
+  async function getRecruiterTeam() {
+    return readRecCollection("team", "../data/recruiter-team.json");
+  }
+
+  // GET api/recruiter/roles.php
+  async function getRecruiterRoles() {
+    return readRecCollection("roles", "../data/recruiter-roles.json");
+  }
+
+  // GET api/recruiter/activity.php
+  async function getRecruiterActivity() {
+    return readRecCollection("activity", "../data/recruiter-activity.json");
+  }
+
+  // GET api/recruiter/candidates.php
+  async function getRecruiterCandidates() {
+    return readRecCollection("candidates", "../data/recruiter-candidates.json");
+  }
+
+  // PATCH api/recruiter/team.php  { id, status }
+  async function setRecruiterStatus(id, status) {
+    const list = await getRecruiterTeam();
+    const item = list.find((r) => r.id === id);
+    if (!item) return list;
+    item.status = status;
+    localStorage.setItem(REC_LS.team, JSON.stringify(list));
+    return list;
+  }
+
+  // DELETE api/recruiter/team.php  { id }
+  async function removeRecruiterRecord(id) {
+    const list = (await getRecruiterTeam()).filter((r) => r.id !== id);
+    localStorage.setItem(REC_LS.team, JSON.stringify(list));
+    return list;
+  }
+
+  // GET api/recruiter/stats.php
+  async function getRecruiterStats() {
+    const [team, roles, candidates] = await Promise.all([
+      getRecruiterTeam(),
+      getRecruiterRoles(),
+      getRecruiterCandidates(),
+    ]);
+    return {
+      teamSize: team.length,
+      activeRecruiters: team.filter((t) => t.status === "active").length,
+      openRoles: roles.length,
+      totalPositions: roles.reduce((s, r) => s + (r.positions || 0), 0),
+      pipelineCandidates: candidates.length,
+    };
+  }
+
+  // ---- helper internal recruiter ----
+
+  async function readRecCollection(name, url) {
+    const raw = localStorage.getItem(REC_LS[name]);
+    if (raw !== null) return JSON.parse(raw);
+    const res = await fetch(url);
+    const seeded = await res.json();
+    localStorage.setItem(REC_LS[name], JSON.stringify(seeded));
+    return seeded;
+  }
+
   // ---- helper internal admin ----
 
   // Ambil koleksi admin: localStorage kalau sudah pernah diubah, jika belum dari JSON seed.
@@ -311,6 +390,15 @@ const API = (() => {
     getCareerSkillMapping,
     setAdminRecordStatus,
     removeAdminRecord,
+    // recruiter
+    getRecruiterCompany,
+    getRecruiterTeam,
+    getRecruiterRoles,
+    getRecruiterActivity,
+    getRecruiterCandidates,
+    setRecruiterStatus,
+    removeRecruiterRecord,
+    getRecruiterStats,
   };
 })();
 

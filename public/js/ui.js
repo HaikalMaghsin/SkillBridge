@@ -27,7 +27,7 @@ const UI = (() => {
     }
     return node;
   }
-
+ 
   function clear(node) {
     while (node.firstChild) node.removeChild(node.firstChild);
     return node;

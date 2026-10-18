@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (page && a.dataset.nav === page) group.open = true;
     });
   });
-
+ 
   // Mobile chip-bar: pastikan semua <a> terlihat (tekan sekali).
   const mobileNav = document.querySelector(".admin-sidebar");
   // Tidak perlu interaksi tambahan; <details> native sudah dapat dipindah di scroll.
