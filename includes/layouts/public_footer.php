@@ -1,7 +1,7 @@
 <?php
 // includes/layouts/public_footer.php
 // Footer Publik untuk Landing Page & Halaman Publik
-$path_prefix = $path_prefix ?? '';
+require_once __DIR__ . '/../config/app.php';
 ?>
 <footer class="lp-footer">
   <div class="lp-footer-nav">
@@ -22,24 +22,24 @@ $path_prefix = $path_prefix ?? '';
     <nav class="lp-footer-groups" aria-label="Footer">
       <div class="lp-footer-group">
         <h3>Platform</h3>
-        <a href="<?= $path_prefix ?>index.php#main">Home</a>
-        <a href="<?= $path_prefix ?>mahasiswa/skills.php">Explore Skills</a>
-        <a href="<?= $path_prefix ?>index.php#learning-paths">Learning Paths</a>
-        <a href="<?= $path_prefix ?>mahasiswa/career.php">Career Opportunities</a>
+        <a href="<?= e(base_url('index.php#main')) ?>">Home</a>
+        <a href="<?= e(base_url('mahasiswa/skills.php')) ?>">Explore Skills</a>
+        <a href="<?= e(base_url('index.php#learning-paths')) ?>">Learning Paths</a>
+        <a href="<?= e(base_url('mahasiswa/career.php')) ?>">Career Opportunities</a>
       </div>
 
       <div class="lp-footer-group">
         <h3>Learning resources</h3>
-        <a href="<?= $path_prefix ?>index.php#insights">Resources</a>
-        <a href="<?= $path_prefix ?>mahasiswa/skills.php">Skill development</a>
-        <a href="<?= $path_prefix ?>mahasiswa/evidence.php">Portfolio guidance</a>
-        <a href="<?= $path_prefix ?>mahasiswa/career.php">Career direction</a>
+        <a href="<?= e(base_url('index.php#insights')) ?>">Resources</a>
+        <a href="<?= e(base_url('mahasiswa/skills.php')) ?>">Skill development</a>
+        <a href="<?= e(base_url('mahasiswa/evidence.php')) ?>">Portfolio guidance</a>
+        <a href="<?= e(base_url('mahasiswa/career.php')) ?>">Career direction</a>
       </div>
 
       <div class="lp-footer-group">
         <h3>SkillBridge</h3>
-        <a href="<?= $path_prefix ?>index.php#how-title">About</a>
-        <a href="<?= $path_prefix ?>index.php#main">Contact</a>
+        <a href="<?= e(base_url('index.php#how-title')) ?>">About</a>
+        <a href="<?= e(base_url('index.php#main')) ?>">Contact</a>
       </div>
     </nav>
   </div>

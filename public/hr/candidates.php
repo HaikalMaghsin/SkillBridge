@@ -1,10 +1,10 @@
 <?php
 // public/hr/candidates.php
-// Pipeline Kandidat · SkillBridge
+// Pipeline Kandidat Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('hr');
 
-$page_title = 'Pipeline Kandidat · SkillBridge';
+$page_title = 'Pipeline Kandidat Â· SkillBridge';
 $role = 'hr';
 $path_prefix = '../';
 $rec_page = 'candidates';
@@ -54,7 +54,7 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
             </select>
           </div>
 
-          <div class="rec-table-wrap">
+          <div class="rec-table-wrap table-responsive">
             <table class="rec-native-table">
               <thead>
                 <tr>

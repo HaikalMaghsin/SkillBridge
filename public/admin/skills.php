@@ -1,10 +1,10 @@
 <?php
 // public/admin/skills.php
-// Manajemen Keterampilan · SkillBridge
+// Manajemen Keterampilan Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('admin');
 
-$page_title = 'Manajemen Keterampilan · SkillBridge';
+$page_title = 'Manajemen Keterampilan Â· SkillBridge';
 $role = 'admin';
 $path_prefix = '../';
 $admin_page = 'skills';
@@ -34,7 +34,7 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
         <select id="skill-category-filter" class="admin-select">
           <option value="all">Semua kategori</option>
         </select>
-        <button class="btn btn-accent btn-44" id="btn-add-skill">
+        <button type="button" class="btn btn-accent btn-44" id="btn-add-skill">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round">
             <path d="M3.333 8h9.334M8 3.333v9.334" />
@@ -44,7 +44,7 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
       </div>
 
       <div class="admin-card">
-        <div class="admin-table-wrap">
+        <div class="admin-table-wrap table-responsive">
           <table class="admin-table">
             <thead>
               <tr>

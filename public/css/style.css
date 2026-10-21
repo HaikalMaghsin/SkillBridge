@@ -1,4 +1,4 @@
-/* ============ 1. Design Tokens ============ */
+﻿/* ============ 1. Design Tokens ============ */
 :root {
   /* Colors */
   --text-primary: #17172b;
@@ -13,7 +13,7 @@
   --tint-indigo: #eef2ff;
   --tint-gray: #f2f2f2;
   --badge-border: #dce4f5;
-  /* Panel admin & recruiter — dipakai bersama, tanpa nilai lokal di panelnya */
+  /* Panel admin & recruiter Ã¢â‚¬â€ dipakai bersama, tanpa nilai lokal di panelnya */
   --row-hover: #f7f8fc;
   --nav-hover: #f4f5f8;
   --pink-border: #ffd9e8;
@@ -265,65 +265,148 @@ small {
   flex-shrink: 0;
 }
 
-/* ============ 4. Buttons ============ */
+/* ============ 4. Buttons (Standardized Multi-Role System) ============ */
 .btn {
   display: inline-flex;
   align-items: center;
-  border: 0;
-  border-radius: var(--radius-sm);
-  padding: 10px 16px;
-  font-weight: 700;
-  font-size: 14px;
-  background: var(--surface);
-  color: var(--text-primary);
+  justify-content: center;
   gap: 8px;
+  min-height: 40px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
   cursor: pointer;
   text-decoration: none;
-}
-
-.btn:hover {
-  background: #f0f1f5;
+  border: 1px solid transparent;
+  transition: all 0.15s ease-in-out;
+  background: transparent;
+  color: var(--text-primary, #0f172a);
+  box-sizing: border-box;
+  font-family: inherit;
+  line-height: 1.25;
 }
 
 .btn:focus-visible {
-  outline: 3px solid var(--primary);
+  outline: 2px solid var(--primary, #1e3a8a);
   outline-offset: 2px;
 }
 
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Primary Button (Navy #1e3a8a, hover #1e40af) */
 .btn-primary {
-  background: var(--accent);
-  color: #fff;
-  box-shadow: var(--shadow-btn-accent);
+  background: #1e3a8a;
+  color: #ffffff;
+  border-color: #1e3a8a;
 }
-
 .btn-primary:hover {
-  background: #d90f66;
+  background: #1e40af;
+  border-color: #1e40af;
+  color: #ffffff;
 }
 
+/* Accent Button (Pink #ec4899, hover #db2777) */
 .btn-accent {
-  background: var(--accent);
-  color: #fff;
-  box-shadow: var(--shadow-btn-accent);
-  transition: background-color 0.2s ease, transform 0.15s ease;
+  background: #ec4899;
+  color: #ffffff;
+  border-color: #ec4899;
+  box-shadow: 0 4px 14px rgba(236, 72, 153, 0.35);
 }
-
 .btn-accent:hover {
-  background: #d90f66;
-  box-shadow: 0 10px 22px rgba(255, 19, 119, 0.32);
+  background: #db2777;
+  border-color: #db2777;
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(219, 39, 119, 0.4);
 }
-
 .btn-accent:active {
   transform: scale(0.98);
 }
 
-.btn-sm {
-  padding: 6px 10px;
-  font-size: 13px;
+/* Secondary Button (Abu #f1f5f9, border #cbd5e1, teks #0f172a) */
+.btn-secondary {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+.btn-secondary:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
+/* Outline Button (Transparan, border #cbd5e1, hover #f8fafc) */
+.btn-outline {
+  background: transparent;
+  color: var(--text-primary, #0f172a);
+  border-color: #cbd5e1;
+}
+.btn-outline:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: var(--text-primary, #0f172a);
+}
+
+/* Danger Button (Merah muda #fee2e2, teks #b91c1c, hover merah solid #ef4444) */
+.btn-danger {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+.btn-danger:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+/* Ghost Button (Transparan, hover rgba(15, 23, 42, 0.06)) */
+.btn-ghost {
+  background: transparent;
+  color: var(--text-primary, #0f172a);
+  border-color: transparent;
+}
+.btn-ghost:hover {
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--text-primary, #0f172a);
+}
+
+/* Button Sizing & Utilities */
+.btn-sm {
+  min-height: 34px;
+  padding: 6px 14px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+
+.btn-lg,
 .btn-44 {
-  height: 44px;
-  padding: 0 17px;
+  min-height: 44px;
+  padding: 10px 22px;
+  font-size: 15px;
+  border-radius: 10px;
+}
+
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-block,
+.w-100 {
+  width: 100%;
+  display: flex;
 }
 
 /* ============ 5. Cards ============ */
@@ -2409,18 +2492,6 @@ body.landing {
 }
 
 @media (max-width: 1023px) {
-  body.landing .navbar {
-    flex-wrap: wrap;
-    height: auto;
-    padding: 12px 24px;
-  }
-
-  body.landing .navbar-nav {
-    order: 3;
-    width: 100%;
-    margin: 12px 0 0;
-    flex-wrap: wrap;
-  }
 
   .lp-hero {
     padding-top: 48px;
@@ -2487,13 +2558,7 @@ body.landing {
     padding-right: 16px;
   }
 
-  body.landing .navbar {
-    padding: 12px 16px;
-  }
-
-  body.landing .navbar-actions {
-    gap: 12px;
-  }
+  
 
   .lp-hero {
     padding-bottom: 32px;
@@ -2818,5 +2883,272 @@ body.landing {
 
   .profile-settings {
     padding: 16px;
+  }
+}
+
+/* ============ Responsive Utilities & Tables ============ */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
+}
+
+.table-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+/* ============ Navbar Hamburger Toggle ============ */
+.navbar-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  background: transparent;
+  border: 1px solid var(--border-light, #cbd5e1);
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 8px;
+  box-sizing: border-box;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.navbar-toggle:hover {
+  background: var(--surface-subtle, #f8fafc);
+  border-color: var(--border, #94a3b8);
+}
+
+.navbar-toggle-bar {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--text-primary, #0f172a);
+  border-radius: 2px;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+/* ============ Global Responsive Grid & Breakpoint Rules ============ */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* Tablet (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Topbar horizontal adaptif */
+  .navbar {
+    height: 72px;
+    padding: 12px 20px;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .navbar-brand {
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .navbar-brand-subtitle {
+    display: none;
+  }
+
+  .navbar-nav {
+    display: flex;
+    flex: 1;
+    margin: 0 10px;
+    gap: 4px;
+    justify-content: center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .navbar-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-item {
+    height: 38px;
+    padding: 0 10px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .navbar-actions .navbar-login {
+    font-size: 13px;
+  }
+
+  .navbar-actions .btn {
+    min-height: 38px;
+    height: 38px;
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .navbar-profile {
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .navbar-profile-email {
+    display: none;
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .career-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  div[style*="grid-template-columns: 1fr 360px"] {
+    grid-template-columns: 1fr 300px !important;
+  }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 767px) {
+  /* Navbar Collapsible */
+  .navbar {
+    min-height: 64px;
+    height: auto;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .navbar-brand {
+    flex: 1;
+  }
+
+  .navbar-toggle {
+    display: inline-flex;
+  }
+
+  .navbar .navbar-nav,
+  .navbar .navbar-actions,
+  .navbar .navbar-profile {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 12px 0 6px;
+    margin: 0;
+  }
+
+  .navbar.is-open .navbar-nav,
+  .navbar.is-open .navbar-actions,
+  .navbar.is-open .navbar-profile {
+    display: flex;
+  }
+
+  .navbar.is-open .navbar-toggle-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .navbar.is-open .navbar-toggle-bar:nth-child(2) {
+    opacity: 0;
+  }
+  .navbar.is-open .navbar-toggle-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .navbar .nav-item {
+    width: 100%;
+    text-align: left;
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+
+  .navbar .navbar-actions {
+    border-top: 1px solid var(--border-light, #eaecf0);
+    margin-top: 8px;
+    padding-top: 12px;
+  }
+
+  .navbar .navbar-actions .btn {
+    width: 100%;
+  }
+
+  .navbar .navbar-profile {
+    border-top: 1px solid var(--border-light, #eaecf0);
+    margin-top: 8px;
+    padding-top: 12px;
+    justify-content: space-between;
+  }
+
+  /* Grids collapse to 1 column on mobile */
+  .grid-2,
+  .grid-3,
+  .career-grid,
+  .dashboard-layout-grid,
+  .skills-layout-grid,
+  .gap-layout-grid,
+  .evidence-cards-grid,
+  .profile-info-grid,
+  div[style*="grid-template-columns: 1fr 360px"],
+  div[style*="grid-template-columns: 1fr 400px"],
+  div[style*="grid-template-columns: repeat(2, 1fr)"],
+  div[style*="grid-template-columns: repeat(3, 1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Padding & overflow fix for no horizontal scrollbar */
+  body {
+    overflow-x: hidden;
+  }
+
+  main {
+    padding: 20px 16px !important;
+  }
+
+  .container {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* Modal Mobile (< 640px) */
+@media (max-width: 639px) {
+  .modal-actions,
+  .modal-footer {
+    flex-direction: column-reverse !important;
+    gap: 10px !important;
+  }
+
+  .modal-actions .btn,
+  .modal-footer .btn {
+    width: 100% !important;
+    min-height: 44px !important;
+  }
+
+  .modal {
+    width: 95% !important;
+    max-width: 95% !important;
+    margin: 10px auto !important;
+    padding: 20px 16px !important;
   }
 }

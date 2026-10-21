@@ -1,10 +1,10 @@
 <?php
 // public/admin/vacancies.php
-// Manajemen Lowongan · SkillBridge
+// Manajemen Lowongan Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('admin');
 
-$page_title = 'Manajemen Lowongan · SkillBridge';
+$page_title = 'Manajemen Lowongan Â· SkillBridge';
 $role = 'admin';
 $path_prefix = '../';
 $admin_page = 'vacancies';
@@ -43,7 +43,7 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
       </div>
 
       <div class="admin-card">
-        <div class="admin-table-wrap">
+        <div class="admin-table-wrap table-responsive">
           <table class="admin-table">
             <thead>
               <tr>

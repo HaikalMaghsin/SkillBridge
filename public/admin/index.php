@@ -1,10 +1,10 @@
 <?php
 // public/admin/index.php
-// Admin Dashboard · SkillBridge
+// Admin Dashboard Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('admin');
 
-$page_title = 'Admin Dashboard · SkillBridge';
+$page_title = 'Admin Dashboard Â· SkillBridge';
 $role = 'admin';
 $path_prefix = '../';
 $admin_page = 'dashboard';
@@ -60,7 +60,7 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
               </div>
               <span class="admin-badge-pill">Hari ini</span>
             </div>
-            <div class="admin-table">
+            <div class="admin-table table-responsive">
               <div class="admin-table-head">
                 <span class="col-time">Waktu</span>
                 <span class="col-activity">Aktivitas</span>
@@ -80,7 +80,7 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
                 <p class="admin-card-sub">Perubahan akses dan akun terakhir</p>
               </div>
             </div>
-            <div class="admin-table">
+            <div class="admin-table table-responsive">
               <div class="admin-table-head admin-table-head--admin">
                 <span class="col-admin">Administrator / aktivitas</span>
                 <span class="col-time-sm">Waktu</span>

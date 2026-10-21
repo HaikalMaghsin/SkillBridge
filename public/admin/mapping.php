@@ -1,10 +1,10 @@
 <?php
 // public/admin/mapping.php
-// Career-Skill Mapping · SkillBridge
+// Career-Skill Mapping Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('admin');
 
-$page_title = 'Career-Skill Mapping · SkillBridge';
+$page_title = 'Career-Skill Mapping Â· SkillBridge';
 $role = 'admin';
 $path_prefix = '../';
 $admin_page = 'mapping';
@@ -41,7 +41,7 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
             <option value="all">Semua karier</option>
           </select>
         </div>
-        <div class="admin-table-wrap">
+        <div class="admin-table-wrap table-responsive">
           <table class="admin-table">
             <thead>
               <tr>

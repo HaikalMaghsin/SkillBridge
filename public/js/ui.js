@@ -1,13 +1,19 @@
 // ui.js - helper DOM bersama. Semua render memakai createElement/textContent
 
 const UI = (() => {
+  const getBaseUrl = () => {
+    return (typeof window !== "undefined" && window.APP_BASE_URL !== undefined)
+      ? (window.APP_BASE_URL === "/" ? "" : window.APP_BASE_URL.replace(/\/+$/, ""))
+      : "";
+  };
+
   const NAV_ITEMS = [
-    { key: "dashboard", label: "Dashboard", href: "dashboard.php" },
-    { key: "skills", label: "My Skills", href: "skills.php" },
-    { key: "evidence", label: "Evidence", href: "evidence.php" },
-    { key: "career", label: "Career Target", href: "career.php" },
-    { key: "gap", label: "Skill Gap", href: "gap.php" },
-    { key: "profile", label: "Profile", href: "profile.php" },
+    { key: "dashboard", label: "Dashboard", href: "mahasiswa/dashboard.php" },
+    { key: "skills", label: "My Skills", href: "mahasiswa/skills.php" },
+    { key: "evidence", label: "Evidence", href: "mahasiswa/evidence.php" },
+    { key: "career", label: "Career Target", href: "mahasiswa/career.php" },
+    { key: "gap", label: "Skill Gap", href: "mahasiswa/gap.php" },
+    { key: "profile", label: "Profile", href: "mahasiswa/profile.php" },
   ];
 
   // el("span", { class: "tag" }, ["PHP"]) -> <span class="tag">PHP</span>
@@ -49,12 +55,11 @@ const UI = (() => {
   }
 
   // modal({ title, body, submitLabel, onSubmit }) -> dialog dengan focus trap.
-  // onSubmit(close, form) dipanggil saat submit; kembalikan false untuk menahan dialog terbuka.
   function modal({ title, body = [], submitLabel = "Save", cancelLabel = "Cancel", onSubmit }) {
     const previouslyFocused = document.activeElement;
 
     const form = el("form", { class: "modal-form", novalidate: "novalidate" }, body);
-    const cancelBtn = el("button", { type: "button", class: "btn", text: cancelLabel, onClick: () => close() });
+    const cancelBtn = el("button", { type: "button", class: "btn btn-secondary", text: cancelLabel, onClick: () => close() });
     const submitBtn = el("button", { type: "submit", class: "btn btn-accent", text: submitLabel });
 
     const dialog = el("div", { class: "modal", role: "dialog", "aria-modal": "true", "aria-label": title }, [
@@ -114,21 +119,26 @@ const UI = (() => {
   }
 
   function renderNavbar() {
-    if (document.querySelector('header.navbar')) return;
+    // Cegah render ulang jika navbar sudah di-render oleh server (PHP)
+    if (document.querySelector("header.navbar")) return;
+
     const active = document.body.dataset.nav || "";
-    const navLinks = el("div", { class: "navbar-nav" },
+    const base = getBaseUrl();
+
+    const navLinks = el(
+      "div",
+      { class: "navbar-nav" },
       NAV_ITEMS.map((item) =>
         el("a", {
           class: item.key === active ? "nav-item active" : "nav-item",
-          href: item.href,
+          href: `${base}/${item.href}`,
           text: item.label,
           ...(item.key === active ? { "aria-current": "page" } : {}),
         })
       )
     );
 
-    // Klik logo/nama mengembalikan ke landing page.
-    const brand = el("a", { class: "navbar-brand", href: "index.php", "aria-label": "SkillBridge home" }, [
+    const brand = el("a", { class: "navbar-brand", href: `${base}/index.php`, "aria-label": "SkillBridge home" }, [
       el("div", { class: "navbar-logo", text: "S" }),
       el("div", { class: "navbar-brand-text" }, [
         el("div", { class: "navbar-brand-name", text: "SkillBridge" }),
@@ -144,12 +154,79 @@ const UI = (() => {
       el("div", { class: "navbar-avatar", text: "JD" }),
     ]);
 
-    const bar = el("header", { class: "navbar" }, [brand, navLinks, profile]);
+    const toggle = el("button", {
+      type: "button",
+      class: "navbar-toggle",
+      "aria-label": "Buka menu navigasi",
+      "aria-expanded": "false",
+      innerHTML: '<span class="navbar-toggle-bar"></span><span class="navbar-toggle-bar"></span><span class="navbar-toggle-bar"></span>',
+    });
+
+    const bar = el("header", { class: "navbar" }, [brand, toggle, navLinks, profile]);
     document.body.prepend(bar);
   }
 
   document.addEventListener("DOMContentLoaded", () => {
     if (document.body.dataset.nav !== undefined) renderNavbar();
+
+    // Event Delegation: Navbar Hamburger Toggle Mobile
+    document.addEventListener("click", (e) => {
+      const toggle = e.target.closest(".navbar-toggle");
+      if (toggle) {
+        const navbar = toggle.closest(".navbar");
+        if (navbar) {
+          const isOpen = navbar.classList.toggle("is-open");
+          toggle.setAttribute("aria-expanded", String(isOpen));
+        }
+        return;
+      }
+
+      // Close mobile navbar when clicking outside
+      const openNav = document.querySelector(".navbar.is-open");
+      if (openNav && !openNav.contains(e.target)) {
+        openNav.classList.remove("is-open");
+        const toggleBtn = openNav.querySelector(".navbar-toggle");
+        if (toggleBtn) toggleBtn.setAttribute("aria-expanded", "false");
+      }
+
+      // Sidebar Toggle HR & Admin Drawer Mobile
+      const sidebarToggle = e.target.closest("[data-toggle-sidebar], .sidebar-toggle");
+      if (sidebarToggle) {
+        const sidebar = document.querySelector(".rec-sidebar, .admin-sidebar");
+        const backdrop = document.querySelector(".sidebar-backdrop");
+        if (sidebar) sidebar.classList.toggle("is-open");
+        if (backdrop) backdrop.classList.toggle("is-open");
+        return;
+      }
+
+      // Sidebar Backdrop / Close Drawer Mobile
+      const sidebarClose = e.target.closest("[data-close-sidebar], .sidebar-backdrop, .sidebar-close-btn");
+      if (sidebarClose) {
+        const sidebar = document.querySelector(".rec-sidebar, .admin-sidebar");
+        const backdrop = document.querySelector(".sidebar-backdrop");
+        if (sidebar) sidebar.classList.remove("is-open");
+        if (backdrop) backdrop.classList.remove("is-open");
+        return;
+      }
+    });
+
+    // Close mobile menus on Escape key
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        const openNav = document.querySelector(".navbar.is-open");
+        if (openNav) {
+          openNav.classList.remove("is-open");
+          const toggle = openNav.querySelector(".navbar-toggle");
+          if (toggle) toggle.setAttribute("aria-expanded", "false");
+        }
+        const openSidebar = document.querySelector(".rec-sidebar.is-open, .admin-sidebar.is-open");
+        if (openSidebar) {
+          openSidebar.classList.remove("is-open");
+          const backdrop = document.querySelector(".sidebar-backdrop");
+          if (backdrop) backdrop.classList.remove("is-open");
+        }
+      }
+    });
   });
 
   function formatDate(iso) {

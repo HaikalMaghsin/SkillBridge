@@ -55,11 +55,11 @@
           el("td", {}, [el("span", { class: "admin-user-name", text: r.skill_name })]),
           el("td", {}, [el("span", { class: "admin-user-email", text: r.skill_category })]),
           el("td", { class: "admin-text-end" }, [
-            el("div", { class: "admin-actions" }, [
+            el("div", { class: "table-actions admin-actions" }, [
               el("button", {
                 class: "admin-icon-btn admin-icon-btn-danger",
                 type: "button",
-                "aria-label": "Hapus relasi",
+                "data-action": "delete", "data-id": `${r.career_id}_${r.skill_id}`, "aria-label": "Hapus relasi",
                 title: "Hapus relasi",
                 innerHTML: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5h10M5 3.5V2a1 1 0 011-1h2a1 1 0 011 1v1.5M3 3.5l.5 8.5h7l.5-8.5"/></svg>',
                 onClick: () => UI.toast(`Relasi "${r.career_name} → ${r.skill_name}" dihapus (dummy)`),
@@ -72,7 +72,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    load();
+    load(); document.getElementById("mapping-table-body")?.addEventListener("click", (e) => { const btn = e.target.closest("button[data-action]"); if (!btn) return; const id = btn.dataset.id; const r = allMappings.find(x => `${x.career_id}_${x.skill_id}` === id); if (!r) return; UI.toast(`Relasi "${r.career_name} ? ${r.skill_name}" dihapus (dummy)`); });
     document.getElementById("admin-search")?.addEventListener("input", applyFilter);
     document.getElementById("mapping-career-filter")?.addEventListener("change", applyFilter);
     document.getElementById("btn-add-mapping")?.addEventListener("click", () => {

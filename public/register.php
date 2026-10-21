@@ -102,8 +102,8 @@ require_once __DIR__ . '/../includes/layouts/head.php';
       </article>
     </main>
 
-    <script src="js/ui.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/pages/register.js"></script>
+    <script src="<?= asset('js/ui.js') ?>"></script>
+    <script src="<?= asset('js/api.js') ?>"></script>
+    <script src="<?= asset('js/pages/register.js') ?>"></script>
   </body>
 </html>

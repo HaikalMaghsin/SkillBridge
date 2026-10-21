@@ -1,10 +1,10 @@
 <?php
 // public/mahasiswa/gap.php
-// Halaman Skill Gap · SkillBridge
+// Halaman Skill Gap Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('mahasiswa');
 
-$page_title = 'Skill Gap · SkillBridge';
+$page_title = 'Skill Gap Â· SkillBridge';
 $role = 'mahasiswa';
 $path_prefix = '../';
 $nav_active = 'gap';
@@ -25,7 +25,7 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
       </div>
 
       <!-- Two columns: left (target + have) + right (explore) -->
-      <div style="display: grid; grid-template-columns: 1fr 400px; gap: 24px; align-items: start">
+      <div class="gap-layout-grid" style="display: grid; grid-template-columns: 1fr 400px; gap: 24px; align-items: start">
         <!-- Left column -->
         <div style="display: grid; gap: 24px">
           <!-- Target Career Tile -->

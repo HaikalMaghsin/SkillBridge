@@ -1,10 +1,10 @@
 <?php
 // public/mahasiswa/dashboard.php
-// Halaman Dashboard · SkillBridge
+// Halaman Dashboard Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('mahasiswa');
 
-$page_title = 'Dashboard · SkillBridge';
+$page_title = 'Dashboard Â· SkillBridge';
 $role = 'mahasiswa';
 $path_prefix = '../';
 $nav_active = 'dashboard';
@@ -34,7 +34,7 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
       </div>
 
       <!-- Main Content: 2 columns -->
-      <div style="display: grid; grid-template-columns: 1fr 360px; gap: 24px">
+      <div class="dashboard-layout-grid" style="display: grid; grid-template-columns: 1fr 360px; gap: 24px">
         <!-- Left Column: 3 cards -->
         <div style="display: grid; gap: 20px">
           <!-- Card 1: Target Career -->

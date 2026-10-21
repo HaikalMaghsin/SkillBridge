@@ -1,7 +1,8 @@
 <?php
 // includes/layouts/admin_footer.php
 // Footer & Script Loader Konsol Admin
-$path_prefix = $path_prefix ?? '../';
+require_once __DIR__ . '/../config/app.php';
+
 $page_script = $page_script ?? '';
 ?>
       <footer style="padding: 24px 32px 32px; color: var(--text-muted); font-size: 13px; text-align: center;">
@@ -9,11 +10,11 @@ $page_script = $page_script ?? '';
       </footer>
     </div><!-- /.admin-workspace -->
 
-    <script src="<?= $path_prefix ?>js/ui.js"></script>
-    <script src="<?= $path_prefix ?>js/admin-nav.js"></script>
-    <script src="<?= $path_prefix ?>js/api.js"></script>
+    <script src="<?= asset('js/ui.js') ?>"></script>
+    <script src="<?= asset('js/admin-nav.js') ?>"></script>
+    <script src="<?= asset('js/api.js') ?>"></script>
     <?php if ($page_script): ?>
-      <script src="<?= $path_prefix ?>js/pages/<?= htmlspecialchars($page_script) ?>"></script>
+      <script src="<?= asset('js/pages/' . $page_script) ?>"></script>
     <?php endif; ?>
   </body>
 </html>
