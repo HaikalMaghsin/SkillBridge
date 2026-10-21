@@ -1,69 +1,102 @@
-# CLAUDE.md - SkillBridge (Front End)
+# CLAUDE.md — SkillBridge (PHP Native Multi-Role Architecture)
 
-## Konteks
-SkillBridge adalah proyek PjBL kelompok mata kuliah Desain dan Pemrograman Web. Aplikasi web dinamis tanpa framework. Backend (PHP native + Supabase PostgreSQL) dikerjakan anggota tim lain.
-**Sebelum mengerjakan apa pun, baca `docs/PRD.md`, `docs/API.md` (jika ada), dan lihat screenshot terkait di `docs/design/`.** PRD adalah sumber kebenaran fitur; mockup hanya acuan visual.
+Dokumen ini adalah sumber aturan utama (**AI Rules & Guardrails**) untuk AI Coding Assistant (Claude Code, Cursor, GitHub Copilot, Windsurf) dan seluruh anggota tim saat mengembangkan dan memigrasikan **SkillBridge** dari HTML statis ke **PHP 8.x Native Modular**.
 
-## Peran: FRONT END ONLY
-- **Boleh diubah:** `public/css/`, `public/js/`, markup halaman di `public/`, `data/*.json` (data dummy), `docs/API.md`.
-- **Dilarang diubah:** `src/`, `database/`, `.env`, `.env.example`, logika auth/query/CSRF di sisi server, `docs/PRD.md`, `CLAUDE.md`. Jika butuh perubahan di area itu, jelaskan kebutuhannya dan tulis di `docs/API.md` sebagai permintaan ke backend.
-- Jika PRD, mockup, atau instruksi saling bertentangan, sampaikan konfliknya sebelum lanjut.
+## 1. Konteks Proyek
 
-## Tech Stack
-- HTML5 semantik, CSS3 native (Flexbox/Grid, CSS variables), JavaScript vanilla (DOM, Event, Fetch API).
-- Dilarang: framework/library eksternal (React, Vue, Tailwind, Bootstrap, jQuery, ikon/font dari CDN pihak ketiga selain Google Fonts Inter), bundler, npm package.
+- **Nama Proyek:** SkillBridge (PjBL Mata Kuliah _Desain dan Pemrograman Web_)
+- **Tujuan:** Platform pemetaan keterampilan mahasiswa terhadap target karier, pengelolaan bukti kompetensi (_evidence/portfolio_), konsol rekrutmen perusahaan (HR/Recruiter), dan konsol administrasi platform (Admin).
+- **Sumber Kebenaran:** `docs/PRD.md` untuk spesifikasi fitur & database; mockup di `docs/design/` untuk acuan visual.
 
-## Struktur Folder (area front end)
+## 2. Tech Stack & Batasan Library (Hard Constraints)
+
+- **Backend:** PHP 8.x Native + PostgreSQL (Supabase via `PDO_PGSQL`).
+- **Frontend:** HTML5 Semantik, CSS3 Native (Flexbox, Grid, CSS Custom Properties di `:root`), Vanilla JavaScript (ES6+, DOM, Event, Fetch API).
+- **Font:** Google Fonts `Inter` (weights 400, 500, 600, 700, 800) dengan fallback `system-ui, sans-serif`.
+- **DILARANG KERAS:**
+  1. Menambahkan framework PHP (Laravel, CodeIgniter, Symfony) atau library eksternal tanpa izin eksplisit.
+  2. Menambahkan framework CSS/JS (Tailwind, Bootstrap, React, Vue, jQuery, Alpine.js).
+  3. Menambahkan CDN font/icon eksternal selain Google Fonts `Inter` (gunakan SVG inline atau file di `public/assets/icons/`).
+  4. Menggunakan bundler atau npm package di sisi frontend.
+
+## 3. Arsitektur Direktori (Pemisahan 3 Role & Layout Modular)
+
+Seluruh halaman **WAJIB** dipisahkan berdasarkan role pengguna (`mahasiswa`, `hr`, `admin`) dan menggunakan komponen layout terpusat di `includes/layouts/`:
+
+```text
+SkillBridge/
+├── includes/                        # Komponen Server-Side & Layout Partials
+│   ├── config/
+│   │   ├── app.php                  # Konstanta BASE_URL, fungsi base_url(), asset(), e()
+│   │   └── database.php             # Koneksi PDO PostgreSQL (Supabase)
+│   ├── auth/
+│   │   ├── session.php              # Manajemen session PHP
+│   │   ├── csrf.php                 # Generator & validator CSRF token
+│   │   └── middleware.php           # Guard require_login() & require_role($role)
+│   └── layouts/                     # Template Header, Sidebar, Footer per Role
+│       ├── head.php                 # <!DOCTYPE html>, <head>, meta CSRF, CSS, window.APP_BASE_URL
+│       ├── scripts.php              # Script global (ui.js, api.js) + $page_js
+│       ├── public_header.php        # Navbar halaman publik (<header class="navbar">)
+│       ├── public_footer.php        # Footer halaman publik (<footer class="lp-footer">)
+│       ├── mahasiswa_header.php     # Topbar navigasi khusus Mahasiswa
+│       ├── mahasiswa_footer.php     # Footer konsol Mahasiswa + penutup tag
+│       ├── hr_header.php            # Topbar HR (<header class="rec-header">)
+│       ├── hr_sidebar.php           # Sidebar HR (<aside class="rec-sidebar">)
+│       ├── hr_footer.php            # Footer konsol HR + penutup wrapper
+│       ├── admin_header.php         # Topbar Admin (<header class="admin-header">)
+│       ├── admin_sidebar.php        # Sidebar Admin (<aside class="admin-sidebar">)
+│       └── admin_footer.php         # Footer konsol Admin + penutup wrapper
+├── public/                          # Document Root Web Server
+│   ├── index.php                    # Landing Page Publik
+│   ├── login.php                    # Halaman Login
+│   ├── register.php                 # Halaman Registrasi
+│   ├── logout.php                   # Handler Logout
+│   ├── mahasiswa/                   # Role Mahasiswa (dashboard, career, gap, skills, evidence, profile, cv, cv_review)
+│   ├── hr/                          # Role HR/Recruiter (index, roles, candidates, activity, team, settings)
+│   ├── admin/                       # Role Admin (index, users, admins, skills, careers, mapping, vacancies, settings)
+│   ├── css/                         # style.css, recruiter.css, admin.css
+│   ├── js/                          # ui.js, api.js, landing.js, admin-nav.js, pages/*.js
+│   └── assets/                      # icons/, landing/
+└── data/                            # Data JSON fallback / dummy
 ```
-public/
-├── *.html atau *.php     # halaman (lihat "Keputusan tim")
-├── css/style.css         # tokens + komponen
-├── js/
-│   ├── api.js            # SATU-SATUNYA tempat pengambilan data
-│   ├── ui.js             # helper DOM (render list, toast, modal)
-│   └── pages/            # satu file JS per halaman (career.js, skills.js, ...)
-data/                     # data dummy: careers.json, skills.json, evidence.json
-docs/                     # PRD.md, API.md, design/*.jpg
-```
 
-## Keputusan tim (default, ubah jika backend meminta)
-- Halaman: `.html` statis yang memanggil `api.js`. Jika tim memutuskan `.php`, markup tetap sama dan bagian dinamis diserahkan ke backend.
-- Nama halaman: `login`, `register`, `dashboard`, `skills`, `evidence`, `career`, `gap`, `profile`, `cv`, `cv-review`.
-- Navbar: Dashboard, My Skills, Evidence, Career Target, Skill Gap, Profile.
-- Teks antarmuka Bahasa Inggris seperti mockup.
+## 4. Aturan Modularisasi PHP (WAJIB Dipatuhi AI)
 
-## Lapisan Data (`public/js/api.js`)
-- Semua pengambilan/pengiriman data **hanya** lewat fungsi di `api.js`. Halaman dan komponen tidak boleh memanggil `fetch` langsung.
-- Fungsi: `getCareers()`, `setTarget(id)`, `getMySkills()`, `addSkill()`, `removeSkill()`, `getEvidence()`, `addEvidence()`, `removeEvidence()`, `getSkillGap()`, dan lainnya sesuai `docs/API.md`.
-- Mode dummy: baca `data/*.json` dan simpan perubahan di `localStorage`. Saat backend siap, hanya isi `api.js` yang diganti ke endpoint asli (`api/*.php`); halaman tidak berubah.
-- Setiap fungsi diberi komentar satu baris berisi endpoint asli yang akan menggantikannya.
-- Request ke server (mode asli) menyertakan header `X-CSRF-Token` yang dibaca dari `<meta name="csrf-token">`; form `POST` memuat `<input type="hidden" name="csrf_token">` (nilai diisi backend).
-- Bentuk data mengikuti `docs/API.md`. Jika butuh field baru, tambahkan ke `docs/API.md` dan beri tahu pengguna.
+1. **Single Source of Truth untuk Layout:**
+   - **DILARANG** menulis tag `<!DOCTYPE html>`, `<head>`, `<header class="navbar">`, `<aside class="rec-sidebar">`, `<header class="rec-header">`, `<aside class="admin-sidebar">`, `<header class="admin-header">`, atau `<footer>` secara langsung di dalam file halaman (`public/mahasiswa/*.php`, `public/hr/*.php`, `public/admin/*.php`).
+   - Setiap file halaman hanya boleh berisi:
+     1. Pemanggilan middleware (`require_role('mahasiswa' | 'hr' | 'admin')`).
+     2. Pendefinisian variabel halaman (`$page_title`, `$active_nav`, `$role_css`, `$page_js`).
+     3. `require_once` untuk `head.php`, `sidebar`/`header` sesuai role, konten `<main>`, dan `footer` sesuai role.
+2. **Preservasi Selector CSS & DOM JavaScript (Zero Visual Regression):**
+   - **DILARANG** mengubah nama class CSS yang sudah ada di `public/css/style.css`, `public/css/recruiter.css`, maupun `public/css/admin.css`.
+   - **DILARANG** mengubah atribut `id`, `data-*` (termasuk `<body data-nav="...">`), atau struktur DOM di dalam `<main>` yang menjadi target selector dari `public/js/pages/*.js`.
+   - Saat mengekstrak `<aside>` atau `<header>` ke dalam `includes/layouts/`, markup HTML dan class CSS harus **100% identik** dengan file HTML aslinya; hanya atribut `href` dan class `active` yang dibuat dinamis menggunakan `$active_nav`.
+3. **Aturan Path & URL (`base_url()` & `asset()`):**
+   - **DILARANG** menulis path relatif mentah seperti `href="css/style.css"`, `src="js/ui.js"`, atau `href="admin-users.html"` karena akan menyebabkan error _404 Not Found_ saat halaman diakses dari dalam subfolder `public/mahasiswa/`, `public/hr/`, atau `public/admin/`.
+   - **WAJIB** menggunakan `asset('css/...')`, `asset('js/...')`, dan `base_url('admin/users.php')` di PHP, serta `window.APP_BASE_URL` pada pemanggilan `fetch()` di `public/js/api.js`.
+   - Seluruh link navigasi yang sebelumnya menunjuk ke `*.html` wajib diperbarui ke rute `*.php` sesuai tabel pemetaan di `docs/PRD.md`.
 
-## Aturan Kode
-- **XSS:** data dinamis dirender dengan `textContent`/`createElement`. Jangan memakai `innerHTML` dengan data dari pengguna atau API. Atribut URL hanya boleh skema `http`/`https`; link keluar memakai `target="_blank" rel="noopener noreferrer"`.
-- **CSS:** semua warna, radius, shadow, spacing di `:root` sebagai variabel. Font Inter dengan fallback `system-ui, sans-serif`. Komponen reusable: `.navbar`, `.nav-pill`, `.card`, `.btn`, `.btn-primary`, `.btn-accent`, `.tag`, `.badge`. Penamaan kelas kebab-case; hindari selector ID untuk styling.
-- **Responsif:** mobile-first dengan media query; uji di 375px, 768px, 1280px.
-- **Aksesibilitas:** elemen semantik (`header`, `nav`, `main`, `section`), `<label>` untuk setiap input, `alt` pada gambar, `aria-label` pada tombol ikon, fokus keyboard terlihat, kontras teks cukup.
-- **JS:** `const`/`let`, fungsi kecil, tanpa variabel global kecuali yang di-export lewat satu namespace; event handling dengan `addEventListener`. Validasi form di JS hanya pelengkap UX (server tetap memvalidasi).
-- Satu file JS per halaman; logika bersama di `ui.js`.
-- Komentar hanya untuk logika yang tidak jelas.
+## 5. Aturan Keamanan & Kualitas Kode
 
-## Fitur Non-Scope (jangan dibuat)
-Skor kesiapan karier, persentase kecocokan/match rate, progress bar persentase, teks "x of y skills covered", analisis GitHub, lowongan kerja. Skill gap hanya dua daftar: *Skills You Already Have* dan *What to Explore Next*; boleh menampilkan jumlah, bukan persentase atau rasio.
+1. **Pencegahan XSS (Server & Client):**
+   - Di PHP: Wajib membungkus seluruh output dinamis dengan fungsi `e($value)` (`htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8')`).
+   - Di JS: Render data dinamis menggunakan `textContent` dan `createElement` (**DILARANG** menggunakan `innerHTML` dengan data dari user atau API). Link eksternal wajib memakai `target="_blank" rel="noopener noreferrer"`.
+2. **Proteksi CSRF:**
+   - `includes/layouts/head.php` wajib memuat `<meta name="csrf-token" content="<?= e(csrf_token()) ?>">`.
+   - Setiap `<form method="POST">` wajib menyertakan `<input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">`.
+   - Request Fetch ke backend wajib menyertakan header `X-CSRF-Token`.
+3. **Pencegahan SQL Injection:**
+   - Seluruh interaksi database di `includes/` wajib menggunakan **PDO Prepared Statements** (`$pdo->prepare(...)` dan `$stmt->execute(...)`). **DILARANG** melakukan interpolasi variabel langsung ke dalam string SQL.
+4. **Batasan Fitur Non-Scope (Sesuai PRD):**
+   - Pada modul Mahasiswa (`gap.php` & `dashboard.php`), **DILARANG** membuat skor kesiapan karier dalam bentuk persentase kecocokan (_match rate_ %), progress bar persentase, rasio _"x of y skills covered"_, atau analisis GitHub otomatis. Halaman _Skill Gap_ hanya menampilkan dua daftar: **Skills You Already Have** dan **What to Explore Next**.
 
-## Aturan Tampilan dari Mockup
-- Tiru layout, warna, tipografi, dan komponen dari `docs/design/`.
-- **Abaikan data contoh di mockup** (Node.js, Express.js, "Product Designer", angka, tanggal). Pakai data dari `data/*.json` sesuai seed di PRD bagian 7.
-- Label skill: **Strong** jika ≥ 2 evidence, **Growing** jika kurang (dihitung di JS dari data).
+## 6. Urutan Eksekusi Migrasi untuk AI
 
-## Cara Kerja
-1. Satu halaman/fitur per sesi. Jangan menyentuh halaman lain.
-2. Untuk tugas besar, buat rencana singkat dulu dan tunggu persetujuan.
-3. Setelah selesai, laporkan: file yang dibuat/diubah, cara mengujinya (URL/langkah klik), dan hal yang belum selesai.
-4. Setelah selesai, periksa kode baru terhadap "Aturan Kode" dan "Fitur Non-Scope".
-5. Jangan refactor atau memformat ulang kode yang tidak diminta.
-6. Kerja di branch `frontend`; jangan commit langsung ke `main`.
+Jika diminta melakukan migrasi dari HTML ke PHP, kerjakan secara bertahap dengan urutan berikut:
 
-## Menjalankan
-- Preview: ekstensi **Live Server** di VS Code (agar `fetch` ke file JSON berjalan), atau `php -S localhost:8000 -t public` jika memakai halaman `.php`.
+1. **Tahap 1:** Buat `includes/config/app.php`, `includes/auth/session.php`, `includes/auth/csrf.php`, dan `includes/auth/middleware.php` (sediakan mode _development fallback_ agar halaman tetap bisa dibuka saat pengujian UI sebelum login DB aktif).
+2. **Tahap 2:** Buat seluruh partial layout di `includes/layouts/` (`head.php`, `scripts.php`, serta header/sidebar/footer untuk Publik, Mahasiswa, HR, dan Admin).
+3. **Tahap 3:** Konversi dan pindahkan 23 file `.html` ke file `.php` di `public/`, `public/mahasiswa/`, `public/hr/`, dan `public/admin/`.
+4. **Tahap 4:** Perbarui referensi link `.html` dan path `fetch()` di `public/js/ui.js`, `public/js/api.js`, `public/js/admin-nav.js`, dan `public/js/pages/*.js`.
+5. **Tahap 5:** Uji dengan `php -S localhost:8000 -t public`, pastikan tidak ada aset 404, lalu hapus file `.html` lama yang sudah digantikan `.php`.

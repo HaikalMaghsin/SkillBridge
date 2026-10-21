@@ -2,12 +2,12 @@
 
 const UI = (() => {
   const NAV_ITEMS = [
-    { key: "dashboard", label: "Dashboard", href: "dashboard.html" },
-    { key: "skills", label: "My Skills", href: "skills.html" },
-    { key: "evidence", label: "Evidence", href: "evidence.html" },
-    { key: "career", label: "Career Target", href: "career.html" },
-    { key: "gap", label: "Skill Gap", href: "gap.html" },
-    { key: "profile", label: "Profile", href: "profile.html" },
+    { key: "dashboard", label: "Dashboard", href: "dashboard.php" },
+    { key: "skills", label: "My Skills", href: "skills.php" },
+    { key: "evidence", label: "Evidence", href: "evidence.php" },
+    { key: "career", label: "Career Target", href: "career.php" },
+    { key: "gap", label: "Skill Gap", href: "gap.php" },
+    { key: "profile", label: "Profile", href: "profile.php" },
   ];
 
   // el("span", { class: "tag" }, ["PHP"]) -> <span class="tag">PHP</span>
@@ -114,6 +114,7 @@ const UI = (() => {
   }
 
   function renderNavbar() {
+    if (document.querySelector('header.navbar')) return;
     const active = document.body.dataset.nav || "";
     const navLinks = el("div", { class: "navbar-nav" },
       NAV_ITEMS.map((item) =>
@@ -127,7 +128,7 @@ const UI = (() => {
     );
 
     // Klik logo/nama mengembalikan ke landing page.
-    const brand = el("a", { class: "navbar-brand", href: "index.html", "aria-label": "SkillBridge home" }, [
+    const brand = el("a", { class: "navbar-brand", href: "index.php", "aria-label": "SkillBridge home" }, [
       el("div", { class: "navbar-logo", text: "S" }),
       el("div", { class: "navbar-brand-text" }, [
         el("div", { class: "navbar-brand-name", text: "SkillBridge" }),

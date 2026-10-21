@@ -12,15 +12,24 @@ const API = (() => {
     customSkills: "sb.customSkills",
   };
 
+  function resolveUrl(path) {
+    if (typeof window !== "undefined" && window.APP_BASE_URL !== undefined) {
+      const base = window.APP_BASE_URL === "/" ? "" : window.APP_BASE_URL.replace(/\/+$/, "");
+      const clean = path.replace(/^(\.\.\/)+/, "").replace(/^\/+/, "");
+      return (base ? base : "") + "/" + clean;
+    }
+    return path;
+  }
+
   // GET api/careers.php
   async function getCareers() {
-    const res = await fetch("../data/careers.json");
+    const res = await fetch(resolveUrl("../data/careers.json"));
     return res.json();
   }
 
   // GET api/skills.php  -> katalog bawaan + skill baru buatan pengguna
   async function getSkillCatalog() {
-    const res = await fetch("../data/skills.json");
+    const res = await fetch(resolveUrl("../data/skills.json"));
     const seeded = await res.json();
     return [...seeded, ...readCustomSkills()];
   }
@@ -32,7 +41,7 @@ const API = (() => {
     if (existing) return existing;
 
     // id lanjutan dari katalog bawaan agar tidak bentrok
-    const seeded = await fetch("../data/skills.json").then((res) => res.json());
+    const seeded = await fetch(resolveUrl("../data/skills.json")).then((res) => res.json());
     const maxId = [...seeded, ...custom].reduce((max, s) => Math.max(max, s.id), 0);
 
     const skill = { id: maxId + 1, name, category };
@@ -154,11 +163,11 @@ const API = (() => {
 
   // GET api/skills.php?admin=1 -> katalog skill master (sumber: skills.json)
   async function getMasterSkills() {
-    const res = await fetch("../data/skills.json");
+    const res = await fetch(resolveUrl("../data/skills.json"));
     return res.json();
   }
 
-  // GET api/careers.php?admin=1 -> daftar target karier master
+    // GET api/careers.php?admin=1 -> daftar target karier master
   async function getMasterCareers() {
     return getCareers();
   }
@@ -315,7 +324,7 @@ const API = (() => {
   async function readRecCollection(name, url) {
     const raw = localStorage.getItem(REC_LS[name]);
     if (raw !== null) return JSON.parse(raw);
-    const res = await fetch(url);
+    const res = await fetch(resolveUrl(url));
     const seeded = await res.json();
     localStorage.setItem(REC_LS[name], JSON.stringify(seeded));
     return seeded;
@@ -327,7 +336,7 @@ const API = (() => {
   async function readAdminCollection(name, url) {
     const raw = localStorage.getItem(ADMIN_LS[name]);
     if (raw !== null) return JSON.parse(raw);
-    const res = await fetch(url);
+    const res = await fetch(resolveUrl(url));
     const seeded = await res.json();
     localStorage.setItem(ADMIN_LS[name], JSON.stringify(seeded));
     return seeded;
