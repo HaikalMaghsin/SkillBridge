@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json();
       if (data.success) {
         UI.toast("Welcome!");
-        setTimeout(() => (location.href = "dashboard.html"), 600);
+        setTimeout(() => (location.href = "dashboard.php"), 600);
       } else {
         UI.toast(data.message || "Login failed");
       }

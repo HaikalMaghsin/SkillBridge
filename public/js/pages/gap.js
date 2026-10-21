@@ -22,7 +22,7 @@
   const gap = await API.getSkillGap();
 
   if (!gap.career) {
-    document.body.innerHTML = `<main class="container"><p style="text-align: center; margin-top: 100px; color: var(--text-muted)">No target career set. <a href="career.html" style="color: var(--primary); font-weight: 600">Choose one</a>.</p></main>`;
+    document.body.innerHTML = `<main class="container"><p style="text-align: center; margin-top: 100px; color: var(--text-muted)">No target career set. <a href="career.php" style="color: var(--primary); font-weight: 600">Choose one</a>.</p></main>`;
     return;
   }
 

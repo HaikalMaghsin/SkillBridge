@@ -96,7 +96,7 @@ async function renderTeam() {
     } else {
       action = el("a", {
         class: "rec-row-action",
-        href: "recruiter-team.html",
+        href: "team.php",
         text: "Kelola",
       });
     }
@@ -183,7 +183,7 @@ function renderDate() {
 
 // Fokus ke form Manajemen Tim (form undang anggota ada di sana).
 function openAddRecruiter() {
-  window.location.href = "recruiter-team.html#invite";
+  window.location.href = "team.php#invite";
 }
 
 async function load() {

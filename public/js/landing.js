@@ -1,17 +1,17 @@
-// landing.js — interaksi minimal untuk index.html (search + smooth scroll).
-// ponytail: tanpa backend, pencarian diarahkan ke skills.html; upgrade saat API siap.
+// landing.js — interaksi minimal untuk index.php (search + smooth scroll).
+// ponytail: tanpa backend, pencarian diarahkan ke mahasiswa/skills.php; upgrade saat API siap.
 
 (function () {
   "use strict";
 
-  // Search form: belum ada backend pencarian → arahkan ke skills.html dengan query.
+  // Search form: belum ada backend pencarian → arahkan ke mahasiswa/skills.php dengan query.
   const searchForm = document.getElementById("hero-search");
   if (searchForm) {
     searchForm.addEventListener("submit", function (e) {
       e.preventDefault();
       const input = searchForm.querySelector('input[type="search"], input[name="q"]');
       const q = input ? input.value.trim() : "";
-      window.location.href = "skills.html" + (q ? "#q=" + encodeURIComponent(q) : "");
+      window.location.href = "mahasiswa/skills.php" + (q ? "#q=" + encodeURIComponent(q) : "");
     });
   }
 
