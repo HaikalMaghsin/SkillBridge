@@ -1,11 +1,13 @@
-// login.js - Login form handler
+// login.js - Login form handler with dynamic role redirection
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("login-form");
-  const csrfInput = form.querySelector('input[name="csrf_token"]');
+  if (!form) return;
 
-  // Set CSRF token from meta tag or API
-  csrfInput.value = API.csrfToken();
+  const csrfInput = form.querySelector('input[name="csrf_token"]');
+  if (csrfInput && typeof API !== "undefined") {
+    csrfInput.value = API.csrfToken();
+  }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -18,12 +20,18 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    const baseUrl = (typeof window !== "undefined" && window.APP_BASE_URL !== undefined)
+      ? (window.APP_BASE_URL === "/" ? "" : window.APP_BASE_URL.replace(/\/+$/, ""))
+      : "";
+
+    const loginEndpoint = `${baseUrl}/login.php`;
+
     try {
-      const res = await fetch("../api/auth/login", {
+      const res = await fetch(loginEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-Token": csrfInput.value,
+          "X-CSRF-Token": csrfInput ? csrfInput.value : "",
         },
         body: JSON.stringify({ email, password }),
       });
@@ -36,13 +44,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await res.json();
       if (data.success) {
-        UI.toast("Welcome!");
-        setTimeout(() => (location.href = "dashboard.php"), 600);
+        UI.toast("Welcome back!");
+
+        let redirectUrl = `${baseUrl}/mahasiswa/dashboard.php`;
+        if (data.role === "admin") {
+          redirectUrl = `${baseUrl}/admin/index.php`;
+        } else if (data.role === "hr") {
+          redirectUrl = `${baseUrl}/hr/index.php`;
+        }
+
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 500);
       } else {
-        UI.toast(data.message || "Login failed");
+        UI.toast(data.message || "Email atau kata sandi tidak valid.");
       }
     } catch (err) {
-      UI.toast("Network error. Try again.");
+      // Fallback: submit standard form jika fetch gagal
+      form.submit();
     }
   });
 });

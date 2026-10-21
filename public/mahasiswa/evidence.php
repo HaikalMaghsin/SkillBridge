@@ -1,10 +1,10 @@
 <?php
 // public/mahasiswa/evidence.php
-// Halaman Evidence · SkillBridge
+// Halaman Evidence Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('mahasiswa');
 
-$page_title = 'Evidence · SkillBridge';
+$page_title = 'Evidence Â· SkillBridge';
 $role = 'mahasiswa';
 $path_prefix = '../';
 $nav_active = 'evidence';
@@ -24,7 +24,7 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
             Keep your strongest work visible, your skills clear, and your next step simple.
           </p>
         </div>
-        <button class="btn btn-accent btn-44" style="gap: 8px" id="btn-add-evidence">
+        <button type="button" class="btn btn-accent btn-44" style="gap: 8px" id="btn-add-evidence">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <path d="M3.333 8h9.334M8 3.333v9.334"/>
           </svg>
@@ -40,7 +40,7 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
         </div>
 
         <!-- Grid: 2x2 evidence cards -->
-        <div id="evidence-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px"></div>
+        <div id="evidence-grid" class="evidence-cards-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px"></div>
       </article>
     </main>
 

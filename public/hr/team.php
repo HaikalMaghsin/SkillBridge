@@ -1,10 +1,10 @@
 <?php
 // public/hr/team.php
-// Manajemen Recruiter / Tim · SkillBridge
+// Manajemen Recruiter / Tim Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('hr');
 
-$page_title = 'Manajemen Recruiter / Tim · SkillBridge';
+$page_title = 'Manajemen Recruiter / Tim Â· SkillBridge';
 $role = 'hr';
 $path_prefix = '../';
 $rec_page = 'team';
@@ -65,7 +65,7 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
 
         <!-- Team table -->
         <section class="rec-card">
-          <div class="rec-table-wrap">
+          <div class="rec-table-wrap table-responsive">
             <table class="rec-native-table">
               <thead>
                 <tr>

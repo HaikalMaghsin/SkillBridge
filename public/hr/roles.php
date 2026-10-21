@@ -1,10 +1,10 @@
 <?php
 // public/hr/roles.php
-// Target Role & Kebutuhan Skill · SkillBridge
+// Target Role & Kebutuhan Skill Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('hr');
 
-$page_title = 'Target Role & Kebutuhan Skill · SkillBridge';
+$page_title = 'Target Role & Kebutuhan Skill Â· SkillBridge';
 $role = 'hr';
 $path_prefix = '../';
 $rec_page = 'roles';

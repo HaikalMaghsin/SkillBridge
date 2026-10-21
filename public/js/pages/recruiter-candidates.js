@@ -72,7 +72,7 @@ function render() {
     body.append(
       el("tr", { class: "rec-cand-row" }, [
         el("td", { class: "rec-cand-id" }, [
-          el("div", { class: "rec-cell" }, [
+          el("div", { class: "table-actions rec-cell" }, [
             el("span", { class: "rec-avatar-sm", text: initials(c.name) }),
             el("div", { class: "rec-row-name-text" }, [
               el("span", { class: "rec-row-name-main", text: c.name }),
@@ -91,7 +91,7 @@ function render() {
         ]),
         el("td", { class: "rec-cand-evidence", text: `${c.evidence_count} Items` }),
         el("td", { class: "rec-cand-actions" }, [
-          el("div", { class: "rec-cell" }, [
+          el("div", { class: "table-actions rec-cell" }, [
             el("button", { type: "button", class: "rec-cand-btn", text: "Lihat Detail", onClick: () => UI.toast(`Riwayat ${c.name} belum tersedia.`) }),
             el("button",
               { type: "button", class: "rec-cand-btn rec-cand-btn--primary", text: "Undang",

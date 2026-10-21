@@ -120,7 +120,7 @@ function renderActions(m, reload) {
     );
   }
 
-  return el("div", { class: "rec-row-actions" }, buttons);
+  return el("div", { class: "table-actions rec-row-actions" }, buttons);
 }
 
 function render() {
@@ -209,7 +209,7 @@ async function load() {
   try {
     allTeam = await API.getRecruiterTeam();
     await renderStats();
-    render();
+    render(); document.getElementById("rec-team-tbody")?.addEventListener("click", async (e) => { const btn = e.target.closest("button"); if (!btn) return; const row = btn.closest("tr"); if (!row) return; const name = row.querySelector(".rec-col-name strong, .rec-col-name")?.textContent?.trim() || "Anggota"; if (btn.textContent.includes("Kirim Ulang")) { UI.toast(`Undangan untuk ${name} dikirim ulang.`); } });
   } catch (err) {
     UI.toast("Gagal memuat tim recruiter: " + err.message);
   }
@@ -217,23 +217,23 @@ async function load() {
 
 document.getElementById("rec-team-search").addEventListener("input", () => {
   page = 1;
-  render();
+  render(); document.getElementById("rec-team-tbody")?.addEventListener("click", async (e) => { const btn = e.target.closest("button"); if (!btn) return; const row = btn.closest("tr"); if (!row) return; const name = row.querySelector(".rec-col-name strong, .rec-col-name")?.textContent?.trim() || "Anggota"; if (btn.textContent.includes("Kirim Ulang")) { UI.toast(`Undangan untuk ${name} dikirim ulang.`); } });
 });
 document.getElementById("rec-team-role-filter").addEventListener("change", () => {
   page = 1;
-  render();
+  render(); document.getElementById("rec-team-tbody")?.addEventListener("click", async (e) => { const btn = e.target.closest("button"); if (!btn) return; const row = btn.closest("tr"); if (!row) return; const name = row.querySelector(".rec-col-name strong, .rec-col-name")?.textContent?.trim() || "Anggota"; if (btn.textContent.includes("Kirim Ulang")) { UI.toast(`Undangan untuk ${name} dikirim ulang.`); } });
 });
 document.getElementById("rec-team-status-filter").addEventListener("change", () => {
   page = 1;
-  render();
+  render(); document.getElementById("rec-team-tbody")?.addEventListener("click", async (e) => { const btn = e.target.closest("button"); if (!btn) return; const row = btn.closest("tr"); if (!row) return; const name = row.querySelector(".rec-col-name strong, .rec-col-name")?.textContent?.trim() || "Anggota"; if (btn.textContent.includes("Kirim Ulang")) { UI.toast(`Undangan untuk ${name} dikirim ulang.`); } });
 });
 document.getElementById("rec-team-prev").addEventListener("click", () => {
   page -= 1;
-  render();
+  render(); document.getElementById("rec-team-tbody")?.addEventListener("click", async (e) => { const btn = e.target.closest("button"); if (!btn) return; const row = btn.closest("tr"); if (!row) return; const name = row.querySelector(".rec-col-name strong, .rec-col-name")?.textContent?.trim() || "Anggota"; if (btn.textContent.includes("Kirim Ulang")) { UI.toast(`Undangan untuk ${name} dikirim ulang.`); } });
 });
 document.getElementById("rec-team-next").addEventListener("click", () => {
   page += 1;
-  render();
+  render(); document.getElementById("rec-team-tbody")?.addEventListener("click", async (e) => { const btn = e.target.closest("button"); if (!btn) return; const row = btn.closest("tr"); if (!row) return; const name = row.querySelector(".rec-col-name strong, .rec-col-name")?.textContent?.trim() || "Anggota"; if (btn.textContent.includes("Kirim Ulang")) { UI.toast(`Undangan untuk ${name} dikirim ulang.`); } });
 });
 document.getElementById("btn-invite-recruiter").addEventListener("click", openInvite);
 

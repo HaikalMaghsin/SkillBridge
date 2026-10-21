@@ -821,62 +821,100 @@ table.admin-table td.admin-text-end {
 }
 
 @media (max-width: 1023px) {
+  /* Off-Canvas Drawer Sidebar Admin */
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
   .admin-sidebar {
-    position: static;
-    width: 100%;
-    height: auto;
-    flex-direction: row;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    height: 100vh;
+    z-index: 1050;
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    background: #0f172a;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .admin-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .admin-brand {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 16px;
-    padding: 12px 16px;
-    overflow-x: auto;
-    border-right: 0;
-    border-bottom: 1px solid var(--admin-card-border);
+    width: 100%;
   }
 
-  .admin-brand-copy {
+  .sidebar-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.75);
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 0;
+  }
+  .sidebar-close-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .sidebar-backdrop {
     display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(2px);
+    z-index: 1040;
   }
 
-  .admin-nav {
-    flex-direction: row;
-    gap: 6px;
+  .sidebar-backdrop.is-open {
+    display: block;
   }
 
-  /* Chip-bar mobile: semua tautan tampil rata, accordion dimatikan. */
-  .admin-nav-group,
-  .admin-nav-group-body,
-  .admin-nav-group:not([open])>.admin-nav-group-body {
-    display: contents;
-  }
-
-  .admin-nav-group::details-content {
-    content-visibility: visible;
-  }
-
-  .admin-nav-group-head,
-  .admin-sidebar-spacer,
-  .admin-owner-context {
-    display: none;
-  }
-
-  .admin-nav-item {
+  .sidebar-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
     height: 40px;
-    white-space: nowrap;
-  }
-
-  .admin-logout-footer {
-    border-top: 0;
-    padding-top: 0;
+    min-height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--admin-card-border, #e2e8f0);
+    background: var(--surface, #ffffff);
+    color: var(--text-primary, #0f172a);
+    cursor: pointer;
+    margin-right: 12px;
   }
 
   .admin-workspace {
-    margin-left: 0;
+    margin-left: 0 !important;
+    width: 100% !important;
   }
 
   .admin-header {
     position: static;
     padding: 0 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sidebar-toggle,
+  .sidebar-backdrop,
+  .sidebar-close-btn {
+    display: none !important;
   }
 }
 

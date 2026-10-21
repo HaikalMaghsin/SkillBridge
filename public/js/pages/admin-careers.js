@@ -46,14 +46,14 @@
           ]),
           el("td", {}, [el("div", { style: "display:flex;flex-wrap:wrap;gap:4px" }, chips)]),
           el("td", { class: "admin-text-end" }, [
-            el("div", { class: "admin-actions" }, [
+            el("div", { class: "table-actions admin-actions" }, [
               el("button", {
-                class: "admin-icon-btn", type: "button", "aria-label": "Edit", title: "Edit",
+                class: "admin-icon-btn", type: "button", "data-action": "edit", "data-id": String(c.id), "aria-label": "Edit", title: "Edit",
                 innerHTML: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8.5 2.5l3 3L4 13H1v-3L8.5 2.5z"/></svg>',
                 onClick: () => UI.toast(`Edit "${c.name}" (dummy)`),
               }),
               el("button", {
-                class: "admin-icon-btn admin-icon-btn-danger", type: "button", "aria-label": "Hapus", title: "Hapus",
+                class: "admin-icon-btn admin-icon-btn-danger", type: "button", "data-action": "delete", "data-id": String(c.id), "aria-label": "Hapus", title: "Hapus",
                 innerHTML: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5h10M5 3.5V2a1 1 0 011-1h2a1 1 0 011 1v1.5M3 3.5l.5 8.5h7l.5-8.5"/></svg>',
                 onClick: () => UI.toast(`Hapus "${c.name}" (dummy)`),
               }),
@@ -65,7 +65,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    load();
+    load(); document.getElementById("careers-table-body")?.addEventListener("click", (e) => { const btn = e.target.closest("button[data-action]"); if (!btn) return; const action = btn.dataset.action; const id = Number(btn.dataset.id); const c = allCareers.find(x => x.id === id); if (!c) return; if (action === "edit") { UI.toast(`Edit "${c.name}" (dummy)`); } else if (action === "delete") { UI.toast(`Hapus "${c.name}" (dummy)`); } });
     document.getElementById("admin-search")?.addEventListener("input", applyFilter);
     document.getElementById("btn-add-career")?.addEventListener("click", () => {
       UI.modal({

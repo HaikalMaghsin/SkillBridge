@@ -1,10 +1,10 @@
 <?php
 // public/admin/settings.php
-// Pengaturan Sistem · SkillBridge
+// Pengaturan Sistem Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('admin');
 
-$page_title = 'Pengaturan Sistem · SkillBridge';
+$page_title = 'Pengaturan Sistem Â· SkillBridge';
 $role = 'admin';
 $path_prefix = '../';
 $admin_page = 'settings';

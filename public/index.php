@@ -3,7 +3,7 @@
 // Landing Page Publik SkillBridge
 require_once __DIR__ . '/../includes/auth/auth.php';
 
-$page_title = 'SkillBridge · Discover Your Skills. Build Your Future.';
+$page_title = 'SkillBridge Â· Discover Your Skills. Build Your Future.';
 $role = 'public';
 $path_prefix = '';
 $body_class = 'landing';
@@ -779,6 +779,7 @@ require_once __DIR__ . '/../includes/layouts/head.php';
 
     <?php require_once __DIR__ . '/../includes/layouts/public_footer.php'; ?>
 
-    <script src="js/landing.js"></script>
+    <script src="<?= asset('js/ui.js') ?>"></script>
+    <script src="<?= asset('js/landing.js') ?>"></script>
   </body>
 </html>

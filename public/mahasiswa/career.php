@@ -1,10 +1,10 @@
 <?php
 // public/mahasiswa/career.php
-// Halaman Career Target · SkillBridge
+// Halaman Career Target Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('mahasiswa');
 
-$page_title = 'Career Target · SkillBridge';
+$page_title = 'Career Target Â· SkillBridge';
 $role = 'mahasiswa';
 $path_prefix = '../';
 $nav_active = 'career';

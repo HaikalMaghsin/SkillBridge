@@ -72,16 +72,16 @@
           ]),
           el("td", { text: UI.formatDate(a.created_at) }),
           el("td", { class: "admin-text-end" }, [
-            el("div", { class: "admin-actions" }, [
+            el("div", { class: "table-actions admin-actions" }, [
               el("button", {
                 type: "button",
                 class: "admin-icon-btn",
-                "aria-label": `Ubah status ${a.name}`,
+                "data-action": "status", "data-id": String(a.id), "aria-label": `Ubah status ${a.name}`,
                 onClick: async () => {
                   const next = active ? "inactive" : "active";
                   await API.setAdminRecordStatus("jobs", a.id, next);
                   UI.toast(`Status ${a.name} diubah`);
-                  load();
+                  load(); document.getElementById("admins-table-body")?.addEventListener("click", async (e) => { const btn = e.target.closest("button[data-action]"); if (!btn) return; const action = btn.dataset.action; const id = Number(btn.dataset.id); const a = allAdmins.find(x => x.id === id); if (!a) return; if (action === "status") { const next = a.status === "active" ? "inactive" : "active"; await API.setAdminRecordStatus("jobs", a.id, next); UI.toast(`Status ${a.name} diubah`); load(); } else if (action === "delete") { if (!confirm(`Hapus administrator ${a.name}?`)) return; await API.removeAdminRecord("jobs", a.id); UI.toast("Administrator dihapus"); load(); } });
                 },
               }, [
                 el("svg", { width: "14", height: "14", viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", "stroke-width": "1.5", "stroke-linecap": "round", "stroke-linejoin": "round" }, [
@@ -92,12 +92,12 @@
               el("button", {
                 type: "button",
                 class: "admin-icon-btn admin-icon-btn-danger",
-                "aria-label": `Hapus ${a.name}`,
+                "data-action": "delete", "data-id": String(a.id), "aria-label": `Hapus ${a.name}`,
                 onClick: async () => {
                   if (!confirm(`Hapus administrator ${a.name}?`)) return;
                   await API.removeAdminRecord("jobs", a.id);
                   UI.toast("Administrator dihapus");
-                  load();
+                  load(); document.getElementById("admins-table-body")?.addEventListener("click", async (e) => { const btn = e.target.closest("button[data-action]"); if (!btn) return; const action = btn.dataset.action; const id = Number(btn.dataset.id); const a = allAdmins.find(x => x.id === id); if (!a) return; if (action === "status") { const next = a.status === "active" ? "inactive" : "active"; await API.setAdminRecordStatus("jobs", a.id, next); UI.toast(`Status ${a.name} diubah`); load(); } else if (action === "delete") { if (!confirm(`Hapus administrator ${a.name}?`)) return; await API.removeAdminRecord("jobs", a.id); UI.toast("Administrator dihapus"); load(); } });
                 },
               }, [
                 el("svg", { width: "14", height: "14", viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", "stroke-width": "1.5", "stroke-linecap": "round", "stroke-linejoin": "round" }, [
@@ -112,7 +112,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    load();
+    load(); document.getElementById("admins-table-body")?.addEventListener("click", async (e) => { const btn = e.target.closest("button[data-action]"); if (!btn) return; const action = btn.dataset.action; const id = Number(btn.dataset.id); const a = allAdmins.find(x => x.id === id); if (!a) return; if (action === "status") { const next = a.status === "active" ? "inactive" : "active"; await API.setAdminRecordStatus("jobs", a.id, next); UI.toast(`Status ${a.name} diubah`); load(); } else if (action === "delete") { if (!confirm(`Hapus administrator ${a.name}?`)) return; await API.removeAdminRecord("jobs", a.id); UI.toast("Administrator dihapus"); load(); } });
     document.getElementById("admin-search").addEventListener("input", applyFilter);
     document.getElementById("admin-role-filter").addEventListener("change", applyFilter);
   });

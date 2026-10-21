@@ -1,10 +1,10 @@
 <?php
 // public/admin/careers.php
-// Manajemen Target Karier · SkillBridge
+// Manajemen Target Karier Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('admin');
 
-$page_title = 'Manajemen Target Karier · SkillBridge';
+$page_title = 'Manajemen Target Karier Â· SkillBridge';
 $role = 'admin';
 $path_prefix = '../';
 $admin_page = 'careers';
@@ -37,7 +37,7 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
               style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:var(--admin-surface);font-size:14px" />
           </div>
         </div>
-        <div class="admin-table-wrap">
+        <div class="admin-table-wrap table-responsive">
           <table class="admin-table">
             <thead>
               <tr>

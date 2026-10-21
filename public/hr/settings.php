@@ -1,10 +1,10 @@
 <?php
 // public/hr/settings.php
-// Pengaturan Akun Recruiter · SkillBridge
+// Pengaturan Akun Recruiter Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('hr');
 
-$page_title = 'Pengaturan Akun Recruiter · SkillBridge';
+$page_title = 'Pengaturan Akun Recruiter Â· SkillBridge';
 $role = 'hr';
 $path_prefix = '../';
 $rec_page = 'settings';

@@ -1,10 +1,10 @@
 <?php
 // public/admin/admins.php
-// Manajemen Administrator · SkillBridge
+// Manajemen Administrator Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('admin');
 
-$page_title = 'Manajemen Administrator · SkillBridge';
+$page_title = 'Manajemen Administrator Â· SkillBridge';
 $role = 'admin';
 $path_prefix = '../';
 $admin_page = 'admins';
@@ -40,7 +40,7 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
       </div>
 
       <div class="admin-card">
-        <div class="admin-table-wrap">
+        <div class="admin-table-wrap table-responsive">
           <table class="admin-table">
             <thead>
               <tr>

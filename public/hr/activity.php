@@ -1,10 +1,10 @@
 <?php
 // public/hr/activity.php
-// Log Aktivitas Recruiter · SkillBridge
+// Log Aktivitas Recruiter Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('hr');
 
-$page_title = 'Log Aktivitas Recruiter · SkillBridge';
+$page_title = 'Log Aktivitas Recruiter Â· SkillBridge';
 $role = 'hr';
 $path_prefix = '../';
 $rec_page = 'activity';

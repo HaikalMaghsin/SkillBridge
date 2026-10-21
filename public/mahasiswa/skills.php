@@ -1,10 +1,10 @@
 <?php
 // public/mahasiswa/skills.php
-// Halaman My Skills · SkillBridge
+// Halaman My Skills Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('mahasiswa');
 
-$page_title = 'My Skills · SkillBridge';
+$page_title = 'My Skills Â· SkillBridge';
 $role = 'mahasiswa';
 $path_prefix = '../';
 $nav_active = 'skills';
@@ -32,7 +32,7 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
         </button>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 360px; gap: 24px">
+      <div class="skills-layout-grid" style="display: grid; grid-template-columns: 1fr 360px; gap: 24px">
         <!-- Left Column -->
         <div style="display: grid; gap: 20px; align-content: start">
           <!-- Target Career -->

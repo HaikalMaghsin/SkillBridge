@@ -1,10 +1,10 @@
 <?php
 // public/admin/users.php
-// Manajemen Pengguna · SkillBridge
+// Manajemen Pengguna Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('admin');
 
-$page_title = 'Manajemen Pengguna · SkillBridge';
+$page_title = 'Manajemen Pengguna Â· SkillBridge';
 $role = 'admin';
 $path_prefix = '../';
 $admin_page = 'users';
@@ -40,7 +40,7 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
           <option value="inactive">Non-aktif</option>
           <option value="suspended">Suspended</option>
         </select>
-        <button class="btn btn-accent btn-44" id="btn-add-user">
+        <button type="button" class="btn btn-accent btn-44" id="btn-add-user">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round">
             <path d="M3.333 8h9.334M8 3.333v9.334" />
@@ -50,7 +50,7 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
       </div>
 
       <div class="admin-card">
-        <div class="admin-table-wrap">
+        <div class="admin-table-wrap table-responsive">
           <table class="admin-table">
             <thead>
               <tr>

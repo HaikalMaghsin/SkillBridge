@@ -1,10 +1,10 @@
 <?php
 // public/mahasiswa/profile.php
-// Halaman My Profile · SkillBridge
+// Halaman My Profile Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('mahasiswa');
 
-$page_title = 'My Profile · SkillBridge';
+$page_title = 'My Profile Â· SkillBridge';
 $role = 'mahasiswa';
 $path_prefix = '../';
 $nav_active = 'profile';

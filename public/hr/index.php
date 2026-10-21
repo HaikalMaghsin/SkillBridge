@@ -1,10 +1,10 @@
 <?php
 // public/hr/index.php
-// Panel Perusahaan & Recruiter · SkillBridge
+// Panel Perusahaan & Recruiter Â· SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('hr');
 
-$page_title = 'Panel Perusahaan & Recruiter · SkillBridge';
+$page_title = 'Panel Perusahaan & Recruiter Â· SkillBridge';
 $role = 'hr';
 $path_prefix = '../';
 $rec_page = 'profile';

@@ -9,16 +9,45 @@ $path_prefix = '';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['email'] ?? '';
-    $password = $_POST['password'] ?? '';
+    $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+    if (stripos($contentType, 'application/json') !== false) {
+        $raw = file_get_contents('php://input');
+        $json = json_decode($raw, true) ?? [];
+        $email = $json['email'] ?? '';
+        $password = $json['password'] ?? '';
+        $isJson = true;
+    } else {
+        $email = $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
+        $isJson = false;
+    }
 
     if (empty($email) || empty($password)) {
+        if ($isJson) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Email dan password wajib diisi.']);
+            exit;
+        }
         $error = 'Email dan password wajib diisi.';
     } else {
         $result = attempt_login($email, $password);
         if ($result['success']) {
+            if ($isJson) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => true,
+                    'role' => $result['role'],
+                    'message' => 'Login berhasil'
+                ]);
+                exit;
+            }
             redirect_to_dashboard($result['role'], $path_prefix);
         } else {
+            if ($isJson) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Email atau kata sandi tidak valid.']);
+                exit;
+            }
             $error = 'Email atau kata sandi tidak valid.';
         }
     }
@@ -46,9 +75,9 @@ require_once __DIR__ . '/../includes/layouts/head.php';
         <div style="background: var(--surface-subtle, #f8fafc); border: 1px dashed var(--border-light, #cbd5e1); border-radius: 8px; padding: 12px; margin-bottom: 20px;">
           <p style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Akses Cepat Demo Role:</p>
           <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-            <button type="button" class="btn btn-sm" onclick="setDemo('jhondoe@gmail.com', 'password123')" style="font-size: 12px; padding: 4px 10px;">Mahasiswa</button>
-            <button type="button" class="btn btn-sm" onclick="setDemo('hr@techindonesia.com', 'password123')" style="font-size: 12px; padding: 4px 10px;">HR / Recruiter</button>
-            <button type="button" class="btn btn-sm" onclick="setDemo('admin@skillbridge.id', 'password123')" style="font-size: 12px; padding: 4px 10px;">Admin</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="setDemo('jhondoe@gmail.com', 'password123')">Mahasiswa</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="setDemo('hr@techindonesia.com', 'password123')">HR / Recruiter</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="setDemo('admin@skillbridge.id', 'password123')">Admin</button>
           </div>
         </div>
 
@@ -65,7 +94,7 @@ require_once __DIR__ . '/../includes/layouts/head.php';
             <input type="password" id="password" name="password" placeholder="••••••••" required />
           </div>
 
-          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; height: 44px">Sign In</button>
+          <button type="submit" class="btn btn-primary btn-block" style="height: 44px">Sign In</button>
         </form>
 
         <p style="text-align: center; font-size: 14px; color: var(--text-muted); margin-top: 20px">
@@ -81,8 +110,8 @@ require_once __DIR__ . '/../includes/layouts/head.php';
         document.getElementById('password').value = pass;
       }
     </script>
-    <script src="js/ui.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/pages/login.js"></script>
+    <script src="<?= asset('js/ui.js') ?>"></script>
+    <script src="<?= asset('js/api.js') ?>"></script>
+    <script src="<?= asset('js/pages/login.js') ?>"></script>
   </body>
 </html>
