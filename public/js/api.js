@@ -194,26 +194,6 @@ const API = (() => {
     return rows;
   }
 
-  // GET api/admin/users.php
-  async function getAdminUsers() {
-    return readAdminCollection("users", "../data/admin-users.json");
-  }
-
-  // GET api/admin/jobs.php  -> daftar akun Admin Job
-  async function getJobAdmins() {
-    return readAdminCollection("jobs", "../data/admin-jobs.json");
-  }
-
-  // GET api/admin/vacancies.php
-  async function getVacancies() {
-    return readAdminCollection("vacancies", "../data/admin-vacancies.json");
-  }
-
-  // GET api/admin/content.php
-  async function getAdminContent() {
-    return readAdminCollection("content", "../data/admin-content.json");
-  }
-
   // PATCH api/admin/users.php  { id, status }
   async function setAdminRecordStatus(collection, id, status) {
     const key = ADMIN_LS[collection];

@@ -57,7 +57,10 @@ SkillBridge/
 │   ├── css/                         # style.css, recruiter.css, admin.css
 │   ├── js/                          # ui.js, api.js, landing.js, admin-nav.js, pages/*.js
 │   └── assets/                      # icons/, landing/
-└── data/                            # Data JSON fallback / dummy
+├── db/                              # schema.sql, seed.sql, optional_hr_role.sql
+└── tools/                           # create_admin.php (CLI)
+
+(Data JSON dummy ada di public/data/. Role DB 'user' dipetakan ke role aplikasi 'mahasiswa'.)
 ```
 
 ## 4. Aturan Modularisasi PHP (WAJIB Dipatuhi AI)
