@@ -3,7 +3,7 @@
 // Header Konsol Admin Platform
 require_once __DIR__ . '/../config/app.php';
 
-$user = current_user() ?? login_demo_user('admin');
+$user = current_user() ?? [];
 $admin_header_title = $admin_header_title ?? 'Admin SkillBridge';
 ?>
 <!-- Header Admin -->
