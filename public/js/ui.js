@@ -24,6 +24,7 @@ const UI = (() => {
       if (key === "class") node.className = value;
       else if (key === "text") node.textContent = value;
       else if (key === "onClick") node.addEventListener("click", value);
+      // HANYA untuk markup statis tepercaya (mis. ikon SVG). Jangan isi dengan data pengguna/API.
       else if (key === "innerHTML") node.innerHTML = value;
       else node.setAttribute(key, value);
     }
