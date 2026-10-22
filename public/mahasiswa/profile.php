@@ -191,8 +191,8 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
 
 <?php require_once __DIR__ . '/../../includes/layouts/mahasiswa_footer.php'; ?>
 
-    <script src="../js/ui.js"></script>
-    <script src="../js/api.js"></script>
-    <script src="../js/pages/profile.js"></script>
+    <script src="<?= e(asset('js/ui.js')) ?>"></script>
+    <script src="<?= e(asset('js/api.js')) ?>"></script>
+    <script src="<?= e(asset('js/pages/profile.js')) ?>"></script>
   </body>
 </html>

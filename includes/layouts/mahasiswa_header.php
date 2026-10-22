@@ -4,7 +4,7 @@
 require_once __DIR__ . '/../config/app.php';
 
 $nav_active = $nav_active ?? '';
-$user = current_user() ?? login_demo_user('mahasiswa');
+$user = current_user() ?? [];
 
 $nav_items = [
     'dashboard' => ['label' => 'Dashboard', 'href' => 'dashboard.php'],
