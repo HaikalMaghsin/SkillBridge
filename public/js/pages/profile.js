@@ -1,4 +1,4 @@
-// profile.js - My Profile page
+﻿// profile.js - My Profile page
 
 (async () => {
   const { el } = UI;

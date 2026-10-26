@@ -1,16 +1,16 @@
-// dashboard.js - render dashboard sesuai Figma spec
+﻿// dashboard.js - render dashboard sesuai Figma spec
 
 (async () => {
   const { el } = UI;
-  const [careers, catalog, gap, evidence] = await Promise.all([
+  const [careers, catalog, gap, evidence, mine, targetId] = await Promise.all([
     API.getCareers(),
     API.getSkillCatalog(),
     API.getSkillGap(),
     API.getEvidence(),
+    API.getMySkills(),
+    API.getTargetCareer(),
   ]);
 
-  const mine = API.getMySkills();
-  const targetId = API.getTargetId();
   const target = careers.find((c) => c.id === targetId) || careers[0];
 
   // Card: Target Career

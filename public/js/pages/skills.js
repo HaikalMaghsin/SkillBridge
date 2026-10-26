@@ -1,4 +1,4 @@
-// skills.js - My Skills page
+﻿// skills.js - My Skills page
 
 (async () => {
   const { el } = UI;
@@ -29,15 +29,15 @@
       innerHTML: categoryIconSvg(skill.category),
     });
   }
-  const [careers, catalog, gap, evidence] = await Promise.all([
+  const [careers, catalog, gap, evidence, mine, targetId] = await Promise.all([
     API.getCareers(),
     API.getSkillCatalog(),
     API.getSkillGap(),
     API.getEvidence(),
+    API.getMySkills(),
+    API.getTargetCareer(),
   ]);
 
-  const mine = API.getMySkills();
-  const targetId = API.getTargetId();
   const target = careers.find((c) => c.id === targetId) || careers[0];
 
   // Card: Target Career
