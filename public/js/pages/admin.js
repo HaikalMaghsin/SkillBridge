@@ -10,12 +10,13 @@
     const grid = document.getElementById("admin-stats-grid");
     if (grid) {
       UI.clear(grid);
+      const totalUsers = (stats.totalStudents ?? 0) + (stats.totalHR ?? 0);
       const cards = [
-        { label: "Total pengguna", value: 1248, context: "986 mahasiswa · 262 fresh graduate" },
-        { label: "Administrator", value: 12, context: "1 Admin · 7 SkillBridge · 4 Job" },
-        { label: "Keterampilan", value: 48, context: "Record keterampilan master" },
-        { label: "Target karier", value: 8, context: "Record target karier master" },
-        { label: "Relasi mapping", value: 64, context: "Relasi karier–keterampilan" },
+        { label: "Total pengguna", value: totalUsers, context: `${stats.totalStudents ?? 0} mahasiswa · ${stats.totalHR ?? 0} HR` },
+        { label: "Administrator", value: stats.totalAdmins ?? 1, context: "Platform owner & admin" },
+        { label: "Keterampilan", value: stats.totalSkills ?? 18, context: "Record keterampilan master" },
+        { label: "Target karier", value: stats.totalCareers ?? 4, context: "Record target karier master" },
+        { label: "Relasi mapping", value: stats.totalMappings ?? 20, context: "Relasi karier–keterampilan" },
       ];
       for (const c of cards) {
         grid.append(
