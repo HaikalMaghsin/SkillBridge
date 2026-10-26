@@ -10,10 +10,12 @@
   function readProfile() {
     const raw = localStorage.getItem(LS_PROFILE);
     if (raw) return JSON.parse(raw);
-    // Backend: defaults mirror mockup; upgrade path = GET api/profile.php
+    // Backend: defaults from PHP session; profile.js merges localStorage edits
+    const nameEl = document.getElementById("detail-fullname");
+    const emailEl = document.getElementById("detail-email");
     return {
-      name: "Jhon Doe",
-      email: "jhondoe@gmail.com",
+      name: nameEl ? nameEl.textContent : "Student",
+      email: emailEl ? emailEl.textContent : "student@example.com",
       institution: "Politeknik Negeri Malang",
       program: "Information Technology",
       semester: "3",
@@ -38,10 +40,12 @@
   let profile = readProfile();
 
   // ---- Load dynamic counts ----
-  const [careers] = await Promise.all([API.getCareers()]);
-  const mine = API.getMySkills();
-  const evidence = API.getEvidence();
-  const targetId = API.getTargetId();
+  const [careers, mine, evidence, targetId] = await Promise.all([
+    API.getCareers(),
+    API.getMySkills(),
+    API.getEvidence(),
+    API.getTargetCareer()
+  ]);
   const target = careers.find((c) => c.id === targetId) || null;
 
   // ---- Render static fields ----

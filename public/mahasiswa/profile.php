@@ -4,6 +4,7 @@
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('mahasiswa');
 
+$user = current_user();
 $page_title = 'My Profile · SkillBridge';
 $role = 'mahasiswa';
 $path_prefix = '../';
@@ -41,7 +42,7 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
                 </svg>
               </div>
               <div class="profile-identity-text">
-                <p class="profile-name" id="profile-display-name">Jhon Doe</p>
+                <p class="profile-name" id="profile-display-name"><?= e($user['name']) ?></p>
                 <p class="profile-role">Student</p>
                 <button class="btn btn-sm profile-change-photo" type="button" id="btn-change-photo">Change Photo</button>
               </div>
@@ -51,11 +52,11 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
               <div class="profile-detail-row">
                 <div class="profile-detail">
                   <p class="profile-detail-label">Full Name</p>
-                  <p class="profile-detail-value" id="detail-fullname">Jhon Doe</p>
+                  <p class="profile-detail-value" id="detail-fullname"><?= e($user['name']) ?></p>
                 </div>
                 <div class="profile-detail">
                   <p class="profile-detail-label">Email Address</p>
-                  <p class="profile-detail-value" id="detail-email">jhondoe@gmail.com</p>
+                  <p class="profile-detail-value" id="detail-email"><?= e($user['email']) ?></p>
                 </div>
               </div>
               <div class="profile-detail-row">

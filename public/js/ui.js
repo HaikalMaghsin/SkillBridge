@@ -153,6 +153,21 @@ const UI = (() => {
         el("div", { class: "navbar-profile-email", text: "jhondoe@gmail.com" }),
       ]),
       el("div", { class: "navbar-avatar", text: "JD" }),
+      el("button", {
+        type: "button",
+        class: "navbar-logout-btn",
+        "aria-label": "Logout",
+        title: "Logout",
+        onClick: () => {
+          // Bersihkan localStorage sebelum redirect
+          localStorage.removeItem('sb.mySkills');
+          localStorage.removeItem('sb.myEvidence');
+          localStorage.removeItem('sb.targetCareer');
+          localStorage.removeItem('sb.profile');
+          localStorage.removeItem('sb.portfolioVisibility');
+          window.location.href = `${base}/logout.php`;
+        },
+      }),
     ]);
 
     const toggle = el("button", {

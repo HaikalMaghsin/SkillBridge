@@ -4,6 +4,7 @@
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('admin');
 
+$user = current_user();
 $page_title = 'Admin Dashboard · SkillBridge';
 $role = 'admin';
 $path_prefix = '../';
@@ -26,7 +27,7 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
         <div class="admin-page-heading">
           <div>
             <p class="admin-eyebrow">Ringkasan platform</p>
-            <h1 class="admin-page-title">Selamat datang kembali, Aditya.</h1>
+            <h1 class="admin-page-title">Selamat datang kembali, <?= e($user['name']) ?>.</h1>
             <p class="admin-page-desc">Pantau data master, aktivitas pengguna, dan konfigurasi SkillBridge dari satu tempat.</p>
           </div>
         </div>
