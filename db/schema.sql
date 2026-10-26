@@ -7,8 +7,8 @@
 -- ============================================================
 
 -- ---------- ENUM ----------
-CREATE TYPE user_role AS ENUM ('user', 'admin');
-CREATE TYPE evidence_source_type AS ENUM ('cv', 'project', 'portfolio', 'certificate');
+CREATE TYPE user_role AS ENUM ('user', 'hr', 'admin');
+CREATE TYPE evidence_source_type AS ENUM ('cv', 'project', 'portfolio', 'certificate', 'github', 'assessment');
 CREATE TYPE skill_source AS ENUM ('manual', 'cv_extracted');
 CREATE TYPE skill_status AS ENUM ('candidate', 'confirmed');
 
