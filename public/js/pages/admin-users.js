@@ -76,7 +76,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 title: "Edit",
                 innerHTML:
                   '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8.5 2.5l3 3L4 13H1v-3L8.5 2.5z"/></svg>',
-                onClick: () => UI.toast(`Edit ${u.name} (dummy)`),
               }),
               el("button", {
                 type: "button",
@@ -85,12 +84,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 title: "Hapus",
                 innerHTML:
                   '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5h10M5 3.5V2a1 1 0 011-1h2a1 1 0 011 1v1.5M3 3.5l.5 8.5h7l.5-8.5"/></svg>',
-                onClick: async () => {
-                  if (!confirm(`Hapus akun ${u.name}?`)) return;
-                  await API.removeAdminRecord("users", u.id);
-                  UI.toast("Pengguna dihapus");
-                  load(); document.getElementById("users-table-body")?.addEventListener("click", async (e) => { const btn = e.target.closest("button[data-action]"); if (!btn) return; const action = btn.dataset.action; const id = Number(btn.dataset.id); const u = allUsers.find(x => x.id === id); if (!u) return; if (action === "edit") { UI.toast(`Edit ${u.name} (dummy)`); } else if (action === "delete") { if (!confirm(`Hapus akun ${u.name}?`)) return; await API.removeAdminRecord("users", u.id); UI.toast("Pengguna dihapus"); load(); } });
-                },
               }),
             ]),
           ]),
@@ -99,7 +92,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  load(); document.getElementById("users-table-body")?.addEventListener("click", async (e) => { const btn = e.target.closest("button[data-action]"); if (!btn) return; const action = btn.dataset.action; const id = Number(btn.dataset.id); const u = allUsers.find(x => x.id === id); if (!u) return; if (action === "edit") { UI.toast(`Edit ${u.name} (dummy)`); } else if (action === "delete") { if (!confirm(`Hapus akun ${u.name}?`)) return; await API.removeAdminRecord("users", u.id); UI.toast("Pengguna dihapus"); load(); } });
+  // Event delegation untuk tombol aksi di tabel
+  document.getElementById("users-table-body")?.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const id = Number(btn.dataset.id);
+    const u = allUsers.find(x => x.id === id);
+    if (!u) return;
+
+    if (action === "edit") {
+      UI.toast(`Edit ${u.name} (dummy)`);
+    } else if (action === "delete") {
+      if (!confirm(`Hapus akun ${u.name}?`)) return;
+      await API.removeAdminRecord("users", u.id);
+      UI.toast("Pengguna dihapus");
+      load();
+    }
+  });
+
+  load();
   document.getElementById("user-search").addEventListener("input", applyFilter);
   document.getElementById("user-status-filter").addEventListener("change", applyFilter);
 
