@@ -72,7 +72,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    load(); document.getElementById("mapping-table-body")?.addEventListener("click", (e) => { const btn = e.target.closest("button[data-action]"); if (!btn) return; const id = btn.dataset.id; const r = allMappings.find(x => `${x.career_id}_${x.skill_id}` === id); if (!r) return; UI.toast(`Relasi "${r.career_name} ? ${r.skill_name}" dihapus (dummy)`); });
+    load(); document.getElementById("mapping-table-body")?.addEventListener("click", (e) => { const btn = e.target.closest("button[data-action]"); if (!btn) return; const id = btn.dataset.id; const r = allRows.find(x => `${x.career_id}_${x.skill_id}` === id); if (!r) return; UI.toast(`Relasi "${r.career_name} → ${r.skill_name}" dihapus (dummy)`); });
     document.getElementById("admin-search")?.addEventListener("input", applyFilter);
     document.getElementById("mapping-career-filter")?.addEventListener("change", applyFilter);
     document.getElementById("btn-add-mapping")?.addEventListener("click", () => {
