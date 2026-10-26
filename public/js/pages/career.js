@@ -2,9 +2,13 @@
 
 (async () => {
   const { el, clear } = UI;
-  const [careers, catalog] = await Promise.all([API.getCareers(), API.getSkillCatalog()]);
+  const [careers, catalog, mine] = await Promise.all([
+    API.getCareers(),
+    API.getSkillCatalog(),
+    API.getMySkills()
+  ]);
 
-  const mine = new Set(API.getMySkills().map((s) => s.skill_id));
+  const mineSet = new Set(mine.map((s) => s.skill_id));
 
   const gridEl = document.getElementById("career-grid");
   const bannerText = document.getElementById("banner-text");
@@ -23,24 +27,25 @@
     return [target, ...rest];
   }
 
-  function render() {
-    const target = getTarget();
-    const list = sortedCareers();
+  async function render() {
+    const targetId = await API.getTargetCareer();
+    const target = careers.find((c) => c.id === targetId) || careers[0];
+    const list = [target, ...careers.filter((c) => c.id !== target.id)];
 
     bannerText.textContent = `${target.name} is your current target. Required skills below are a practical starter list for this project.`;
 
     gridEl.classList.remove("career-grid--animated");
     clear(gridEl);
     for (const career of list) {
-      gridEl.append(renderCareerCard(career, career.id === target.id, mine, catalog));
+      gridEl.append(renderCareerCard(career, career.id === target.id, mineSet, catalog));
     }
     // Re-trigger animasi fade-in pada setiap render ulang.
     void gridEl.offsetWidth;
     requestAnimationFrame(() => gridEl.classList.add("career-grid--animated"));
   }
 
-  function selectTarget(career) {
-    API.setTarget(career.id);
+  async function selectTarget(career) {
+    await API.setTarget(career.id);
     render();
   }
 
@@ -81,7 +86,7 @@
 
     // Required skills
     const skillNames = career.skills.map((name) => catalog.find((s) => s.name === name)).filter(Boolean);
-    const matched = skillNames.filter((s) => mine.has(s.id)).length;
+    const matched = skillNames.filter((s) => mineSet.has(s.id)).length;
 
     card.append(
       el("div", { class: "career-card-skills" }, [
@@ -91,7 +96,6 @@
     );
 
     if (isSelected) {
-      card.append(el("p", { class: "career-card-count", text: `${matched} of ${skillNames.length} skills covered` }));
       card.append(
         el("button", {
           class: "btn btn-accent",

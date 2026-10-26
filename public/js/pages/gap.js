@@ -63,7 +63,7 @@
   if (gap.explore.length === 0) {
     exploreEl.append(el("p", { style: "color: var(--text-muted); font-size: 15px", text: "All required skills covered." }));
   } else {
-    exploreEl.append(el("div", { style: "display: flex; flex-direction: column" }, gap.explore.slice(0, 1).map((s) => renderSkillRow(s, 0, "explore"))));
+    exploreEl.append(el("div", { style: "display: flex; flex-direction: column" }, gap.explore.map((s) => renderSkillRow(s, 0, "explore"))));
   }
 
   // Next step box
@@ -76,7 +76,15 @@
       el("button", {
         class: "btn btn-accent",
         style: "width: fit-content; margin-top: 8px; gap: 7px",
-        onClick: () => UI.toast("Feature coming soon"),
+        onClick: async () => {
+          try {
+            await API.addMySkill(first.id);
+            UI.toast(`${first.name} added to your skills!`);
+            location.reload();
+          } catch (err) {
+            UI.toast(`Error: ${err.message}`, "error");
+          }
+        },
       }, [
         el("svg", { width: "16", height: "16", viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", "stroke-width": "2", innerHTML: `<path d="M3.333 8h9.334M8 3.333v9.334" stroke-linecap="round"/>` }),
         document.createTextNode(`Add ${first.name}`),
