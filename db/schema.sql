@@ -145,3 +145,99 @@ LEFT JOIN user_skills us
 --   Skill gap user 1      : SELECT * FROM v_skill_gap WHERE user_id = 1 AND NOT has_skill;
 --   Skill yang sudah ada  : SELECT * FROM v_skill_gap WHERE user_id = 1 AND has_skill;
 --   Profil publik         : SELECT ... FROM student_profiles WHERE public_token = $1 AND is_public;
+
+-- ---------- MODUL HR / PERUSAHAAN ----------
+-- Identitas perusahaan mitra
+CREATE TABLE companies (
+    id          SERIAL PRIMARY KEY,
+    name        VARCHAR(150) NOT NULL,
+    industry    VARCHAR(100),
+    website     VARCHAR(255),
+    description TEXT,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER trg_companies_updated_at
+    BEFORE UPDATE ON companies
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- Relasi user HR dengan perusahaan & role/jabatan di tim
+CREATE TABLE company_recruiters (
+    id          SERIAL PRIMARY KEY,
+    company_id  INT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    user_id     INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role_title  VARCHAR(100) DEFAULT 'Recruiter',
+    status      VARCHAR(20) NOT NULL DEFAULT 'active', -- active, inactive
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (company_id, user_id)
+);
+
+CREATE INDEX idx_company_recruiters_company ON company_recruiters (company_id);
+CREATE INDEX idx_company_recruiters_user ON company_recruiters (user_id);
+
+CREATE TRIGGER trg_company_recruiters_updated_at
+    BEFORE UPDATE ON company_recruiters
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- Lowongan / Target Roles yang dibuka perusahaan
+CREATE TABLE job_vacancies (
+    id              SERIAL PRIMARY KEY,
+    company_id      INT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    career_id       INT REFERENCES careers(id) ON DELETE SET NULL,
+    title           VARCHAR(150) NOT NULL,
+    positions       INT NOT NULL DEFAULT 1,
+    status          VARCHAR(20) NOT NULL DEFAULT 'active', -- active, inactive, closed
+    description     TEXT,
+    requirements    TEXT,
+    created_by      INT REFERENCES users(id) ON DELETE SET NULL,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_job_vacancies_company ON job_vacancies (company_id);
+CREATE INDEX idx_job_vacancies_career ON job_vacancies (career_id);
+CREATE INDEX idx_job_vacancies_status ON job_vacancies (status);
+
+CREATE TRIGGER trg_job_vacancies_updated_at
+    BEFORE UPDATE ON job_vacancies
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- Status seleksi kandidat mahasiswa oleh HR
+CREATE TABLE candidate_pipelines (
+    id              SERIAL PRIMARY KEY,
+    company_id      INT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    vacancy_id      INT REFERENCES job_vacancies(id) ON DELETE SET NULL,
+    user_id         INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status          VARCHAR(20) NOT NULL DEFAULT 'Shortlisted', -- Shortlisted, Interview, Accepted, Rejected
+    notes           TEXT,
+    updated_by      INT REFERENCES users(id) ON DELETE SET NULL,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (company_id, user_id, vacancy_id)
+);
+
+CREATE INDEX idx_candidate_pipelines_company ON candidate_pipelines (company_id);
+CREATE INDEX idx_candidate_pipelines_user ON candidate_pipelines (user_id);
+CREATE INDEX idx_candidate_pipelines_status ON candidate_pipelines (status);
+
+CREATE TRIGGER trg_candidate_pipelines_updated_at
+    BEFORE UPDATE ON candidate_pipelines
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- Riwayat aktivitas tim HR di perusahaan
+CREATE TABLE recruiter_activity_logs (
+    id              SERIAL PRIMARY KEY,
+    company_id      INT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    user_id         INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    action_type     VARCHAR(50) NOT NULL, -- 'candidate_shortlist', 'candidate_interview', 'vacancy_created', dll
+    target_type     VARCHAR(50), -- 'candidate', 'vacancy', 'team'
+    target_id       INT,
+    description     TEXT,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_recruiter_activity_logs_company ON recruiter_activity_logs (company_id);
+CREATE INDEX idx_recruiter_activity_logs_user ON recruiter_activity_logs (user_id);
+CREATE INDEX idx_recruiter_activity_logs_created ON recruiter_activity_logs (created_at DESC);
