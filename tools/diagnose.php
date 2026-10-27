@@ -1,5 +1,11 @@
 <?php
-// Diagnostic script untuk debug error 500
+// tools/diagnose.php - Diagnostic script untuk debug error 500
+// Guard: hanya boleh dijalankan via CLI
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    exit('Forbidden: This script can only be run from command line');
+}
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 

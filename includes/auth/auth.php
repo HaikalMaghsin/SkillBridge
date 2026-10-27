@@ -11,9 +11,19 @@ require_once __DIR__ . '/csrf.php';
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../config/database.php';
 
-/** Mode demo: hanya aktif jika APP_DEMO=1. Default MATI. */
+/** Mode demo: hanya aktif jika APP_DEMO=1 DAN host adalah localhost/127.0.0.1. Default MATI. */
 function demo_mode() {
-    return getenv('APP_DEMO') === '1';
+    if (getenv('APP_DEMO') !== '1') {
+        return false;
+    }
+
+    // Hanya boleh aktif di localhost/127.0.0.1
+    $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '';
+    $is_local = in_array($host, ['localhost', '127.0.0.1', 'localhost:8000', '127.0.0.1:8000'], true)
+                || strpos($host, 'localhost:') === 0
+                || strpos($host, '127.0.0.1:') === 0;
+
+    return $is_local;
 }
 
 function db_role_to_app_role($role) {
