@@ -377,74 +377,102 @@ const API = (() => {
     return seeded;
   }
 
-  // ============ RECRUITER: Company & Team (Dummy - akan diganti backend) ============
-
-  const REC_LS = {
-    company: "sb.rec.company",
-    team: "sb.rec.team",
-    roles: "sb.rec.roles",
-    activity: "sb.rec.activity",
-    candidates: "sb.rec.candidates",
-  };
+  // ============ RECRUITER: Company & Team (Backend PostgreSQL) ============
 
   async function getRecruiterCompany() {
-    return readRecCollection("company", "../data/recruiter-company.json");
+    return await fetchAPI('hr/company.php');
+  }
+
+  async function updateRecruiterCompany(data) {
+    return await fetchAPI('hr/company.php', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
   }
 
   async function getRecruiterTeam() {
-    return readRecCollection("team", "../data/recruiter-team.json");
+    return await fetchAPI('hr/team.php');
+  }
+
+  async function addRecruiterTeamMember(data) {
+    return await fetchAPI('hr/team.php', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async function updateRecruiterTeamMember(data) {
+    return await fetchAPI('hr/team.php', {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async function removeRecruiterTeamMember(id) {
+    return await fetchAPI('hr/team.php', {
+      method: 'DELETE',
+      body: JSON.stringify({ id })
+    });
   }
 
   async function getRecruiterRoles() {
-    return readRecCollection("roles", "../data/recruiter-roles.json");
+    return await fetchAPI('hr/roles.php');
+  }
+
+  async function createRecruiterRole(data) {
+    return await fetchAPI('hr/roles.php', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async function updateRecruiterRole(data) {
+    return await fetchAPI('hr/roles.php', {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async function deleteRecruiterRole(id) {
+    return await fetchAPI('hr/roles.php', {
+      method: 'DELETE',
+      body: JSON.stringify({ id })
+    });
   }
 
   async function getRecruiterActivity() {
-    return readRecCollection("activity", "../data/recruiter-activity.json");
+    return await fetchAPI('hr/activity.php');
   }
 
   async function getRecruiterCandidates() {
-    return readRecCollection("candidates", "../data/recruiter-candidates.json");
+    return await fetchAPI('hr/candidates.php');
   }
 
-  async function setRecruiterStatus(id, status) {
-    const list = await getRecruiterTeam();
-    const item = list.find((r) => r.id === id);
-    if (!item) return list;
-    item.status = status;
-    localStorage.setItem(REC_LS.team, JSON.stringify(list));
-    return list;
-  }
-
-  async function removeRecruiterRecord(id) {
-    const list = (await getRecruiterTeam()).filter((r) => r.id !== id);
-    localStorage.setItem(REC_LS.team, JSON.stringify(list));
-    return list;
+  async function updateCandidateStatus(data) {
+    return await fetchAPI('hr/candidates.php', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
   }
 
   async function getRecruiterStats() {
-    const [team, roles, candidates] = await Promise.all([
-      getRecruiterTeam(),
-      getRecruiterRoles(),
-      getRecruiterCandidates(),
-    ]);
-    return {
-      teamSize: team.length,
-      activeRecruiters: team.filter((t) => t.status === "active").length,
-      openRoles: roles.length,
-      totalPositions: roles.reduce((s, r) => s + (r.positions || 0), 0),
-      pipelineCandidates: candidates.length,
+    const data = await getRecruiterCompany();
+    return data.metrics || {
+      teamSize: 0,
+      activeRecruiters: 0,
+      openRoles: 0,
+      totalPositions: 0,
+      pipelineCandidates: 0
     };
   }
 
-  async function readRecCollection(name, url) {
-    const raw = localStorage.getItem(REC_LS[name]);
-    if (raw !== null) return JSON.parse(raw);
-    const base = getBaseUrl();
-    const res = await fetch(`${base}/${url}`);
-    const seeded = await res.json();
-    localStorage.setItem(REC_LS[name], JSON.stringify(seeded));
-    return seeded;
+  // Legacy compatibility
+  async function setRecruiterStatus(id, status) {
+    return await updateRecruiterTeamMember({ id, status });
+  }
+
+  async function removeRecruiterRecord(id) {
+    return await removeRecruiterTeamMember(id);
   }
 
   // ============ Export API ============
@@ -512,13 +540,30 @@ const API = (() => {
 
     // Recruiter
     getRecruiterCompany,
+    updateRecruiterCompany,
     getRecruiterTeam,
+    addRecruiterTeamMember,
+    updateRecruiterTeamMember,
+    removeRecruiterTeamMember,
     getRecruiterRoles,
+    createRecruiterRole,
+    updateRecruiterRole,
+    deleteRecruiterRole,
     getRecruiterActivity,
     getRecruiterCandidates,
+    updateCandidateStatus,
     setRecruiterStatus,
     removeRecruiterRecord,
     getRecruiterStats,
+
+    // Admin - Vacancies
+    getVacancies: async () => await fetchAPI('admin/vacancies.php'),
+    updateVacancyStatus: async (data) => await fetchAPI('admin/vacancies.php', { method: 'PUT', body: JSON.stringify(data) }),
+    deleteVacancy: async (id) => await fetchAPI('admin/vacancies.php', { method: 'DELETE', body: JSON.stringify({ id }) }),
+
+    // CV Processing
+    extractCVSkills: async (data) => await fetchAPI('cv.php', { method: 'POST', body: JSON.stringify(data) }),
+    confirmCVSkills: async (data) => await fetchAPI('cv.php', { method: 'PUT', body: JSON.stringify(data) }),
   };
 })();
 
