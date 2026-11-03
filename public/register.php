@@ -3,55 +3,74 @@
 // Halaman Registrasi Mahasiswa Baru
 require_once __DIR__ . '/../includes/auth/auth.php';
 
+if (is_logged_in()) {
+    redirect_to_dashboard(get_user_role());
+}
+
 $page_title = 'Register · SkillBridge';
 $role = 'public';
 $path_prefix = '';
 $error = '';
-$success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
     $email = strtolower(trim($_POST['email'] ?? ''));
-    $password = $_POST['password'] ?? '';
+    $password = (string) ($_POST['password'] ?? '');
 
-    if (empty($name) || empty($email) || empty($password)) {
+    if (!csrf_verify()) {
+        $error = 'Sesi formulir kedaluwarsa. Muat ulang halaman lalu coba lagi.';
+    } elseif ($name === '' || $email === '' || $password === '') {
         $error = 'Semua field wajib diisi.';
-    } elseif (strlen($password) < 8) {
-        $error = 'Kata sandi minimal harus 8 karakter.';
+    } elseif (mb_strlen($name) > 100 || strlen($email) > 150) {
+        $error = 'Nama maksimal 100 karakter dan email maksimal 150 karakter.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Format email tidak valid.';
+    } elseif (strlen($password) < 8) {
+        $error = 'Kata sandi minimal harus 8 karakter.';
+    } elseif (strlen($password) > 72) {
+        // bcrypt hanya memakai 72 byte pertama
+        $error = 'Kata sandi maksimal 72 karakter.';
     } else {
         $pdo = get_db_connection();
-        if ($pdo) {
+        if (!$pdo) {
+            $error = 'Layanan pendaftaran sedang tidak tersedia. Coba lagi beberapa saat lagi.';
+        } else {
             try {
-                // Cek email duplikat
-                $stmt = $pdo->prepare('SELECT id FROM users WHERE LOWER(email) = :email LIMIT 1');
-                $stmt->execute([':email' => $email]);
-                if ($stmt->fetch()) {
+                $pdo->beginTransaction();
+                $ins = $pdo->prepare(
+                    'INSERT INTO users (name, email, password_hash, role)
+                     VALUES (:name, :email, :hash, :role) RETURNING id'
+                );
+                $ins->execute([
+                    ':name'  => $name,
+                    ':email' => $email,
+                    ':hash'  => password_hash($password, PASSWORD_DEFAULT),
+                    ':role'  => app_role_to_db_role('mahasiswa'), // 'user'
+                ]);
+                $user_id = (int) $ins->fetchColumn();
+
+                // Setiap mahasiswa punya satu baris profil (target karier diisi kemudian).
+                $pdo->prepare('INSERT INTO student_profiles (user_id) VALUES (:id)')
+                    ->execute([':id' => $user_id]);
+                $pdo->commit();
+
+                $result = attempt_login($email, $password);
+                if ($result['success']) {
+                    redirect_to_dashboard($result['role'], $path_prefix);
+                }
+                header('Location: ' . base_url('login.php'));
+                exit;
+            } catch (PDOException $e) {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+                if ($e->getCode() === '23505') { // unique_violation (email)
                     $error = 'Email ini sudah terdaftar. Silakan login.';
                 } else {
-                    $hash = password_hash($password, PASSWORD_DEFAULT);
-                    $ins = $pdo->prepare('INSERT INTO users (name, email, password_hash, role) VALUES (:name, :email, :hash, :role)');
-                    $ins->execute([
-                        ':name' => $name,
-                        ':email' => $email,
-                        ':hash' => $hash,
-                        ':role' => 'mahasiswa',
-                    ]);
-                    attempt_login($email, $password);
-                    header('Location: mahasiswa/dashboard.php');
-                    exit;
+                    error_log('Register error: ' . $e->getMessage());
+                    $error = 'Terjadi kesalahan sistem saat mendaftar.';
                 }
-            } catch (Exception $e) {
-                error_log('Register error: ' . $e->getMessage());
-                $error = 'Terjadi kesalahan sistem saat mendaftar.';
             }
-        } else {
-            // Mode fallback tanpa DB: langsung buat sesi mahasiswa
-            attempt_login($email, $password);
-            $_SESSION['user']['name'] = $name;
-            header('Location: mahasiswa/dashboard.php');
-            exit;
         }
     }
 }
@@ -70,26 +89,26 @@ require_once __DIR__ . '/../includes/layouts/head.php';
 
         <?php if (!empty($error)): ?>
           <div style="background: #FEF2F2; color: #991B1B; border: 1px solid #F87171; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px;">
-            <?= htmlspecialchars($error) ?>
+            <?= e($error) ?>
           </div>
         <?php endif; ?>
 
-        <form id="register-form" method="POST" action="register.php" style="display: grid; gap: 16px">
-          <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(get_csrf_token()) ?>" />
+        <form id="register-form" method="POST" action="<?= e(base_url('register.php')) ?>" style="display: grid; gap: 16px">
+          <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>" />
 
           <div class="field">
             <label for="name">Full name</label>
-            <input type="text" id="name" name="name" placeholder="Jhon Doe" required value="<?= htmlspecialchars($_POST['name'] ?? '') ?>" />
+            <input type="text" id="name" name="name" placeholder="Jhon Doe" required maxlength="100" autocomplete="name" value="<?= e($_POST['name'] ?? '') ?>" />
           </div>
 
           <div class="field">
             <label for="email">Email address</label>
-            <input type="email" id="email" name="email" placeholder="you@example.com" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" />
+            <input type="email" id="email" name="email" placeholder="you@example.com" required maxlength="150" autocomplete="email" value="<?= e($_POST['email'] ?? '') ?>" />
           </div>
 
           <div class="field">
             <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="At least 8 characters" minlength="8" required />
+            <input type="password" id="password" name="password" placeholder="At least 8 characters" minlength="8" maxlength="72" required autocomplete="new-password" />
           </div>
 
           <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; height: 44px">Create Account</button>
@@ -102,8 +121,8 @@ require_once __DIR__ . '/../includes/layouts/head.php';
       </article>
     </main>
 
-    <script src="<?= asset('js/ui.js') ?>"></script>
-    <script src="<?= asset('js/api.js') ?>"></script>
-    <script src="<?= asset('js/pages/register.js') ?>"></script>
+    <script src="<?= e(asset('js/ui.js')) ?>"></script>
+    <script src="<?= e(asset('js/api.js')) ?>"></script>
+    <script src="<?= e(asset('js/pages/register.js')) ?>"></script>
   </body>
 </html>

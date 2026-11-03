@@ -24,6 +24,7 @@ const UI = (() => {
       if (key === "class") node.className = value;
       else if (key === "text") node.textContent = value;
       else if (key === "onClick") node.addEventListener("click", value);
+      // HANYA untuk markup statis tepercaya (mis. ikon SVG). Jangan isi dengan data pengguna/API.
       else if (key === "innerHTML") node.innerHTML = value;
       else node.setAttribute(key, value);
     }
@@ -58,14 +59,23 @@ const UI = (() => {
   function modal({ title, body = [], submitLabel = "Save", cancelLabel = "Cancel", onSubmit }) {
     const previouslyFocused = document.activeElement;
 
-    const form = el("form", { class: "modal-form", novalidate: "novalidate" }, body);
     const cancelBtn = el("button", { type: "button", class: "btn btn-secondary", text: cancelLabel, onClick: () => close() });
     const submitBtn = el("button", { type: "submit", class: "btn btn-accent", text: submitLabel });
 
+    const form = el("form", { class: "modal-form", novalidate: "novalidate" }, [
+      ...body,
+      el("div", { class: "modal-actions" }, [cancelBtn, submitBtn])
+    ]);
+
+    // TAMBAHAN: Click handler langsung di button sebagai fallback
+    submitBtn.addEventListener("click", async (event) => {
+      console.log('[UI.modal] Button clicked directly'); // DEBUG
+      console.log('[UI.modal] Button.form:', event.target.form); // DEBUG
+    });
+
     const dialog = el("div", { class: "modal", role: "dialog", "aria-modal": "true", "aria-label": title }, [
       el("h3", { class: "modal-title", text: title }),
-      form,
-      el("div", { class: "modal-actions" }, [cancelBtn, submitBtn]),
+      form
     ]);
 
     const overlay = el("div", { class: "modal-overlay" }, [dialog]);
@@ -106,10 +116,44 @@ const UI = (() => {
       if (event.target === overlay) close();
     });
 
-    form.addEventListener("submit", (event) => {
+    form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      if (onSubmit && onSubmit(close, form) === false) return;
-      close();
+      event.stopPropagation(); // Prevent bubbling
+
+      console.log('[UI.modal] Form submit triggered'); // DEBUG
+
+      if (!onSubmit) {
+        console.log('[UI.modal] No onSubmit, closing'); // DEBUG
+        close();
+        return;
+      }
+
+      // Disable submit button saat processing
+      submitBtn.disabled = true;
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = "Processing...";
+
+      console.log('[UI.modal] Calling onSubmit...'); // DEBUG
+
+      try {
+        const result = await onSubmit(close, form);
+        console.log('[UI.modal] onSubmit result:', result); // DEBUG
+
+        if (result === false) {
+          // onSubmit return false = jangan close
+          console.log('[UI.modal] Not closing (result=false)'); // DEBUG
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+          return;
+        }
+        console.log('[UI.modal] Closing modal'); // DEBUG
+        close();
+      } catch (err) {
+        console.error('[UI.modal] Submit error:', err);
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        // Jangan close jika error
+      }
     });
 
     document.addEventListener("keydown", onKeydown);
@@ -152,6 +196,21 @@ const UI = (() => {
         el("div", { class: "navbar-profile-email", text: "jhondoe@gmail.com" }),
       ]),
       el("div", { class: "navbar-avatar", text: "JD" }),
+      el("button", {
+        type: "button",
+        class: "navbar-logout-btn",
+        "aria-label": "Logout",
+        title: "Logout",
+        onClick: () => {
+          // Bersihkan localStorage sebelum redirect
+          localStorage.removeItem('sb.mySkills');
+          localStorage.removeItem('sb.myEvidence');
+          localStorage.removeItem('sb.targetCareer');
+          localStorage.removeItem('sb.profile');
+          localStorage.removeItem('sb.portfolioVisibility');
+          window.location.href = `${base}/logout.php`;
+        },
+      }),
     ]);
 
     const toggle = el("button", {

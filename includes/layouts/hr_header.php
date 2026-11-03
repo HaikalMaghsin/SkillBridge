@@ -3,7 +3,7 @@
 // Header Konsol HR / Recruiter
 require_once __DIR__ . '/../config/app.php';
 
-$user = current_user() ?? login_demo_user('hr');
+$user = current_user() ?? [];
 $rec_title = $rec_title ?? 'Perusahaan Partner';
 ?>
 <header class="rec-header">

@@ -168,7 +168,7 @@
     };
 
     try {
-      await API.createEvidence(payload);
+      await API.addEvidence(payload);
       UI.toast("Bukti berhasil disimpan!");
       closeModal();
       location.reload();

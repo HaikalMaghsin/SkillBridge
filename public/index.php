@@ -779,7 +779,7 @@ require_once __DIR__ . '/../includes/layouts/head.php';
 
     <?php require_once __DIR__ . '/../includes/layouts/public_footer.php'; ?>
 
-    <script src="<?= asset('js/ui.js') ?>"></script>
-    <script src="<?= asset('js/landing.js') ?>"></script>
+    <script src="<?= e(asset('js/ui.js')) ?>"></script>
+    <script src="<?= e(asset('js/landing.js')) ?>"></script>
   </body>
 </html>
