@@ -94,6 +94,15 @@ try {
         $metadata = $input['metadata'] ?? [];
         $skill_ids = $input['skill_ids'] ?? [];
 
+        // Jika skill_ids kosong tapi ada skill names di metadata, convert ke IDs
+        if (empty($skill_ids) && !empty($metadata['skills']) && is_array($metadata['skills'])) {
+            $skillNames = $metadata['skills'];
+            $placeholders = str_repeat('?,', count($skillNames) - 1) . '?';
+            $stmt = $pdo->prepare("SELECT id FROM skills WHERE name IN ($placeholders)");
+            $stmt->execute($skillNames);
+            $skill_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        }
+
         // Validasi input
         if (!$source_type || !$title) {
             http_response_code(400);
@@ -157,6 +166,73 @@ try {
                 'success' => true,
                 'id' => $evidence_id,
                 'message' => 'Evidence added'
+            ]);
+            exit;
+
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    // PUT: Update evidence skill links
+    if ($method === 'PUT') {
+        if (!csrf_verify()) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Invalid CSRF token']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $evidence_id = isset($input['id']) ? (int)$input['id'] : null;
+        $skill_ids = $input['skill_ids'] ?? [];
+
+        if (!$evidence_id) {
+            http_response_code(400);
+            echo json_encode(['error' => 'id required']);
+            exit;
+        }
+
+        // Verify ownership
+        $stmt = $pdo->prepare('SELECT user_id FROM evidence WHERE id = :evidence_id');
+        $stmt->execute([':evidence_id' => $evidence_id]);
+        $evidence = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$evidence || $evidence['user_id'] != $user_id) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Evidence not found']);
+            exit;
+        }
+
+        // Update skill links
+        $pdo->beginTransaction();
+
+        try {
+            // Delete existing links
+            $stmt = $pdo->prepare('DELETE FROM evidence_skills WHERE evidence_id = :evidence_id');
+            $stmt->execute([':evidence_id' => $evidence_id]);
+
+            // Insert new links
+            if (!empty($skill_ids) && is_array($skill_ids)) {
+                $stmtInsert = $pdo->prepare('
+                    INSERT INTO evidence_skills (evidence_id, skill_id)
+                    VALUES (:evidence_id, :skill_id)
+                    ON CONFLICT DO NOTHING
+                ');
+
+                foreach ($skill_ids as $skill_id) {
+                    $stmtInsert->execute([
+                        ':evidence_id' => $evidence_id,
+                        ':skill_id' => (int)$skill_id
+                    ]);
+                }
+            }
+
+            $pdo->commit();
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Evidence skills updated'
             ]);
             exit;
 

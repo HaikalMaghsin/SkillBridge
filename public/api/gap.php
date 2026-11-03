@@ -72,7 +72,7 @@ try {
         LEFT JOIN evidence_skills es ON es.skill_id = vsg.skill_id
         LEFT JOIN evidence e ON e.id = es.evidence_id AND e.user_id = vsg.user_id
         WHERE vsg.user_id = :user_id AND vsg.has_skill = TRUE
-        GROUP BY vsg.skill_id, vsg.skill_name, s.category
+        GROUP BY vsg.skill_id, vsg.skill_name, s.category, s.name
         ORDER BY s.name
     ');
     $stmt->execute([':user_id' => $user_id]);
@@ -87,6 +87,7 @@ try {
         FROM v_skill_gap vsg
         JOIN skills s ON s.id = vsg.skill_id
         WHERE vsg.user_id = :user_id AND vsg.has_skill = FALSE
+        GROUP BY vsg.skill_id, vsg.skill_name, s.category, s.name
         ORDER BY s.name
     ');
     $stmt->execute([':user_id' => $user_id]);
