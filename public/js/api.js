@@ -94,6 +94,14 @@ const API = (() => {
   const addSkill = addMySkill;
   const removeSkill = removeMySkill;
 
+  // PUT api/evidence.php { id, skill_ids } - Update skill links for evidence
+  async function updateEvidenceSkills(evidenceId, skillIds) {
+    return await fetchAPI('evidence.php', {
+      method: 'PUT',
+      body: JSON.stringify({ id: evidenceId, skill_ids: skillIds })
+    });
+  }
+
   // ============ MAHASISWA: Evidence ============
 
   // GET api/evidence.php
@@ -495,6 +503,7 @@ const API = (() => {
     getEvidence,
     addEvidence,
     removeEvidence,
+    updateEvidenceSkills,
 
     // Target Career
     getTargetCareer,
