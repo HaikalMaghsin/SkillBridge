@@ -3152,3 +3152,70 @@ body.landing {
     padding: 20px 16px !important;
   }
 }
+/* Button Icon Edit */
+.btn-icon-edit {
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+}
+
+.btn-icon-edit:hover {
+  background: var(--tint-gray) !important;
+  color: var(--primary);
+}
+
+/* Badge Variants */
+.badge-strong {
+  background: var(--tint-blue);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.badge-growing {
+  background: var(--tint-pink);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* Modal Footer Layout */
+.modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.modal-actions .btn-danger {
+  background: #EF4444;
+  color: white;
+  border: none;
+}
+
+.modal-actions .btn-danger:hover {
+  background: #DC2626;
+}
+
+/* Field Styling */
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.field select,
+.field input[type="text"] {
+  font-family: inherit;
+}
+
+.field-error {
+  color: #EF4444;
+  font-size: 13px;
+  margin-top: 4px;
+}

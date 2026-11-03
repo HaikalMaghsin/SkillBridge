@@ -1,16 +1,16 @@
-// dashboard.js - render dashboard sesuai Figma spec
+﻿// dashboard.js - render dashboard sesuai Figma spec
 
 (async () => {
   const { el } = UI;
-  const [careers, catalog, gap, evidence] = await Promise.all([
+  const [careers, catalog, gap, evidence, mine, targetId] = await Promise.all([
     API.getCareers(),
     API.getSkillCatalog(),
     API.getSkillGap(),
     API.getEvidence(),
+    API.getMySkills(),
+    API.getTargetCareer(),
   ]);
 
-  const mine = API.getMySkills();
-  const targetId = API.getTargetId();
   const target = careers.find((c) => c.id === targetId) || careers[0];
 
   // Card: Target Career
@@ -33,7 +33,11 @@
       ? el("div", { style: "display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px" },
           mySkillNames.map((name) => {
             const chip = el("div", { class: "tag-chip", style: "display: inline-flex; align-items: center; gap: 7px; background: var(--tint-gray); border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; color: var(--primary-dark)" });
-            chip.innerHTML = `<span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--primary)"></span>${name}`;
+            // Nama skill bisa berasal dari input pengguna: jangan lewat innerHTML (XSS).
+            chip.append(
+              el("span", { style: "display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--primary)" }),
+              document.createTextNode(name)
+            );
             return chip;
           }))
       : null

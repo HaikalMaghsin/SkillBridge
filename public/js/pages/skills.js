@@ -1,4 +1,4 @@
-// skills.js - My Skills page
+﻿// skills.js - My Skills page
 
 (async () => {
   const { el } = UI;
@@ -29,16 +29,31 @@
       innerHTML: categoryIconSvg(skill.category),
     });
   }
-  const [careers, catalog, gap, evidence] = await Promise.all([
-    API.getCareers(),
-    API.getSkillCatalog(),
-    API.getSkillGap(),
-    API.getEvidence(),
-  ]);
+  let careers, catalog, gap, evidence, mine, targetId;
 
-  const mine = API.getMySkills();
-  const targetId = API.getTargetId();
-  const target = careers.find((c) => c.id === targetId) || careers[0];
+  try {
+    [careers, catalog, gap, evidence, mine, targetId] = await Promise.all([
+      API.getCareers(),
+      API.getSkillCatalog(),
+      API.getSkillGap(),
+      API.getEvidence(),
+      API.getMySkills(),
+      API.getTargetCareer(),
+    ]);
+  } catch (err) {
+    console.error('Error loading skills data:', err);
+    UI.toast('Error loading data. Please refresh the page.', 'error');
+
+    // Set fallback values to prevent crash
+    careers = [];
+    catalog = [];
+    gap = { explore: [], covered: [] };
+    evidence = [];
+    mine = [];
+    targetId = null;
+  }
+
+  const target = careers.find((c) => c.id === targetId) || careers[0] || { name: 'No Career Selected', description: 'Please set your target career in Profile.' };
 
   // Card: Target Career
   document.getElementById("card-target").append(
@@ -92,12 +107,15 @@
 
   // Add skill button handler
   document.getElementById("btn-add-skill").addEventListener("click", () => {
+    // Safety: Remove any stuck overlays first
+    document.querySelectorAll('.modal-overlay').forEach(el => el.remove());
     showAddSkillModal();
   });
 
   async function showAddSkillModal() {
     const catalog = await API.getSkillCatalog();
-    const mine = new Set(API.getMySkills().map((s) => s.skill_id));
+    const mySkills = await API.getMySkills();
+    const mine = new Set(mySkills.map((s) => s.skill_id));
     const available = catalog.filter((s) => !mine.has(s.id));
 
     const modeExisting = el("input", { type: "radio", id: "mode-existing", name: "mode", value: "existing", checked: true });
@@ -217,8 +235,10 @@
       ],
       submitLabel: "Add",
       onSubmit: async (close, form) => {
+        console.log('onSubmit called!'); // DEBUG
         errorEl.style.display = "none";
         const mode = form.querySelector('input[name="mode"]:checked').value;
+        console.log('Mode:', mode); // DEBUG
 
         if (mode === "existing") {
           if (!selectedSkillId) {
@@ -226,7 +246,7 @@
             errorEl.style.display = "block";
             return false;
           }
-          API.addSkill(selectedSkillId);
+          await API.addSkill(selectedSkillId);
         } else {
           const name = form.querySelector("#skill-name").value.trim();
           const category = form.querySelector("#skill-category").value;
@@ -243,7 +263,7 @@
             return false;
           }
           const skill = await API.addCustomSkill(name, category);
-          API.addSkill(skill.id);
+          await API.addSkill(skill.id);
         }
 
         UI.toast("Skill added");
@@ -253,28 +273,243 @@
     });
   }
 
-  // Render skill row: icon + name + count + badge
+  // Render skill row: icon + name + count + badge + edit button
   function renderSkillRow(skill, evidenceCount, label) {
     const badgeClass = label === "Strong" ? "badge-strong" : "badge-growing";
 
-    return el("div", { style: "display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm)" }, [
+    const row = el("div", {
+      style: "display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: all 0.2s",
+      onMouseOver: (e) => e.currentTarget.style.background = "var(--tint-gray)",
+      onMouseOut: (e) => e.currentTarget.style.background = "var(--surface)"
+    }, [
       skillAvatar(skill, { size: 44 }),
       el("div", { style: "flex: 1; min-width: 0" }, [
         el("p", { style: "font-size: 16px; font-weight: 700; color: var(--text-primary)", text: skill.name }),
         el("p", { style: "font-size: 13px; color: var(--text-muted); margin-top: 2px", text: `${evidenceCount} evidence ${evidenceCount === 1 ? "item" : "items"}` }),
       ]),
       el("span", { class: `badge ${badgeClass}`, style: "font-size: 12px; padding: 5px 10px", text: label }),
+      el("button", {
+        type: "button",
+        class: "btn-icon-edit",
+        "aria-label": "Edit skill",
+        style: "padding: 6px; border: none; background: transparent; cursor: pointer; border-radius: 6px; transition: background 0.2s",
+        innerHTML: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11.333 2A1.886 1.886 0 0 1 14 4.667l-9 9-3.667.666.667-3.666 9-9z"/></svg>`,
+        onClick: (e) => {
+          e.stopPropagation();
+          showEditSkillModal(skill);
+        }
+      })
     ]);
+
+    row.addEventListener("click", () => showEditSkillModal(skill));
+
+    return row;
   }
 
   // Render gap item: icon + skill name + action hint
   function renderGapItem(skill) {
-    return el("div", { style: "display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm)" }, [
+    const row = el("div", {
+      style: "display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s",
+      onMouseOver: (e) => e.currentTarget.style.background = "var(--tint-gray)",
+      onMouseOut: (e) => e.currentTarget.style.background = "var(--surface)"
+    }, [
       skillAvatar(skill, { size: 38, variant: "accent" }),
       el("div", { style: "flex: 1; min-width: 0" }, [
         el("p", { style: "font-size: 15px; font-weight: 700; color: var(--text-primary)", text: skill.name }),
-        el("p", { style: "font-size: 12px; color: var(--text-muted); margin-top: 2px", text: "Add 1 case study" }),
+        el("p", { style: "font-size: 12px; color: var(--text-muted); margin-top: 2px", text: "Click to add" }),
       ]),
     ]);
+
+    row.addEventListener("click", async () => {
+      try {
+        await API.addSkill(skill.id);
+        UI.toast("Skill added from gap list!");
+        setTimeout(() => window.location.reload(), 300);
+      } catch (err) {
+        UI.toast(`Error: ${err.message}`, "error");
+      }
+    });
+
+    return row;
+  }
+
+  // Modal Edit Skill
+  async function showEditSkillModal(skill) {
+    const allSkills = await API.getSkillCatalog();
+    const allEvidence = await API.getEvidence();
+    const mySkills = await API.getMySkills();
+
+    // Find current user_skill entry
+    const currentSkill = mySkills.find(s => s.skill_id === skill.id);
+
+    // Get evidence linked to this skill
+    const linkedEvidenceIds = new Set();
+    allEvidence.forEach(ev => {
+      if (ev.skill_ids && ev.skill_ids.includes(skill.id)) {
+        linkedEvidenceIds.add(ev.id);
+      }
+    });
+
+    let selectedSkillId = skill.id;
+    let selectedEvidenceIds = new Set(linkedEvidenceIds);
+
+    // Skill selector
+    const skillSelect = el("select", {
+      id: "edit-skill-select",
+      style: "width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px"
+    });
+
+    allSkills.forEach(s => {
+      const option = el("option", { value: s.id, text: s.name });
+      if (s.id === skill.id) option.selected = true;
+      skillSelect.appendChild(option);
+    });
+
+    skillSelect.addEventListener("change", (e) => {
+      selectedSkillId = Number(e.target.value);
+    });
+
+    // Evidence checkboxes
+    const evidenceList = el("div", { style: "display: grid; gap: 8px; max-height: 300px; overflow-y: auto" });
+
+    if (allEvidence.length === 0) {
+      evidenceList.append(el("p", { style: "color: var(--text-muted); font-size: 14px; padding: 12px; text-align: center", text: "No evidence yet. Add evidence first to link with skills." }));
+    } else {
+      allEvidence.forEach(ev => {
+        const isLinked = linkedEvidenceIds.has(ev.id);
+        const checkbox = el("input", { type: "checkbox", id: `ev-${ev.id}`, checked: isLinked });
+
+        checkbox.addEventListener("change", (e) => {
+          if (e.target.checked) {
+            selectedEvidenceIds.add(ev.id);
+          } else {
+            selectedEvidenceIds.delete(ev.id);
+          }
+          updateStatusPreview();
+        });
+
+        const label = el("label", {
+          for: `ev-${ev.id}`,
+          style: "display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: background 0.2s",
+          onMouseOver: (e) => e.currentTarget.style.background = "var(--tint-gray)",
+          onMouseOut: (e) => e.currentTarget.style.background = "transparent"
+        }, [
+          checkbox,
+          el("div", { style: "flex: 1" }, [
+            el("p", { style: "font-size: 14px; font-weight: 600", text: ev.title }),
+            el("p", { style: "font-size: 12px; color: var(--text-muted)", text: ev.source_type })
+          ])
+        ]);
+
+        evidenceList.append(label);
+      });
+    }
+
+    // Status preview
+    const statusBadge = el("span", {
+      id: "status-preview",
+      class: "badge",
+      style: "font-size: 13px; padding: 6px 12px"
+    });
+
+    function updateStatusPreview() {
+      const count = selectedEvidenceIds.size;
+      const isStrong = count >= 2;
+      statusBadge.className = `badge ${isStrong ? "badge-strong" : "badge-growing"}`;
+      statusBadge.textContent = isStrong ? "Strong" : "Growing";
+    }
+
+    updateStatusPreview();
+
+    const errorEl = el("p", { class: "field-error", style: "display: none; color: var(--danger); font-size: 13px; margin-top: 8px" });
+
+    UI.modal({
+      title: "Edit Skill",
+      body: [
+        el("div", { class: "field" }, [
+          el("label", { for: "edit-skill-select", text: "Change Skill" }),
+          skillSelect
+        ]),
+        el("div", { class: "field", style: "margin-top: 20px" }, [
+          el("label", { text: "Linked Evidence" }),
+          el("p", { style: "font-size: 13px; color: var(--text-muted); margin-bottom: 12px", text: "Select evidence that demonstrates this skill" }),
+          evidenceList
+        ]),
+        el("div", { style: "margin-top: 16px; padding: 12px; background: var(--tint-gray); border-radius: var(--radius); display: flex; align-items: center; justify-content: space-between" }, [
+          el("span", { style: "font-size: 14px; font-weight: 600", text: "Status Preview:" }),
+          statusBadge
+        ]),
+        errorEl
+      ],
+      submitLabel: "Save Changes",
+      cancelLabel: "Cancel",
+      onSubmit: async (close, form) => {
+        errorEl.style.display = "none";
+
+        try {
+          // If skill changed, remove old and add new
+          if (selectedSkillId !== skill.id) {
+            await API.removeSkill(skill.id);
+            await API.addSkill(selectedSkillId);
+          }
+
+          // Update evidence links for the skill
+          for (const ev of allEvidence) {
+            const wasLinked = linkedEvidenceIds.has(ev.id);
+            const isNowLinked = selectedEvidenceIds.has(ev.id);
+
+            if (wasLinked !== isNowLinked) {
+              // Rebuild skill_ids for this evidence
+              const newSkillIds = [...(ev.skill_ids || [])];
+
+              if (isNowLinked && !newSkillIds.includes(selectedSkillId)) {
+                newSkillIds.push(selectedSkillId);
+              } else if (!isNowLinked) {
+                const idx = newSkillIds.indexOf(selectedSkillId);
+                if (idx > -1) newSkillIds.splice(idx, 1);
+              }
+
+              await API.updateEvidenceSkills(ev.id, newSkillIds);
+            }
+          }
+
+          UI.toast("Skill updated successfully!");
+          setTimeout(() => window.location.reload(), 300);
+          return true;
+
+        } catch (err) {
+          errorEl.textContent = `Error: ${err.message}`;
+          errorEl.style.display = "block";
+          return false;
+        }
+      }
+    });
+
+    // Add delete button to modal footer
+    setTimeout(() => {
+      const modalActions = document.querySelector('.modal-actions');
+      if (modalActions) {
+        const deleteBtn = el("button", {
+          type: "button",
+          class: "btn btn-danger",
+          text: "Delete Skill",
+          style: "margin-right: auto",
+          onClick: async () => {
+            if (!confirm(`Remove "${skill.name}" from your skills?`)) return;
+
+            try {
+              await API.removeSkill(skill.id);
+              UI.toast("Skill removed");
+              close();
+              setTimeout(() => window.location.reload(), 300);
+            } catch (err) {
+              alert(`Error: ${err.message}`);
+            }
+          }
+        });
+
+        modalActions.insertBefore(deleteBtn, modalActions.firstChild);
+      }
+    }, 10);
   }
 })();
