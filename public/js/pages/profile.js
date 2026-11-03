@@ -3,41 +3,44 @@
 (async () => {
   const { el } = UI;
 
-  // ---- Profile data (localStorage dummy; backend replaces via api.js) ----
-  const LS_PROFILE = "sb.profile";
-  const LS_VISIBILITY = "sb.portfolioVisibility";
+  // ---- Profile data (loaded from API backend) ----
+  let profile = {};
 
-  function readProfile() {
-    const raw = localStorage.getItem(LS_PROFILE);
-    if (raw) return JSON.parse(raw);
-    // Backend: defaults from PHP session; profile.js merges localStorage edits
-    const nameEl = document.getElementById("detail-fullname");
-    const emailEl = document.getElementById("detail-email");
-    return {
-      name: nameEl ? nameEl.textContent : "Student",
-      email: emailEl ? emailEl.textContent : "student@example.com",
-      institution: "Politeknik Negeri Malang",
-      program: "Information Technology",
-      semester: "3",
-      location: "Malang, Indonesia",
-      memberSince: "January 2026",
-      photo: null,
-    };
+  // Load profile from API
+  async function loadProfile() {
+    try {
+      const data = await API.getProfile();
+      profile = {
+        name: data.name,
+        email: data.email,
+        institution: "Politeknik Negeri Malang", // TODO: add to backend
+        program: "Information Technology",
+        semester: "3",
+        location: "Malang, Indonesia",
+        memberSince: "January 2026",
+        photo: null,
+        is_public: data.is_public || false,
+        public_url: data.public_url || null
+      };
+      return profile;
+    } catch (err) {
+      console.error('Failed to load profile:', err);
+      return {
+        name: "Student",
+        email: "student@example.com",
+        institution: "Politeknik Negeri Malang",
+        program: "Information Technology",
+        semester: "3",
+        location: "Malang, Indonesia",
+        memberSince: "January 2026",
+        photo: null,
+        is_public: false
+      };
+    }
   }
 
-  function saveProfile(p) {
-    localStorage.setItem(LS_PROFILE, JSON.stringify(p));
-  }
-
-  function readVisibility() {
-    return localStorage.getItem(LS_VISIBILITY) || "Public";
-  }
-
-  function saveVisibility(v) {
-    localStorage.setItem(LS_VISIBILITY, v);
-  }
-
-  let profile = readProfile();
+  // Wait for profile to load
+  await loadProfile();
 
   // ---- Load dynamic counts ----
   const [careers, mine, evidence, targetId] = await Promise.all([
@@ -74,7 +77,7 @@
     $("detail-semester").textContent = profile.semester;
     $("detail-location").textContent = profile.location;
     $("detail-member-since").textContent = profile.memberSince;
-    $("detail-visibility").textContent = readVisibility();
+    $("detail-visibility").textContent = profile.is_public ? "Public" : "Private";
 
     // Portfolio overview counts (real data, not mockup numbers)
     $("summary-skills").textContent = String(mine.length);
@@ -116,31 +119,44 @@
       title: "Edit Personal Information",
       body,
       submitLabel: "Save changes",
-      onSubmit: (close) => {
+      onSubmit: async (close) => {
+        errorEl.style.display = "none";
+
         const name = inputs["edit-name"].value.trim();
         const email = inputs["edit-email"].value.trim();
+
         if (!name || !email) {
           errorEl.textContent = "Name and email are required.";
           errorEl.style.display = "block";
           return false;
         }
+
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           errorEl.textContent = "Enter a valid email address.";
           errorEl.style.display = "block";
           return false;
         }
-        profile = {
-          ...profile,
-          name,
-          email,
-          institution: inputs["edit-institution"].value.trim(),
-          program: inputs["edit-program"].value.trim(),
-          semester: inputs["edit-semester"].value.trim(),
-          location: inputs["edit-location"].value.trim(),
-        };
-        saveProfile(profile);
-        // Backend: POST api/profile.php when backend ready
-        render();
+
+        try {
+          // Call backend API
+          await API.updateProfile({ name, email });
+
+          // Update local state
+          profile.name = name;
+          profile.email = email;
+          profile.institution = inputs["edit-institution"].value.trim();
+          profile.program = inputs["edit-program"].value.trim();
+          profile.semester = inputs["edit-semester"].value.trim();
+          profile.location = inputs["edit-location"].value.trim();
+
+          render();
+          UI.toast("Profile updated successfully!");
+          return true;
+        } catch (err) {
+          errorEl.textContent = err.message || "Failed to update profile";
+          errorEl.style.display = "block";
+          return false;
+        }
         UI.toast("Profile updated");
         return true;
       },
@@ -163,33 +179,43 @@
         errorEl,
       ],
       submitLabel: "Update password",
-      onSubmit: (close) => {
+      onSubmit: async (close) => {
         errorEl.style.display = "none";
+
         if (!cur.value || !next.value) {
           errorEl.textContent = "Fill in all password fields.";
           errorEl.style.display = "block";
           return false;
         }
+
         if (next.value.length < 6) {
           errorEl.textContent = "New password must be at least 6 characters.";
           errorEl.style.display = "block";
           return false;
         }
+
         if (next.value !== confirm.value) {
           errorEl.textContent = "Passwords do not match.";
           errorEl.style.display = "block";
           return false;
         }
-        // Backend: POST api/auth/password.php with CSRF; dummy mode just acknowledges
-        UI.toast("Password updated");
-        return true;
+
+        try {
+          await API.changePassword(cur.value, next.value);
+          UI.toast("Password updated successfully!");
+          return true;
+        } catch (err) {
+          errorEl.textContent = err.message || "Failed to update password";
+          errorEl.style.display = "block";
+          return false;
+        }
       },
     });
   }
 
   // ---- Modal: Portfolio Visibility ----
   function openVisibility() {
-    const current = readVisibility();
+    const current = profile.is_public ? "Public" : "Private";
     const options = [
       ["Public", "Anyone can view your student portfolio."],
       ["Private", "Only you can view your portfolio."],
@@ -216,17 +242,41 @@
       ]);
     });
 
+    const errorEl = el("p", { class: "field-error", style: "display: none" });
+    body.push(errorEl);
+
     UI.modal({
       title: "Portfolio Visibility",
       body,
       submitLabel: "Save",
-      onSubmit: () => {
+      onSubmit: async () => {
+        errorEl.style.display = "none";
+
         const chosen = Object.entries(radios).find(([, r]) => r.checked);
         if (chosen) {
-          saveVisibility(chosen[0]);
-          // Backend: PATCH api/profile.php { visibility }
-          render();
-          UI.toast(`Visibility set to ${chosen[0]}`);
+          const isPublic = chosen[0] === "Public";
+
+          try {
+            const result = await API.updateProfile({ is_public: isPublic });
+
+            profile.is_public = isPublic;
+            if (result.public_url) {
+              profile.public_url = result.public_url;
+            }
+
+            render();
+            UI.toast(`Visibility set to ${chosen[0]}`);
+
+            if (isPublic && result.public_url) {
+              UI.toast(`Public URL: ${result.public_url}`);
+            }
+
+            return true;
+          } catch (err) {
+            errorEl.textContent = err.message || "Failed to update visibility";
+            errorEl.style.display = "block";
+            return false;
+          }
         }
         return true;
       },
