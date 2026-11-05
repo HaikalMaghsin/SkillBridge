@@ -65,20 +65,16 @@ try {
                 u.id,
                 u.name,
                 COALESCE(c.name, 'Belum Ditentukan') AS target_role,
-                COUNT(DISTINCT e.id) AS evidence_count,
-                cp.status AS pipeline_status,
-                cp.notes AS pipeline_notes,
-                cp.updated_at AS pipeline_updated
+                COUNT(DISTINCT e.id) AS evidence_count
             FROM users u
             JOIN student_profiles sp ON sp.user_id = u.id AND sp.is_public = TRUE
             LEFT JOIN careers c ON c.id = sp.target_career_id
             LEFT JOIN evidence e ON e.user_id = u.id
-            LEFT JOIN candidate_pipelines cp ON cp.user_id = u.id AND cp.company_id = :company_id
             WHERE u.role = 'user'
-            GROUP BY u.id, u.name, c.name, cp.status, cp.notes, cp.updated_at
+            GROUP BY u.id, u.name, c.name
             ORDER BY u.name ASC
         ");
-        $stmt->execute([':company_id' => $company_id]);
+        $stmt->execute();
         $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Query matched skills & gap skills per user
@@ -128,10 +124,7 @@ try {
                 'target_role' => $s['target_role'],
                 'matched_skills' => $matched ?: [],
                 'gap_skills' => $gaps ?: [],
-                'evidence_count' => (int)$s['evidence_count'],
-                'status' => $s['pipeline_status'] ?? 'New',
-                'notes' => $s['pipeline_notes'],
-                'pipeline_updated' => $s['pipeline_updated']
+                'evidence_count' => (int)$s['evidence_count']
             ];
         }
 
