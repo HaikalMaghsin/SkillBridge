@@ -173,12 +173,16 @@ document.addEventListener("DOMContentLoaded", () => {
           }),
         ]),
         el("div", { class: "field" }, [
-          el("label", { for: "f-pass", text: "Password awal" }),
+          el("label", { for: "f-pass", text: "Password awal (8-72 karakter)" }),
           el("input", {
             type: "password",
             id: "f-pass",
             name: "password",
-            placeholder: "Minimal 8 karakter (default: password123)",
+            placeholder: "Minimal 8 karakter",
+            required: "required",
+            minlength: "8",
+            maxlength: "72",
+            autocomplete: "new-password",
           }),
         ]),
       ],
@@ -186,9 +190,13 @@ document.addEventListener("DOMContentLoaded", () => {
       onSubmit: async (close) => {
         const name = document.getElementById("f-name")?.value.trim();
         const email = document.getElementById("f-email")?.value.trim();
-        const password = document.getElementById("f-pass")?.value || "password123";
+        const password = document.getElementById("f-pass")?.value || "";
         if (!name || !email) {
           UI.toast("Nama dan email wajib diisi");
+          return false;
+        }
+        if (password.length < 8 || password.length > 72) {
+          UI.toast("Password wajib diisi 8-72 karakter");
           return false;
         }
         try {
