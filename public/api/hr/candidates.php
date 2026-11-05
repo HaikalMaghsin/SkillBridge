@@ -57,9 +57,9 @@ try {
 
     $company_id = (int)$recruiter['company_id'];
 
-    // GET: Ambil daftar kandidat
+    // GET: Ambil daftar kandidat yang profilnya dipublikasikan user
     if ($method === 'GET') {
-        // Ambil semua mahasiswa dengan data lengkap
+        // Hanya profil dengan is_public = TRUE yang boleh terlihat HR.
         $stmt = $pdo->prepare("
             SELECT
                 u.id,
@@ -71,7 +71,7 @@ try {
                 cp.notes AS pipeline_notes,
                 cp.updated_at AS pipeline_updated
             FROM users u
-            LEFT JOIN student_profiles sp ON sp.user_id = u.id
+            JOIN student_profiles sp ON sp.user_id = u.id AND sp.is_public = TRUE
             LEFT JOIN careers c ON c.id = sp.target_career_id
             LEFT JOIN evidence e ON e.user_id = u.id
             LEFT JOIN candidate_pipelines cp ON cp.user_id = u.id AND cp.company_id = :company_id
