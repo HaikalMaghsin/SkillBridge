@@ -77,45 +77,53 @@ try {
         $stmt->execute();
         $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Query matched skills & gap skills per user
-        $stmtMatched = $pdo->prepare("
-            SELECT skill_name
-            FROM v_skill_gap
-            WHERE user_id = :user_id AND has_skill = TRUE
-            ORDER BY skill_name
-        ");
+        // Ambil skill dan gap untuk semua kandidat sekaligus (bukan N+1).
+        $candidate_ids = array_map(static function ($s) {
+            return (int) $s['id'];
+        }, $students);
 
-        $stmtGap = $pdo->prepare("
-            SELECT skill_name
-            FROM v_skill_gap
-            WHERE user_id = :user_id AND has_skill = FALSE
-            ORDER BY skill_name
-        ");
+        $confirmed_skills = [];
+        $gap_map = [];
 
-        $stmtUserSkills = $pdo->prepare("
-            SELECT s.name
-            FROM user_skills us
-            JOIN skills s ON s.id = us.skill_id
-            WHERE us.user_id = :user_id AND us.status = 'confirmed'
-            ORDER BY s.name
-        ");
+        if ($candidate_ids) {
+            $placeholders = implode(',', array_fill(0, count($candidate_ids), '?'));
+
+            $stmt = $pdo->prepare("
+                SELECT us.user_id, s.name
+                FROM user_skills us
+                JOIN skills s ON s.id = us.skill_id
+                WHERE us.status = 'confirmed' AND us.user_id IN ($placeholders)
+                ORDER BY us.user_id, s.name
+            ");
+            $stmt->execute($candidate_ids);
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                $confirmed_skills[(int) $row['user_id']][] = $row['name'];
+            }
+
+            $stmt = $pdo->prepare("
+                SELECT user_id, skill_name, has_skill
+                FROM v_skill_gap
+                WHERE user_id IN ($placeholders)
+                ORDER BY user_id, skill_name
+            ");
+            $stmt->execute($candidate_ids);
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                $uid = (int) $row['user_id'];
+                $key = db_is_true($row['has_skill']) ? 'matched' : 'gap';
+                $gap_map[$uid][$key][] = $row['skill_name'];
+            }
+        }
 
         $candidates = [];
         foreach ($students as $s) {
             $uid = (int)$s['id'];
 
-            // Ambil matched skills
-            $stmtMatched->execute([':user_id' => $uid]);
-            $matched = $stmtMatched->fetchAll(PDO::FETCH_COLUMN);
-
-            // Ambil gap skills
-            $stmtGap->execute([':user_id' => $uid]);
-            $gaps = $stmtGap->fetchAll(PDO::FETCH_COLUMN);
+            $matched = $gap_map[$uid]['matched'] ?? [];
+            $gaps = $gap_map[$uid]['gap'] ?? [];
 
             // Jika belum ada target career, ambil semua skill yang dimiliki
             if (empty($matched) && $s['target_role'] === 'Belum Ditentukan') {
-                $stmtUserSkills->execute([':user_id' => $uid]);
-                $matched = $stmtUserSkills->fetchAll(PDO::FETCH_COLUMN);
+                $matched = $confirmed_skills[$uid] ?? [];
             }
 
             $candidates[] = [
