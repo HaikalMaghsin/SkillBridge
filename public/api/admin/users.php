@@ -108,7 +108,7 @@ try {
         $input = json_decode(file_get_contents('php://input'), true) ?: [];
         $name = trim($input['name'] ?? '');
         $email = trim($input['email'] ?? '');
-        $password = $input['password'] ?? 'password123'; // Default password
+        $password = $input['password'] ?? '';
         $role = admin_normalize_role($input['role'] ?? 'user');
 
         if ($role === null) {
@@ -120,6 +120,19 @@ try {
         if (!$name || !$email) {
             http_response_code(400);
             echo json_encode(['error' => 'name and email are required']);
+            exit;
+        }
+
+        if (!is_string($password) || $password === '') {
+            http_response_code(400);
+            echo json_encode(['error' => 'password is required']);
+            exit;
+        }
+
+        $password_length = strlen($password);
+        if ($password_length < 8 || $password_length > 72) {
+            http_response_code(400);
+            echo json_encode(['error' => 'password must be between 8 and 72 characters']);
             exit;
         }
 
