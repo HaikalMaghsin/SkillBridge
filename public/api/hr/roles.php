@@ -50,8 +50,8 @@ try {
     $recruiter = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$recruiter) {
-        http_response_code(404);
-        echo json_encode(['error' => 'Company not found']);
+        // HR tanpa perusahaan tetap read-only; tidak ada target role perusahaan.
+        echo json_encode([]);
         exit;
     }
 

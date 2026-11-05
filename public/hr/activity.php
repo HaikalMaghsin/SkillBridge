@@ -30,7 +30,7 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
             </div>
           </div>
           <h1 class="rec-page-title">Log Aktivitas Recruiter</h1>
-          <p class="rec-page-desc">Riwayat tindakan tim recruiter: peninjauan kandidat, perubahan target role, dan undangan wawancara.</p>
+          <p class="rec-page-desc">Riwayat tindakan tim recruiter: peninjauan kandidat dan perubahan target role. Akses HR bersifat baca saja.</p>
         </div>
 
         <section class="rec-card">
@@ -45,9 +45,9 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
             </label>
             <select class="rec-select" id="rec-act-type" aria-label="Filter jenis aktivitas">
               <option value="">Semua Jenis</option>
-              <option value="interview">Interview</option>
-              <option value="role">Target Role</option>
-              <option value="review">Review</option>
+              <option value="candidate_status_update">Kandidat</option>
+              <option value="candidate_interview">Interview</option>
+              <option value="vacancy_created">Target Role</option>
             </select>
           </div>
           <div class="rec-activity-body" id="rec-act-body">
