@@ -67,6 +67,7 @@ function sync_session_user() {
 
     $pdo = get_db_connection();
     if (!$pdo) {
+        error_log('Session sync skipped: database unavailable');
         return true;
     }
 
