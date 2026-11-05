@@ -76,7 +76,6 @@ function render() {
             el("span", { class: "rec-avatar-sm", text: initials(c.name) }),
             el("div", { class: "rec-row-name-text" }, [
               el("span", { class: "rec-row-name-main", text: c.name }),
-              el("span", { class: "rec-row-name-sub", text: c.email }),
             ]),
           ]),
         ]),

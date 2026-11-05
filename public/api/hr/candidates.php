@@ -64,7 +64,6 @@ try {
             SELECT
                 u.id,
                 u.name,
-                u.email,
                 COALESCE(c.name, 'Belum Ditentukan') AS target_role,
                 COUNT(DISTINCT e.id) AS evidence_count,
                 cp.status AS pipeline_status,
@@ -76,7 +75,7 @@ try {
             LEFT JOIN evidence e ON e.user_id = u.id
             LEFT JOIN candidate_pipelines cp ON cp.user_id = u.id AND cp.company_id = :company_id
             WHERE u.role = 'user'
-            GROUP BY u.id, u.name, u.email, c.name, cp.status, cp.notes, cp.updated_at
+            GROUP BY u.id, u.name, c.name, cp.status, cp.notes, cp.updated_at
             ORDER BY u.name ASC
         ");
         $stmt->execute([':company_id' => $company_id]);
@@ -126,7 +125,6 @@ try {
             $candidates[] = [
                 'id' => $uid,
                 'name' => $s['name'],
-                'email' => $s['email'],
                 'target_role' => $s['target_role'],
                 'matched_skills' => $matched ?: [],
                 'gap_skills' => $gaps ?: [],
