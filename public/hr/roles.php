@@ -33,7 +33,8 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
           </div>
           <h1 class="rec-page-title">Target Role &amp; Kebutuhan Skill</h1>
           <p class="rec-page-desc">
-            Kelola target role yang dibuka perusahaan serta kebutuhan skill terkait untuk menyaring kandidat.
+            Lihat target role yang dibuka perusahaan serta kebutuhan skill terkait untuk menyaring kandidat.
+            Akses HR bersifat baca saja.
           </p>
         </div>
 
@@ -51,19 +52,11 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
         <!-- Workspace mapping dua panel -->
         <section>
           <h2 class="rec-section-title">Mapping Skill ke Target Role</h2>
-          <p class="rec-section-sub">Pilih target role di atas, lalu tentukan skill yang menjadi kebutuhan role tersebut.</p>
+          <p class="rec-section-sub">Pilih target role di atas untuk melihat skill yang menjadi kebutuhan role tersebut.</p>
           <div class="rec-mapping-grid" id="rec-mapping-panel" style="margin-top: 16px">
             <!-- diisi js/pages/recruiter-roles.js -->
           </div>
         </section>
-
-        <div class="rec-save-bar">
-          <span class="rec-save-note">Simpan perubahan untuk menerapkan mapping baru ke pipeline kandidat.</span>
-          <div class="rec-save-actions">
-            <button type="button" class="btn" id="btn-cancel-mapping">Batal</button>
-            <button type="button" class="btn btn-accent" id="btn-save-mapping">Simpan Mapping</button>
-          </div>
-        </div>
 
       </main>
 

@@ -33,6 +33,13 @@ try {
             exit;
         }
 
+        $user = current_user();
+        if (($user['role'] ?? null) === 'hr') {
+            http_response_code(403);
+            echo json_encode(['error' => 'Forbidden - HR is read-only']);
+            exit;
+        }
+
         if (!csrf_verify()) {
             http_response_code(403);
             echo json_encode(['error' => 'Invalid CSRF token']);

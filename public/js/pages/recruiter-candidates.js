@@ -93,10 +93,6 @@ function render() {
         el("td", { class: "rec-cand-actions" }, [
           el("div", { class: "table-actions rec-cell" }, [
             el("button", { type: "button", class: "rec-cand-btn", text: "Lihat Detail", onClick: () => UI.toast(`Riwayat ${c.name} belum tersedia.`) }),
-            el("button",
-              { type: "button", class: "rec-cand-btn rec-cand-btn--primary", text: "Undang",
-                onClick: () => UI.toast(`Undangan dikirim ke ${c.name}.`),
-              }),
           ]),
         ]),
       ])

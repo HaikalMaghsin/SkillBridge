@@ -63,66 +63,6 @@ function applyFilter() {
   });
 }
 
-function renderActions(m, reload) {
-  const buttons = [];
-
-  if (m.status === "pending") {
-    buttons.push(
-      el("button", {
-        type: "button",
-        class: "rec-pager-link",
-        text: "Kirim Ulang",
-        onClick: () => UI.toast(`Undangan untuk ${m.name} dikirim ulang.`),
-      })
-    );
-  } else if (m.status === "inactive") {
-    buttons.push(
-      el("button", {
-        type: "button",
-        class: "rec-pager-link",
-        text: "Aktifkan",
-        onClick: async () => {
-          await API.setRecruiterStatus(m.id, "active");
-          UI.toast(`${m.name} diaktifkan.`);
-          reload();
-        },
-      })
-    );
-  } else {
-    buttons.push(
-      el("button", {
-        type: "button",
-        class: "rec-pager-link",
-        text: "Nonaktifkan",
-        onClick: async () => {
-          await API.setRecruiterStatus(m.id, "inactive");
-          UI.toast(`${m.name} dinonaktifkan.`);
-          reload();
-        },
-      })
-    );
-  }
-
-  if (m.role !== "lead") {
-    buttons.push(
-      el("button", {
-        type: "button",
-        class: "rec-pager-link rec-pager-link--danger",
-        text: "Hapus",
-        onClick: () => {
-          if (!confirm(`Hapus ${m.name} dari tim recruiter?`)) return;
-          API.removeRecruiterRecord(m.id).then(() => {
-            UI.toast(`${m.name} dihapus dari tim.`);
-            reload();
-          });
-        },
-      })
-    );
-  }
-
-  return el("div", { class: "table-actions rec-row-actions" }, buttons);
-}
-
 function render() {
   const list = applyFilter();
   const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
@@ -149,7 +89,7 @@ function render() {
             ]),
           ]),
           el("td", {}, [
-            el("span", { class: "rec-role-text", text: m.role_label }),
+            el("span", { class: "rec-role-text", text: m.role || "Recruiter" }),
           ]),
           el("td", {}, [
             el("span", {
@@ -157,8 +97,8 @@ function render() {
               text: STATUS_LABEL[m.status] || m.status,
             }),
           ]),
-          el("td", { text: UI.formatDate(m.created_at) }),
-          el("td", {}, [renderActions(m, load)]),
+          el("td", { text: UI.formatDate(m.joined || m.created_at) }),
+          el("td", { text: "—" }),
         ])
       );
     }
@@ -167,41 +107,6 @@ function render() {
   document.getElementById("rec-team-page").textContent = String(page);
   document.getElementById("rec-team-prev").disabled = page <= 1;
   document.getElementById("rec-team-next").disabled = page >= totalPages;
-}
-
-function openInvite() {
-  const body = [
-    el("div", { class: "rec-field" }, [
-      el("label", { for: "invite-name", text: "Nama Lengkap" }),
-      el("input", { id: "invite-name", name: "name", type: "text", placeholder: "Nama recruiter" }),
-    ]),
-    el("div", { class: "rec-field" }, [
-      el("label", { for: "invite-email", text: "Email Perusahaan" }),
-      el("input", { id: "invite-email", name: "email", type: "email", placeholder: "nama@perusahaan.com" }),
-    ]),
-    el("div", { class: "rec-field" }, [
-      el("label", { for: "invite-role", text: "Peran" }),
-      el("select", { id: "invite-role", name: "role" }, [
-        el("option", { value: "recruiter", text: "Recruiter" }),
-        el("option", { value: "hiring_manager", text: "Hiring Manager" }),
-      ]),
-    ]),
-  ];
-
-  UI.modal({
-    title: "Undang Recruiter Baru",
-    body,
-    submitLabel: "Kirim Undangan",
-    onSubmit: (_close, form) => {
-      const name = form.querySelector("#invite-name").value.trim();
-      if (!name) {
-        UI.toast("Nama recruiter wajib diisi.");
-        return false;
-      }
-      UI.toast(`Undangan untuk ${name} dikirim.`);
-      return true;
-    },
-  });
 }
 
 async function load() {
@@ -235,9 +140,5 @@ document.getElementById("rec-team-next").addEventListener("click", () => {
   page += 1;
   render();
 });
-document.getElementById("btn-invite-recruiter").addEventListener("click", openInvite);
-
-// Tombol "Tambah Recruiter" dari dashboard mengarah ke sini dengan #invite.
-if (window.location.hash === "#invite") openInvite();
 
 load();

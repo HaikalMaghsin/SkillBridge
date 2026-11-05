@@ -66,7 +66,7 @@ $rec_page = $rec_page ?? 'profile';
       <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 1.5L2.5 4v4.5c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8.5 1.5z"/><path d="M6 8.5l2 2 3.5-3.5"/></svg>
       <span>Akses Perusahaan</span>
     </div>
-    <p>Kelola informasi profil perusahaan, anggota tim recruiter, dan kebutuhan role.</p>
+    <p>Lihat informasi profil perusahaan, anggota tim recruiter, dan kebutuhan role.</p>
   </div>
 
   <div class="rec-logout-footer">

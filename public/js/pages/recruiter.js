@@ -30,8 +30,11 @@ function initials(name) {
 }
 
 async function renderCompany() {
-  const c = await API.getRecruiterCompany();
-  document.getElementById("company-sub").textContent = `${c.name} · ${c.tagline}`;
+  const data = await API.getRecruiterCompany();
+  const c = data?.company;
+  document.getElementById("company-sub").textContent = c
+    ? `${c.name} · ${c.industry || "Mitra SkillBridge"}`
+    : "Belum terhubung ke perusahaan.";
 }
 
 async function renderStats() {
@@ -72,34 +75,11 @@ async function renderTeam() {
     return;
   }
   for (const m of team.slice(0, 4)) {
-    let action;
-    if (m.status === "pending") {
-      action = el("button", {
-        type: "button",
-        class: "rec-row-action",
-        text: "Kirim Ulang",
-        onClick: () => {
-          UI.toast(`Undangan untuk ${m.name} dikirim ulang.`);
-        },
-      });
-    } else if (m.status === "inactive") {
-      action = el("button", {
-        type: "button",
-        class: "rec-row-action",
-        text: "Aktifkan",
-        onClick: async () => {
-          await API.setRecruiterStatus(m.id, "active");
-          UI.toast(`${m.name} diaktifkan.`);
-          load();
-        },
-      });
-    } else {
-      action = el("a", {
-        class: "rec-row-action",
-        href: "team.php",
-        text: "Kelola",
-      });
-    }
+    const action = el("a", {
+      class: "rec-row-action",
+      href: "team.php",
+      text: "Lihat",
+    });
 
     body.appendChild(
       el("div", { class: "rec-row" }, [
@@ -111,7 +91,7 @@ async function renderTeam() {
           ]),
         ]),
         el("div", { class: "rec-row-role" }, [
-          el("span", { class: "rec-role-text", text: m.role_label }),
+          el("span", { class: "rec-role-text", text: m.role || "Recruiter" }),
         ]),
         el("div", { class: "rec-row-status" }, [
           el("span", { class: `rec-badge ${STATUS_BADGE[m.status] || "rec-badge--gray"}`, text: STATUS_LABEL[m.status] || m.status }),
@@ -181,11 +161,6 @@ function renderDate() {
     `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
 }
 
-// Fokus ke form Manajemen Tim (form undang anggota ada di sana).
-function openAddRecruiter() {
-  window.location.href = "team.php#invite";
-}
-
 async function load() {
   renderDate();
   try {
@@ -194,7 +169,5 @@ async function load() {
     UI.toast("Gagal memuat data perusahaan: " + err.message);
   }
 }
-
-document.getElementById("btn-add-recruiter").addEventListener("click", openAddRecruiter);
 
 load();

@@ -20,6 +20,13 @@ if ($user['role'] !== 'hr') {
     exit;
 }
 
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    http_response_code(405);
+    header('Allow: GET');
+    echo json_encode(['error' => 'Method not allowed']);
+    exit;
+}
+
 try {
     $pdo = get_db_connection();
 
