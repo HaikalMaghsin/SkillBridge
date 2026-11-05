@@ -91,7 +91,7 @@ function render() {
         el("td", { class: "rec-cand-evidence", text: `${c.evidence_count} Items` }),
         el("td", { class: "rec-cand-actions" }, [
           el("div", { class: "table-actions rec-cell" }, [
-            el("button", { type: "button", class: "rec-cand-btn", text: "Lihat Detail", onClick: () => UI.toast(`Riwayat ${c.name} belum tersedia.`) }),
+            el("a", { class: "rec-cand-btn", href: `candidate.php?id=${encodeURIComponent(c.id)}`, text: "Lihat Detail" }),
           ]),
         ]),
       ])
