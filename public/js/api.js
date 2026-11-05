@@ -407,6 +407,10 @@ const API = (() => {
     return await fetchAPI('hr/candidates.php');
   }
 
+  async function getRecruiterCandidate(id) {
+    return await fetchAPI(`hr/candidate.php?id=${encodeURIComponent(id)}`);
+  }
+
   async function getRecruiterStats() {
     const data = await getRecruiterCompany();
     return data.metrics || {
@@ -488,6 +492,7 @@ const API = (() => {
     getRecruiterRoles,
     getRecruiterActivity,
     getRecruiterCandidates,
+    getRecruiterCandidate,
     getRecruiterStats,
 
     // Admin - Vacancies
