@@ -10,6 +10,25 @@ require_once __DIR__ . '/../../../includes/config/database.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
+/**
+ * Normalisasi role dari API ke nilai enum database.
+ * Menerima user|hr|admin dan alias lama mahasiswa untuk user.
+ * Mengembalikan null untuk nilai yang tidak dikenal.
+ */
+function admin_normalize_role($role) {
+    if (!is_string($role)) {
+        return null;
+    }
+    $role = strtolower(trim($role));
+    $map = [
+        'user'      => 'user',
+        'mahasiswa' => 'user',
+        'hr'        => 'hr',
+        'admin'     => 'admin',
+    ];
+    return $map[$role] ?? null;
+}
+
 // Wajib login sebagai admin
 if (!is_logged_in()) {
     http_response_code(401);
@@ -86,11 +105,17 @@ try {
             exit;
         }
 
-        $input = json_decode(file_get_contents('php://input'), true);
+        $input = json_decode(file_get_contents('php://input'), true) ?: [];
         $name = trim($input['name'] ?? '');
         $email = trim($input['email'] ?? '');
         $password = $input['password'] ?? 'password123'; // Default password
-        $role = $input['role'] ?? 'user'; // Default mahasiswa
+        $role = admin_normalize_role($input['role'] ?? 'user');
+
+        if ($role === null) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid role']);
+            exit;
+        }
 
         if (!$name || !$email) {
             http_response_code(400);
@@ -124,7 +149,7 @@ try {
             ':name' => $name,
             ':email' => $email,
             ':password_hash' => $password_hash,
-            ':role' => app_role_to_db_role($role)
+            ':role' => $role
         ]);
 
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -145,11 +170,20 @@ try {
             exit;
         }
 
-        $input = json_decode(file_get_contents('php://input'), true);
+        $input = json_decode(file_get_contents('php://input'), true) ?: [];
         $user_id = isset($input['id']) ? (int)$input['id'] : null;
         $name = trim($input['name'] ?? '');
         $email = trim($input['email'] ?? '');
-        $role = $input['role'] ?? null;
+        $role = null;
+
+        if (array_key_exists('role', $input)) {
+            $role = admin_normalize_role($input['role']);
+            if ($role === null) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid role']);
+                exit;
+            }
+        }
 
         if (!$user_id) {
             http_response_code(400);
@@ -169,9 +203,9 @@ try {
             $updates[] = 'email = :email';
             $params[':email'] = $email;
         }
-        if ($role) {
+        if ($role !== null) {
             $updates[] = 'role = :role';
-            $params[':role'] = app_role_to_db_role($role);
+            $params[':role'] = $role;
         }
 
         if (empty($updates)) {
