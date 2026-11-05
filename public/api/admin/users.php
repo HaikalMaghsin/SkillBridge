@@ -29,6 +29,17 @@ function admin_normalize_role($role) {
     return $map[$role] ?? null;
 }
 
+/** Serialisasi perubahan akun admin agar pengecekan admin terakhir tidak balapan. */
+function admin_guard_lock(PDO $pdo) {
+    $pdo->query("SELECT pg_advisory_xact_lock(hashtext('skillbridge.admin.guard')::bigint)")->fetchColumn();
+}
+
+/** Jumlah admin yang benar-benar aktif. */
+function admin_active_count(PDO $pdo) {
+    return (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'admin' AND is_active = TRUE")
+        ->fetchColumn();
+}
+
 // Wajib login sebagai admin
 if (!is_logged_in()) {
     http_response_code(401);
@@ -198,6 +209,16 @@ try {
             }
         }
 
+        $is_active = null;
+        if (array_key_exists('is_active', $input)) {
+            $is_active = filter_var($input['is_active'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($is_active === null) {
+                http_response_code(400);
+                echo json_encode(['error' => 'is_active must be a boolean']);
+                exit;
+            }
+        }
+
         if (!$user_id) {
             http_response_code(400);
             echo json_encode(['error' => 'id is required']);
@@ -220,6 +241,10 @@ try {
             $updates[] = 'role = :role';
             $params[':role'] = $role;
         }
+        if ($is_active !== null) {
+            $updates[] = 'is_active = :is_active';
+            $params[':is_active'] = $is_active ? 'true' : 'false';
+        }
 
         if (empty($updates)) {
             http_response_code(400);
@@ -227,11 +252,48 @@ try {
             exit;
         }
 
+        $pdo->beginTransaction();
+        $fail = function ($code, $message) use ($pdo) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            http_response_code($code);
+            echo json_encode(['error' => $message]);
+            exit;
+        };
+
+        admin_guard_lock($pdo);
+
+        $stmt = $pdo->prepare('SELECT id, role, is_active FROM users WHERE id = :id FOR UPDATE');
+        $stmt->execute([':id' => $user_id]);
+        $target = $stmt->fetch();
+
+        if (!$target) {
+            $fail(404, 'User not found');
+        }
+
+        $target_role = (string) $target['role'];
+        $target_active = db_is_true($target['is_active']);
+        $role_changed = ($role !== null && $role !== $target_role);
+        $deactivating = ($is_active === false && $target_active);
+
+        if ((int) $user_id === (int) $user['id']
+            && (($role !== null && $role !== 'admin') || $is_active === false)) {
+            $fail(403, 'Cannot change your own admin role or deactivate your own account');
+        }
+
+        if ($target_role === 'admin' && $target_active && ($role_changed || $deactivating)) {
+            if (admin_active_count($pdo) <= 1) {
+                $fail(409, 'Cannot remove the last active admin');
+            }
+        }
+
         $updates[] = 'updated_at = CURRENT_TIMESTAMP';
         $sql = 'UPDATE users SET ' . implode(', ', $updates) . ' WHERE id = :user_id';
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
+        $pdo->commit();
 
         echo json_encode(['success' => true, 'message' => 'User updated']);
         exit;
@@ -245,7 +307,7 @@ try {
             exit;
         }
 
-        $input = json_decode(file_get_contents('php://input'), true);
+        $input = json_decode(file_get_contents('php://input'), true) ?: [];
         $user_id = isset($input['id']) ? (int)$input['id'] : null;
 
         if (!$user_id) {
@@ -254,15 +316,39 @@ try {
             exit;
         }
 
-        // Tidak boleh hapus diri sendiri
-        if ($user_id === $user['id']) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Cannot delete your own account']);
+        $pdo->beginTransaction();
+        $fail = function ($code, $message) use ($pdo) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            http_response_code($code);
+            echo json_encode(['error' => $message]);
             exit;
+        };
+
+        admin_guard_lock($pdo);
+
+        $stmt = $pdo->prepare('SELECT id, role, is_active FROM users WHERE id = :id FOR UPDATE');
+        $stmt->execute([':id' => $user_id]);
+        $target = $stmt->fetch();
+
+        if (!$target) {
+            $fail(404, 'User not found');
+        }
+
+        // Tidak boleh hapus diri sendiri
+        if ((int) $user_id === (int) $user['id']) {
+            $fail(400, 'Cannot delete your own account');
+        }
+
+        if ($target['role'] === 'admin' && db_is_true($target['is_active'])
+            && admin_active_count($pdo) <= 1) {
+            $fail(409, 'Cannot remove the last active admin');
         }
 
         $stmt = $pdo->prepare('DELETE FROM users WHERE id = :user_id');
         $stmt->execute([':user_id' => $user_id]);
+        $pdo->commit();
 
         echo json_encode(['success' => true, 'message' => 'User deleted']);
         exit;
@@ -272,6 +358,9 @@ try {
     echo json_encode(['error' => 'Method not allowed']);
 
 } catch (Exception $e) {
+    if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     error_log('API admin/users.php error: ' . $e->getMessage());
     http_response_code(500);
     echo json_encode(['error' => 'Internal server error']);
