@@ -1,9 +1,7 @@
 <?php
 // public/api/hr/candidates.php
-// GET: Ambil pipeline kandidat untuk perusahaan ini
-// POST: Update status kandidat di pipeline
+// GET: Ambil pipeline kandidat untuk perusahaan ini (HR read-only).
 require_once __DIR__ . '/../../../includes/auth/auth.php';
-require_once __DIR__ . '/../../../includes/auth/csrf.php';
 require_once __DIR__ . '/../../../includes/config/database.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -24,6 +22,13 @@ if ($user['role'] !== 'hr') {
 
 $user_id = $user['id'];
 $method = $_SERVER['REQUEST_METHOD'];
+
+if ($method !== 'GET') {
+    http_response_code(405);
+    header('Allow: GET');
+    echo json_encode(['error' => 'Method not allowed']);
+    exit;
+}
 
 try {
     $pdo = get_db_connection();
@@ -135,85 +140,6 @@ try {
         echo json_encode($candidates, JSON_UNESCAPED_UNICODE);
         exit;
     }
-
-    // POST: Update status kandidat
-    if ($method === 'POST') {
-        if (!csrf_verify()) {
-            http_response_code(403);
-            echo json_encode(['error' => 'Invalid CSRF token']);
-            exit;
-        }
-
-        $input = json_decode(file_get_contents('php://input'), true);
-
-        $candidate_user_id = isset($input['user_id']) ? (int)$input['user_id'] : null;
-        $status = trim($input['status'] ?? '');
-        $notes = trim($input['notes'] ?? '');
-        $vacancy_id = isset($input['vacancy_id']) ? (int)$input['vacancy_id'] : null;
-
-        if (!$candidate_user_id || !$status) {
-            http_response_code(400);
-            echo json_encode(['error' => 'user_id and status are required']);
-            exit;
-        }
-
-        // Validasi status
-        $valid_statuses = ['Shortlisted', 'Interview', 'Accepted', 'Rejected', 'New'];
-        if (!in_array($status, $valid_statuses)) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Invalid status']);
-            exit;
-        }
-
-        // UPSERT candidate_pipelines
-        $stmt = $pdo->prepare('
-            INSERT INTO candidate_pipelines (company_id, vacancy_id, user_id, status, notes, updated_by)
-            VALUES (:company_id, :vacancy_id, :user_id, :status, :notes, :updated_by)
-            ON CONFLICT (company_id, user_id, vacancy_id)
-            DO UPDATE SET
-                status = EXCLUDED.status,
-                notes = EXCLUDED.notes,
-                updated_by = EXCLUDED.updated_by,
-                updated_at = CURRENT_TIMESTAMP
-        ');
-        $stmt->execute([
-            ':company_id' => $company_id,
-            ':vacancy_id' => $vacancy_id,
-            ':user_id' => $candidate_user_id,
-            ':status' => $status,
-            ':notes' => $notes,
-            ':updated_by' => $user_id
-        ]);
-
-        // Log aktivitas
-        $stmtLog = $pdo->prepare('
-            INSERT INTO recruiter_activity_logs (company_id, user_id, action_type, target_type, target_id, description)
-            VALUES (:company_id, :user_id, :action_type, :target_type, :target_id, :description)
-        ');
-
-        // Ambil nama kandidat untuk log
-        $stmtUser = $pdo->prepare('SELECT name FROM users WHERE id = :user_id');
-        $stmtUser->execute([':user_id' => $candidate_user_id]);
-        $candidateName = $stmtUser->fetchColumn();
-
-        $stmtLog->execute([
-            ':company_id' => $company_id,
-            ':user_id' => $user_id,
-            ':action_type' => 'candidate_status_update',
-            ':target_type' => 'candidate',
-            ':target_id' => $candidate_user_id,
-            ':description' => "Updated candidate {$candidateName} status to {$status}"
-        ]);
-
-        echo json_encode([
-            'success' => true,
-            'message' => 'Candidate status updated'
-        ]);
-        exit;
-    }
-
-    http_response_code(405);
-    echo json_encode(['error' => 'Method not allowed']);
 
 } catch (Exception $e) {
     error_log('API hr/candidates.php error: ' . $e->getMessage());

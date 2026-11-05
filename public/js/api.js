@@ -1,4 +1,4 @@
-﻿// api.js - Client untuk REST API PHP Backend
+// api.js - Client untuk REST API PHP Backend
 // Semua request ke public/api/*.php dengan CSRF token dan session handling
 
 const API = (() => {
@@ -385,67 +385,18 @@ const API = (() => {
     return seeded;
   }
 
-  // ============ RECRUITER: Company & Team (Backend PostgreSQL) ============
+  // ============ RECRUITER: Company & Team (read-only) ============
 
   async function getRecruiterCompany() {
     return await fetchAPI('hr/company.php');
-  }
-
-  async function updateRecruiterCompany(data) {
-    return await fetchAPI('hr/company.php', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
   }
 
   async function getRecruiterTeam() {
     return await fetchAPI('hr/team.php');
   }
 
-  async function addRecruiterTeamMember(data) {
-    return await fetchAPI('hr/team.php', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
-  }
-
-  async function updateRecruiterTeamMember(data) {
-    return await fetchAPI('hr/team.php', {
-      method: 'PUT',
-      body: JSON.stringify(data)
-    });
-  }
-
-  async function removeRecruiterTeamMember(id) {
-    return await fetchAPI('hr/team.php', {
-      method: 'DELETE',
-      body: JSON.stringify({ id })
-    });
-  }
-
   async function getRecruiterRoles() {
     return await fetchAPI('hr/roles.php');
-  }
-
-  async function createRecruiterRole(data) {
-    return await fetchAPI('hr/roles.php', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
-  }
-
-  async function updateRecruiterRole(data) {
-    return await fetchAPI('hr/roles.php', {
-      method: 'PUT',
-      body: JSON.stringify(data)
-    });
-  }
-
-  async function deleteRecruiterRole(id) {
-    return await fetchAPI('hr/roles.php', {
-      method: 'DELETE',
-      body: JSON.stringify({ id })
-    });
   }
 
   async function getRecruiterActivity() {
@@ -454,13 +405,6 @@ const API = (() => {
 
   async function getRecruiterCandidates() {
     return await fetchAPI('hr/candidates.php');
-  }
-
-  async function updateCandidateStatus(data) {
-    return await fetchAPI('hr/candidates.php', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
   }
 
   async function getRecruiterStats() {
@@ -472,15 +416,6 @@ const API = (() => {
       totalPositions: 0,
       pipelineCandidates: 0
     };
-  }
-
-  // Legacy compatibility
-  async function setRecruiterStatus(id, status) {
-    return await updateRecruiterTeamMember({ id, status });
-  }
-
-  async function removeRecruiterRecord(id) {
-    return await removeRecruiterTeamMember(id);
   }
 
   // ============ Export API ============
@@ -547,22 +482,12 @@ const API = (() => {
     setAdminRecordStatus,
     removeAdminRecord,
 
-    // Recruiter
+    // Recruiter (read-only)
     getRecruiterCompany,
-    updateRecruiterCompany,
     getRecruiterTeam,
-    addRecruiterTeamMember,
-    updateRecruiterTeamMember,
-    removeRecruiterTeamMember,
     getRecruiterRoles,
-    createRecruiterRole,
-    updateRecruiterRole,
-    deleteRecruiterRole,
     getRecruiterActivity,
     getRecruiterCandidates,
-    updateCandidateStatus,
-    setRecruiterStatus,
-    removeRecruiterRecord,
     getRecruiterStats,
 
     // Admin - Vacancies
