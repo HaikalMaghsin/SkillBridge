@@ -20,7 +20,6 @@ if ($user['role'] !== 'hr') {
     exit;
 }
 
-$user_id = $user['id'];
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method !== 'GET') {
@@ -39,23 +38,7 @@ try {
         exit;
     }
 
-    // Ambil company_id
-    $stmt = $pdo->prepare('
-        SELECT company_id
-        FROM company_recruiters
-        WHERE user_id = :user_id
-        LIMIT 1
-    ');
-    $stmt->execute([':user_id' => $user_id]);
-    $recruiter = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$recruiter) {
-        http_response_code(404);
-        echo json_encode(['error' => 'Company not found']);
-        exit;
-    }
-
-    $company_id = (int)$recruiter['company_id'];
+    // Kandidat adalah profil publik platform; tidak bergantung pada perusahaan HR.
 
     // GET: Ambil daftar kandidat yang profilnya dipublikasikan user
     if ($method === 'GET') {

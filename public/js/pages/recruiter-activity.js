@@ -2,9 +2,17 @@
 const { el, clear } = UI;
 
 const TYPE_BADGE = {
-  interview: "rec-badge--pink",
-  role: "rec-badge--indigo",
-  review: "rec-badge--gray",
+  candidate_status_update: "rec-badge--indigo",
+  candidate_shortlist: "rec-badge--indigo",
+  candidate_interview: "rec-badge--pink",
+  vacancy_created: "rec-badge--pink",
+};
+
+const TYPE_LABEL = {
+  candidate_status_update: "Kandidat",
+  candidate_shortlist: "Kandidat",
+  candidate_interview: "Interview",
+  vacancy_created: "Target Role",
 };
 
 let allActivity = [];
@@ -23,8 +31,8 @@ function applyFilter() {
   const q = (document.getElementById("rec-act-search")?.value || "").toLowerCase();
   const type = document.getElementById("rec-act-type")?.value || "";
   return allActivity.filter((a) => {
-    if (type && a.type !== type) return false;
-    if (q && !`${a.actor} ${a.text}`.toLowerCase().includes(q)) return false;
+    if (type && a.action !== type) return false;
+    if (q && !`${a.recruiter || ""} ${a.description || ""}`.toLowerCase().includes(q)) return false;
     return true;
   });
 }
@@ -42,14 +50,16 @@ function render() {
   }
 
   for (const a of list) {
+    const action = a.action || "activity";
+    const text = `${a.recruiter || "—"} ${a.description || ""}`.trim();
     body.append(
       el("div", { class: "rec-activity-item" }, [
-        el("span", { class: "rec-activity-time", text: a.time }),
+        el("span", { class: "rec-activity-time", text: a.timestamp || "—" }),
         el("div", { class: "rec-activity-content" }, [
-          el("span", { class: "rec-activity-text", text: `${a.actor} ${a.text}` }),
+          el("span", { class: "rec-activity-text", text }),
           el("span", {
-            class: `rec-badge rec-activity-badge ${TYPE_BADGE[a.type] || "rec-badge--gray"}`,
-            text: a.type_label,
+            class: `rec-badge rec-activity-badge ${TYPE_BADGE[action] || "rec-badge--gray"}`,
+            text: TYPE_LABEL[action] || action,
           }),
         ]),
       ])
@@ -60,7 +70,8 @@ function render() {
 async function load() {
   renderDate();
   try {
-    allActivity = await API.getRecruiterActivity();
+    const items = await API.getRecruiterActivity();
+    allActivity = Array.isArray(items) ? items : [];
   } catch {
     allActivity = [];
   }
