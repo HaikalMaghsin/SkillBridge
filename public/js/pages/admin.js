@@ -1,5 +1,5 @@
 // admin.js - render dashboard admin (Admin Console)
-// Data dari API.getAdminStats / API.getAdminUsers dst. Saat ini memakai JSON dummy.
+// Data angka berasal dari API.getAdminStats.
 
 (async () => {
   const { el } = UI;
@@ -10,13 +10,15 @@
     const grid = document.getElementById("admin-stats-grid");
     if (grid) {
       UI.clear(grid);
-      const totalUsers = (stats.totalStudents ?? 0) + (stats.totalHR ?? 0);
+      const totalStudents = Number(stats.total_students ?? 0);
+      const totalHR = Number(stats.total_hr ?? 0);
+      const totalUsers = totalStudents + totalHR;
       const cards = [
-        { label: "Total pengguna", value: totalUsers, context: `${stats.totalStudents ?? 0} mahasiswa · ${stats.totalHR ?? 0} HR` },
-        { label: "Administrator", value: stats.totalAdmins ?? 1, context: "Platform owner & admin" },
-        { label: "Keterampilan", value: stats.totalSkills ?? 18, context: "Record keterampilan master" },
-        { label: "Target karier", value: stats.totalCareers ?? 4, context: "Record target karier master" },
-        { label: "Relasi mapping", value: stats.totalMappings ?? 20, context: "Relasi karier–keterampilan" },
+        { label: "Total pengguna", value: totalUsers, context: `${totalStudents} mahasiswa · ${totalHR} HR` },
+        { label: "Administrator", value: Number(stats.total_admins ?? 0), context: "Platform owner & admin" },
+        { label: "Keterampilan", value: Number(stats.total_skills ?? 0), context: "Record keterampilan master" },
+        { label: "Target karier", value: Number(stats.total_careers ?? 0), context: "Record target karier master" },
+        { label: "Relasi mapping", value: Number(stats.total_mappings ?? 0), context: "Relasi karier–keterampilan" },
       ];
       for (const c of cards) {
         grid.append(

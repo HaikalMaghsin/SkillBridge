@@ -9,7 +9,7 @@ $role = 'admin';
 $path_prefix = '../';
 $admin_page = 'skills';
 $body_class = 'admin-body';
-$body_attrs = 'data-admin-page="skills" data-nav="skills"';
+$body_attrs = 'data-admin-page="skills"';
 $page_script = 'admin-skills.js';
 
 require_once __DIR__ . '/../../includes/layouts/head.php';
@@ -30,8 +30,8 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
       </div>
 
       <div class="admin-toolbar">
-        <div class="admin-search"><input type="text" id="skill-search" placeholder="Cari keterampilan..." /></div>
-        <select id="skill-category-filter" class="admin-select">
+        <div class="admin-search"><input type="text" id="admin-search" placeholder="Cari keterampilan..." /></div>
+        <select id="admin-cat-filter" class="admin-select">
           <option value="all">Semua kategori</option>
         </select>
         <button type="button" class="btn btn-accent btn-44" id="btn-add-skill">
@@ -48,8 +48,7 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
           <table class="admin-table">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Nama Keterampilan</th>
+                <th>Keterampilan</th>
                 <th>Kategori</th>
                 <th class="admin-text-end">Aksi</th>
               </tr>
