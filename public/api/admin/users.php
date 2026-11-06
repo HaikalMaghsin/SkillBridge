@@ -198,7 +198,7 @@ try {
         $input = json_decode(file_get_contents('php://input'), true) ?: [];
         $user_id = isset($input['id']) ? (int)$input['id'] : null;
         $name = trim($input['name'] ?? '');
-        $email = trim($input['email'] ?? '');
+        $email = strtolower(trim($input['email'] ?? ''));
         $role = null;
 
         if (array_key_exists('role', $input)) {
@@ -224,6 +224,23 @@ try {
             http_response_code(400);
             echo json_encode(['error' => 'id is required']);
             exit;
+        }
+
+        if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid email format']);
+            exit;
+        }
+
+        if ($email !== '') {
+            // Cek duplikat tanpa memandang huruf besar/kecil, kecuali akun ini sendiri.
+            $stmt = $pdo->prepare('SELECT id FROM users WHERE LOWER(email) = LOWER(:email) AND id <> :id');
+            $stmt->execute([':email' => $email, ':id' => $user_id]);
+            if ($stmt->fetch()) {
+                http_response_code(409);
+                echo json_encode(['error' => 'Email already exists']);
+                exit;
+            }
         }
 
         // Build dynamic update
@@ -305,6 +322,18 @@ try {
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);
 
+} catch (PDOException $e) {
+    if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    if ($e->getCode() === '23505') {
+        http_response_code(409);
+        echo json_encode(['error' => 'Email already exists']);
+        exit;
+    }
+    error_log('API admin/users.php error: ' . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['error' => 'Internal server error']);
 } catch (Exception $e) {
     if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
         $pdo->rollBack();
