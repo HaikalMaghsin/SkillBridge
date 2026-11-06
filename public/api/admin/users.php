@@ -163,7 +163,8 @@ try {
             exit;
         }
 
-        // Insert user
+        // Insert user + profil kosong agar user baru dari admin punya student_profiles.
+        $pdo->beginTransaction();
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
         $stmt = $pdo->prepare('
             INSERT INTO users (name, email, password_hash, role)
@@ -178,10 +179,22 @@ try {
         ]);
 
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $new_user_id = (int) $result['id'];
+
+        if ($role === 'user') {
+            $stmt = $pdo->prepare('
+                INSERT INTO student_profiles (user_id)
+                VALUES (:user_id)
+                ON CONFLICT (user_id) DO NOTHING
+            ');
+            $stmt->execute([':user_id' => $new_user_id]);
+        }
+
+        $pdo->commit();
 
         echo json_encode([
             'success' => true,
-            'id' => (int)$result['id'],
+            'id' => $new_user_id,
             'message' => 'User created'
         ]);
         exit;
@@ -292,6 +305,7 @@ try {
 
         $target_role = (string) $target['role'];
         $target_active = db_is_true($target['is_active']);
+        $final_role = $role ?? $target_role;
         $role_changed = ($role !== null && $role !== $target_role);
         $deactivating = ($is_active === false && $target_active);
 
@@ -311,6 +325,16 @@ try {
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
+
+        if ($final_role === 'user') {
+            $stmt = $pdo->prepare('
+                INSERT INTO student_profiles (user_id)
+                VALUES (:user_id)
+                ON CONFLICT (user_id) DO NOTHING
+            ');
+            $stmt->execute([':user_id' => $user_id]);
+        }
+
         $pdo->commit();
 
         echo json_encode(['success' => true, 'message' => 'User updated']);
