@@ -73,6 +73,7 @@ try {
                 u.name,
                 u.email,
                 u.role,
+                u.is_active,
                 u.created_at,
                 sp.target_career_id,
                 c.name AS career_target,
@@ -84,7 +85,7 @@ try {
             LEFT JOIN user_skills us ON us.user_id = u.id AND us.status = 'confirmed'
             LEFT JOIN evidence e ON e.user_id = u.id
             WHERE u.role = 'user'
-            GROUP BY u.id, u.name, u.email, u.role, u.created_at, sp.target_career_id, c.name
+            GROUP BY u.id, u.name, u.email, u.role, u.is_active, u.created_at, sp.target_career_id, c.name
             ORDER BY u.created_at DESC
         ");
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -99,7 +100,7 @@ try {
                 'career_target' => $row['career_target'],
                 'skills_count' => (int)$row['skills_count'],
                 'evidence_count' => (int)$row['evidence_count'],
-                'status' => 'active', // Default status
+                'status' => db_is_true($row['is_active']) ? 'active' : 'inactive',
                 'created_at' => $row['created_at']
             ];
         }, $users);
@@ -299,60 +300,7 @@ try {
         exit;
     }
 
-    // DELETE: Hapus user
-    if ($method === 'DELETE') {
-        if (!csrf_verify()) {
-            http_response_code(403);
-            echo json_encode(['error' => 'Invalid CSRF token']);
-            exit;
-        }
-
-        $input = json_decode(file_get_contents('php://input'), true) ?: [];
-        $user_id = isset($input['id']) ? (int)$input['id'] : null;
-
-        if (!$user_id) {
-            http_response_code(400);
-            echo json_encode(['error' => 'id is required']);
-            exit;
-        }
-
-        $pdo->beginTransaction();
-        $fail = function ($code, $message) use ($pdo) {
-            if ($pdo->inTransaction()) {
-                $pdo->rollBack();
-            }
-            http_response_code($code);
-            echo json_encode(['error' => $message]);
-            exit;
-        };
-
-        admin_guard_lock($pdo);
-
-        $stmt = $pdo->prepare('SELECT id, role, is_active FROM users WHERE id = :id FOR UPDATE');
-        $stmt->execute([':id' => $user_id]);
-        $target = $stmt->fetch();
-
-        if (!$target) {
-            $fail(404, 'User not found');
-        }
-
-        // Tidak boleh hapus diri sendiri
-        if ((int) $user_id === (int) $user['id']) {
-            $fail(400, 'Cannot delete your own account');
-        }
-
-        if ($target['role'] === 'admin' && db_is_true($target['is_active'])
-            && admin_active_count($pdo) <= 1) {
-            $fail(409, 'Cannot remove the last active admin');
-        }
-
-        $stmt = $pdo->prepare('DELETE FROM users WHERE id = :user_id');
-        $stmt->execute([':user_id' => $user_id]);
-        $pdo->commit();
-
-        echo json_encode(['success' => true, 'message' => 'User deleted']);
-        exit;
-    }
+    // DELETE permanen dihapus; penonaktifan dilakukan lewat PUT is_active=false.
 
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);

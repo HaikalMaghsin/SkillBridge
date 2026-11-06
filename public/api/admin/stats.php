@@ -35,16 +35,17 @@ try {
         exit;
     }
 
+    // Statistik pengguna hanya menghitung akun aktif.
     // Total mahasiswa (role 'user' di DB = 'mahasiswa' di aplikasi)
-    $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'user'");
+    $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'user' AND is_active = TRUE");
     $totalStudents = (int)$stmt->fetchColumn();
 
     // Total HR
-    $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'hr'");
+    $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'hr' AND is_active = TRUE");
     $totalHR = (int)$stmt->fetchColumn();
 
     // Total admin
-    $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'admin'");
+    $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'admin' AND is_active = TRUE");
     $totalAdmins = (int)$stmt->fetchColumn();
 
     // Total master skills
@@ -66,7 +67,8 @@ try {
     // Recent registrations (last 7 days)
     $stmt = $pdo->query("
         SELECT COUNT(*) FROM users
-        WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL '7 days'
+        WHERE is_active = TRUE
+          AND created_at >= CURRENT_TIMESTAMP - INTERVAL '7 days'
     ");
     $recentRegistrations = (int)$stmt->fetchColumn();
 
