@@ -1055,6 +1055,15 @@ small {
   font-size: 14px;
   z-index: 50;
 }
+.toast-error {
+  background: #DC2626;
+}
+.toast-warning {
+  background: #D97706;
+}
+.toast-success {
+  background: #059669;
+}
 
 .modal-overlay {
   position: fixed;

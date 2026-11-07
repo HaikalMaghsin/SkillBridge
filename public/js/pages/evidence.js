@@ -133,9 +133,8 @@
     }
 
     gridEl.style.gridTemplateColumns = "repeat(2, 1fr)";
-    // Render urutan terbaru di atas
-    const sorted = evidenceList.slice().reverse();
-    sorted.forEach((ev) => {
+    // API returns ORDER BY created_at DESC = newest first
+    evidenceList.forEach((ev) => {
       gridEl.appendChild(createEvidenceCardElement(ev));
     });
   }
@@ -581,6 +580,10 @@
       skillsInput.value = JSON.stringify(selectedSkillIds);
       updateSelectedChipsUi();
 
+      // Auto-detect level evidence dari konten CV
+      const detectedLevel = detectEvidenceLevelFromCv(cleanFullText, detectedSkillObjects.length);
+      levelSelect.value = detectedLevel;
+
       // Tampilkan Umpan Balik Visual Sukses
       if (feedbackBox) {
         feedbackBox.className = "ats-feedback-box ats-feedback--success";
@@ -596,6 +599,13 @@
           noteSpan.textContent = `(Dipilih otomatis 6 skill paling relevan dengan Target Career. Kamu bisa menyesuaikannya di daftar skill bawah).`;
           successText.appendChild(noteSpan);
         }
+
+        // Info level yang terdeteksi
+        const levelLabels = { basic: "Dasar", intermediate: "Menengah", advanced: "Mahir" };
+        const levelInfo = document.createElement("span");
+        levelInfo.style.cssText = "display: block; font-size: 11.5px; color: #047857; margin-top: 4px;";
+        levelInfo.textContent = `Level bukti disetel otomatis ke: ${levelLabels[detectedLevel]} (masih bisa kamu ubah manual).`;
+        successText.appendChild(levelInfo);
 
         if (detectedCvSummary) {
           const summarySnippet = document.createElement("div");
@@ -617,6 +627,62 @@
       }
       UI.toast("Gagal memindai PDF CV", "error");
     }
+  }
+
+  // Auto-detect level evidence berdasarkan konten CV
+  function detectEvidenceLevelFromCv(text, totalMatchedSkills) {
+    const lowerText = text.toLowerCase();
+
+    // Advanced (Mahir): pengalaman senior/production atau banyak skill
+    const advancedKeywords = [
+      /\bsenior\b/i,
+      /\blead\b/i,
+      /\barchitect\b/i,
+      /\bproduction\b/i,
+      /\b[23]\+?\s*(tahun|years?)\b/i,
+      /\bjuara\b/i,
+      /\bchampion\b/i,
+    ];
+
+    for (const regex of advancedKeywords) {
+      if (regex.test(lowerText)) {
+        return "advanced";
+      }
+    }
+
+    // Jika banyak skill DAN ada bukti pengalaman kerja
+    if (totalMatchedSkills >= 8 && (/pengalaman kerja/i.test(lowerText) || /work experience/i.test(lowerText))) {
+      return "advanced";
+    }
+
+    // Intermediate (Menengah): pengalaman praktik/proyek atau skill moderat
+    const intermediateKeywords = [
+      /\bintern(ship)?\b/i,
+      /\bmagang\b/i,
+      /\bfreelance\b/i,
+      /\bproject\b/i,
+      /\bproyek\b/i,
+      /\bcapstone\b/i,
+      /\bpbl\b/i,
+      /\bpjbl\b/i,
+      /\basisten\b/i,
+      /\bassistant\b/i,
+      /\b1\+?\s*(tahun|year)\b/i,
+    ];
+
+    for (const regex of intermediateKeywords) {
+      if (regex.test(lowerText)) {
+        return "intermediate";
+      }
+    }
+
+    // Jika skill cukup banyak, anggap intermediate
+    if (totalMatchedSkills >= 4) {
+      return "intermediate";
+    }
+
+    // Default: Basic (Dasar)
+    return "basic";
   }
 
   // Ekstraksi ringkasan profil sederhana dari teks CV
@@ -796,7 +862,7 @@
     modalTitle.textContent = "Ceritakan yang sudah kamu kerjakan";
     submitBtn.textContent = "Simpan Bukti";
     resetForm();
-    modal.style.display = "flex";
+    modal.style.display = "grid";
   };
 
   // Buka Modal Edit
@@ -839,7 +905,7 @@
     renderSkillChips();
     updateSelectedChipsUi();
 
-    modal.style.display = "flex";
+    modal.style.display = "grid";
   }
 
   // Tutup Modal
@@ -881,7 +947,7 @@
     if (e.target === modal) closeModal();
   };
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && modal.style.display === "flex") closeModal();
+    if (e.key === "Escape" && modal.style.display === "grid") closeModal();
   });
 
   // =========================================================================
