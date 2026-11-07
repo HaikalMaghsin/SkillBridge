@@ -9,9 +9,9 @@ const UI = (() => {
 
   const NAV_ITEMS = [
     { key: "dashboard", label: "Dashboard", href: "mahasiswa/dashboard.php" },
+    { key: "career", label: "Career Target", href: "mahasiswa/career.php" },
     { key: "skills", label: "My Skills", href: "mahasiswa/skills.php" },
     { key: "evidence", label: "Evidence", href: "mahasiswa/evidence.php" },
-    { key: "career", label: "Career Target", href: "mahasiswa/career.php" },
     { key: "gap", label: "Skill Gap", href: "mahasiswa/gap.php" },
     { key: "profile", label: "Profile", href: "mahasiswa/profile.php" },
   ];
@@ -49,8 +49,8 @@ const UI = (() => {
     }
   }
 
-  function toast(message) {
-    const box = el("div", { class: "toast", role: "status", text: message });
+  function toast(message, type = "info") {
+    const box = el("div", { class: `toast toast-${type}`, role: "status", text: message });
     document.body.append(box);
     setTimeout(() => box.remove(), 2600);
   }
@@ -66,12 +66,6 @@ const UI = (() => {
       ...body,
       el("div", { class: "modal-actions" }, [cancelBtn, submitBtn])
     ]);
-
-    // TAMBAHAN: Click handler langsung di button sebagai fallback
-    submitBtn.addEventListener("click", async (event) => {
-      console.log('[UI.modal] Button clicked directly'); // DEBUG
-      console.log('[UI.modal] Button.form:', event.target.form); // DEBUG
-    });
 
     const dialog = el("div", { class: "modal", role: "dialog", "aria-modal": "true", "aria-label": title }, [
       el("h3", { class: "modal-title", text: title }),
@@ -118,12 +112,9 @@ const UI = (() => {
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      event.stopPropagation(); // Prevent bubbling
-
-      console.log('[UI.modal] Form submit triggered'); // DEBUG
+      event.stopPropagation();
 
       if (!onSubmit) {
-        console.log('[UI.modal] No onSubmit, closing'); // DEBUG
         close();
         return;
       }
@@ -133,26 +124,19 @@ const UI = (() => {
       const originalText = submitBtn.textContent;
       submitBtn.textContent = "Processing...";
 
-      console.log('[UI.modal] Calling onSubmit...'); // DEBUG
-
       try {
         const result = await onSubmit(close, form);
-        console.log('[UI.modal] onSubmit result:', result); // DEBUG
 
         if (result === false) {
-          // onSubmit return false = jangan close
-          console.log('[UI.modal] Not closing (result=false)'); // DEBUG
           submitBtn.disabled = false;
           submitBtn.textContent = originalText;
           return;
         }
-        console.log('[UI.modal] Closing modal'); // DEBUG
         close();
       } catch (err) {
         console.error('[UI.modal] Submit error:', err);
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
-        // Jangan close jika error
       }
     });
 

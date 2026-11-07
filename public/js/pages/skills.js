@@ -235,10 +235,8 @@
       ],
       submitLabel: "Add",
       onSubmit: async (close, form) => {
-        console.log('onSubmit called!'); // DEBUG
         errorEl.style.display = "none";
         const mode = form.querySelector('input[name="mode"]:checked').value;
-        console.log('Mode:', mode); // DEBUG
 
         if (mode === "existing") {
           if (!selectedSkillId) {
@@ -500,7 +498,9 @@
             try {
               await API.removeSkill(skill.id);
               UI.toast("Skill removed");
-              close();
+              // Close modal by removing overlay from DOM
+              const overlay = document.querySelector('.modal-overlay');
+              if (overlay) overlay.remove();
               setTimeout(() => window.location.reload(), 300);
             } catch (err) {
               alert(`Error: ${err.message}`);

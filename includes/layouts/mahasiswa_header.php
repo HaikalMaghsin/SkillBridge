@@ -8,9 +8,9 @@ $user = current_user() ?? [];
 
 $nav_items = [
     'dashboard' => ['label' => 'Dashboard', 'href' => 'dashboard.php'],
+    'career'    => ['label' => 'Career Target', 'href' => 'career.php'],
     'skills'    => ['label' => 'My Skills', 'href' => 'skills.php'],
     'evidence'  => ['label' => 'Evidence', 'href' => 'evidence.php'],
-    'career'    => ['label' => 'Career Target', 'href' => 'career.php'],
     'gap'       => ['label' => 'Skill Gap', 'href' => 'gap.php'],
     'profile'   => ['label' => 'Profile', 'href' => 'profile.php'],
 ];
