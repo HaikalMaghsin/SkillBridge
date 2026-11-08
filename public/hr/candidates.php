@@ -1,10 +1,10 @@
 <?php
 // public/hr/candidates.php
-// Pipeline Kandidat · SkillBridge
+// Kandidat · SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('hr');
 
-$page_title = 'Pipeline Kandidat · SkillBridge';
+$page_title = 'Kandidat · SkillBridge';
 $role = 'hr';
 $path_prefix = '../';
 $rec_page = 'candidates';
