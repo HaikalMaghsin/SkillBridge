@@ -1,4 +1,4 @@
-﻿/* ============ 1. Design Tokens ============ */
+/* ============ 1. Design Tokens ============ */
 :root {
   /* Colors */
   --text-primary: #17172b;
@@ -1054,6 +1054,15 @@ small {
   box-shadow: var(--shadow-md);
   font-size: 14px;
   z-index: 50;
+}
+.toast-error {
+  background: #DC2626;
+}
+.toast-warning {
+  background: #D97706;
+}
+.toast-success {
+  background: #059669;
 }
 
 .modal-overlay {
@@ -3218,4 +3227,356 @@ body.landing {
   color: #EF4444;
   font-size: 13px;
   margin-top: 4px;
+}
+
+
+/* ==========================================================================
+   Responsive Evidence Modal & ATS CV Scanner Architecture
+   ========================================================================== */
+
+.modal-card,
+.modal-content {
+  background: var(--surface, #FFFFFF);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  animation: slideUp 0.2s ease;
+}
+
+.modal-header {
+  flex-shrink: 0;
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid var(--border, #E2E8F0);
+  background: var(--surface, #FFFFFF);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  position: relative;
+}
+
+.modal-header-content {
+  flex: 1;
+}
+
+.modal-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #5B6B7C;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.modal-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary, #0F172A);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.modal-subtitle {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted, #64748B);
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  color: var(--text-muted, #64748B);
+  display: grid;
+  place-items: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.modal-close-btn:hover {
+  background: var(--tint-gray, #F1F5F9);
+  color: var(--text-primary, #0F172A);
+}
+
+.modal-form-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.modal-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modal-footer {
+  flex-shrink: 0;
+  border-top: 1px solid #e2e8f0;
+  background: #fff;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Upload Dropzone & ATS Status */
+.upload-dropzone {
+  border: 2px dashed #CBD5E1;
+  background: #F8FAFC;
+  border-radius: 10px;
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.upload-dropzone:hover,
+.upload-dropzone.dragover {
+  border-color: #6366F1;
+  background: #F3F0FF;
+}
+
+.upload-dropzone-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #EEF2FF;
+  color: #6366F1;
+  display: grid;
+  place-items: center;
+}
+
+.ats-feedback-box {
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 10px;
+  transition: all 0.2s ease;
+}
+
+.ats-feedback--idle {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  color: #64748B;
+}
+
+.ats-feedback--loading {
+  background: #EEF2FF;
+  border: 1px solid #C7D2FE;
+  color: #3730A3;
+}
+
+.ats-feedback--success {
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  color: #065F46;
+}
+
+.ats-feedback--error {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
+}
+
+.ats-summary-snippet {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 6px;
+  font-size: 12px;
+  color: #334155;
+  border-left: 3px solid #10B981;
+}
+
+/* Skill Picker Search & Chips */
+.skill-search-wrapper {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.skill-search-input {
+  width: 100%;
+  padding: 9px 12px 9px 36px;
+  border: 1px solid var(--border, #E2E8F0);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  background: #FFFFFF;
+  color: var(--text-primary, #0F172A);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.skill-search-input:focus {
+  border-color: #6366F1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.skill-search-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted, #94A3B8);
+  pointer-events: none;
+}
+
+.skill-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 4px 2px;
+}
+
+.skill-chip {
+  padding: 6px 12px;
+  border: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  color: #475569;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.skill-chip:hover {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+}
+
+.skill-chip.is-owned {
+  border-color: #BFDBFE;
+  background: #EFF6FF;
+  color: #1E40AF;
+  font-weight: 600;
+}
+
+.skill-chip.is-selected {
+  border: 2px solid #6366F1 !important;
+  background: #EEF2FF !important;
+  color: #4338CA !important;
+  font-weight: 700;
+}
+
+.skill-chip-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: #DBEAFE;
+  color: #1D4ED8;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.skill-chip.is-selected .skill-chip-badge {
+  background: #C7D2FE;
+  color: #3730A3;
+}
+
+/* Evidence Card Component Enhancements */
+.evidence-card {
+  background: var(--surface, #FFFFFF);
+  border: 1px solid var(--border, #E2E8F0);
+  border-radius: var(--radius-lg, 16px);
+  padding: 20px;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.evidence-card:hover {
+  box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
+}
+
+.evidence-card-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.evidence-card-skill-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #F1F5F9;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.evidence-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid var(--border, #E2E8F0);
+  margin-top: auto;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.evidence-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 639px) {
+  .modal-card,
+  .modal-content {
+    max-height: 94vh;
+    width: 95%;
+    border-radius: 12px;
+  }
+  .modal-header {
+    padding: 16px 18px 12px;
+  }
+  .modal-body {
+    padding: 16px 18px;
+    gap: 16px;
+  }
+  .modal-footer {
+    padding: 14px 18px;
+    flex-direction: column-reverse;
+  }
+  .modal-footer .btn {
+    width: 100%;
+    min-height: 44px;
+  }
 }

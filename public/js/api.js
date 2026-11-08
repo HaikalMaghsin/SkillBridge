@@ -60,7 +60,10 @@ const API = (() => {
     const skills = await fetchAPI('my-skills.php');
     // Transform untuk kompatibilitas dengan kode lama yang expect { skill_id, evidence_count, label }
     return skills.map(s => ({
+      id: s.id,
       skill_id: s.skill_id,
+      name: s.name,
+      category: s.category,
       evidence_count: s.evidence_count,
       label: s.label
     }));
@@ -111,18 +114,44 @@ const API = (() => {
 
   // POST api/evidence.php { source_type, title, description, file_url, metadata, skill_ids }
   async function addEvidence(data) {
-    // Transform metadata jika perlu
+    const rawSkills = data.skill_ids || data.skillIds || data.skills || data.metadata?.skills || [];
     const payload = {
-      source_type: data.source_type,
+      source_type: data.source_type || data.type,
       title: data.title,
-      description: data.description || '',
-      file_url: data.file_url || null,
-      metadata: data.metadata || {},
-      skill_ids: data.metadata?.skills || [] // Ambil skill_ids dari metadata.skills
+      description: data.description || data.summary || '',
+      file_url: data.file_url || data.attachment || null,
+      metadata: data.metadata || {
+        date: new Date().toISOString().split('T')[0],
+        level: data.level || 'intermediate',
+        skills: rawSkills
+      },
+      skill_ids: rawSkills
     };
 
     return await fetchAPI('evidence.php', {
       method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
+  // PUT api/evidence.php { id, source_type, title, description, file_url, metadata, skill_ids }
+  async function updateEvidence(data) {
+    const rawSkills = data.skill_ids || data.skillIds || data.skills || data.metadata?.skills || [];
+    const payload = {
+      id: data.id,
+      source_type: data.source_type || data.type,
+      title: data.title,
+      description: data.description || data.summary || '',
+      file_url: data.file_url || data.attachment || null,
+      metadata: data.metadata || {
+        level: data.level || 'intermediate',
+        skills: rawSkills
+      },
+      skill_ids: rawSkills
+    };
+
+    return await fetchAPI('evidence.php', {
+      method: 'PUT',
       body: JSON.stringify(payload)
     });
   }
@@ -441,6 +470,7 @@ const API = (() => {
     // Evidence
     getEvidence,
     addEvidence,
+    updateEvidence,
     removeEvidence,
     updateEvidenceSkills,
 
