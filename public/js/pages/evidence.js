@@ -485,6 +485,201 @@
   // =========================================================================
   // 3. INTEGRASI PENUH SCAN CV ATS DENGAN MOZILLA PDF.JS
   // =========================================================================
+
+  // Helper: Rekonstruksi teks berdasarkan koordinat X,Y (mengatasi font kerning PDF)
+  function extractLinesFromPdfTextContent(textContent) {
+    const items = textContent.items
+      .filter(item => typeof item.str === 'string' && item.str.trim() && item.transform)
+      .map(item => ({
+        str: item.str,
+        x: item.transform[4],
+        y: item.transform[5],
+        width: item.width || 0,
+        height: Math.abs(item.transform[3]) || 10
+      }));
+
+    // Kelompokkan item ke dalam baris berdasarkan Y-coordinate (toleransi 3.5)
+    const lines = [];
+    items.forEach(item => {
+      let foundLine = lines.find(line => Math.abs(item.y - line.y) <= 3.5);
+      if (!foundLine) {
+        foundLine = { y: item.y, items: [] };
+        lines.push(foundLine);
+      }
+      foundLine.items.push(item);
+    });
+
+    // Urutkan baris dari atas ke bawah (Y menurun), dan item di baris dari kiri ke kanan
+    lines.sort((a, b) => b.y - a.y);
+    lines.forEach(line => {
+      line.items.sort((a, b) => a.x - b.x);
+    });
+
+    // Gabungkan item di setiap baris dengan gap-aware spacing
+    const reconstructedLines = lines.map(line => {
+      let text = '';
+      line.items.forEach((item, idx) => {
+        if (idx === 0) {
+          text = item.str;
+        } else {
+          const prev = line.items[idx - 1];
+          const gap = item.x - (prev.x + prev.width);
+
+          // Jika gap kecil (<2.2) atau prev berakhir dengan hyphen atau item dimulai dengan punctuation
+          if (gap < 2.2 || prev.str.endsWith('-') || /^[,.;:!?)\]}]/.test(item.str)) {
+            text += item.str; // Gabung TANPA spasi (fix kerning!)
+          } else {
+            text += ' ' + item.str; // Gabung dengan spasi
+          }
+        }
+      });
+      return text;
+    });
+
+    return reconstructedLines;
+  }
+
+  // Helper: Normalisasi kata yang terpecah spasi (fallback untuk pola spasi aneh)
+  function defragmentSpacedWords(text) {
+    // Gabungkan rangkaian 3+ huruf tunggal berurutan yang dipisahkan spasi
+    // Contoh: "P y t h o n" -> "Python"
+    return text.replace(/\b([A-Za-z])\s+([A-Za-z])\s+([A-Za-z])(?:\s+([A-Za-z]))*\b/g, (match) => {
+      return match.replace(/\s+/g, '');
+    });
+  }
+
+  // Helper: Pemilahan section CV (header, summary, experience, skills, education)
+  function parseCvSections(lines) {
+    const sections = {
+      header: [],
+      summary: [],
+      experience: [],
+      skills: [],
+      education: []
+    };
+
+    const sectionRegex = {
+      summary: /^(ringkasan(\s+profil|\s+profesional|\s+eksekutif)?|tentang\s+saya|profil(\s+singkat|\s+diri)?|professional\s+summary|executive\s+summary|summary|profile|about(\s+me)?)$/i,
+      experience: /^(pengalaman(\s+kerja|\s+proyek|\s+&\s+praktik|\s+organisasi|\s+profesional)?|proyek(\s+pilihan|\s+utama)?|riwayat\s+pekerjaan|work\s+experience|experience|projects|professional\s+experience)$/i,
+      skills: /^(keahlian(\s+teknis)?|keterampilan(\s+teknis)?|kompetensi(\s+teknis)?|technical\s+skills|skills|core\s+competencies|tech\s+stack)(\s*\(.*\))?$/i,
+      education: /^(pendidikan(\s+formal)?|riwayat\s+pendidikan|education|academic\s+background)$/i
+    };
+
+    let currentSection = 'header';
+    let foundFirstSection = false;
+
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+
+      // Deteksi pergantian section (judul section biasanya pendek < 55 karakter)
+      if (trimmed.length < 55) {
+        let sectionFound = false;
+        for (const [sectionName, regex] of Object.entries(sectionRegex)) {
+          if (regex.test(trimmed)) {
+            currentSection = sectionName;
+            foundFirstSection = true;
+            sectionFound = true;
+            return; // Skip menambahkan judul section ke konten
+          }
+        }
+      }
+
+      // Jika belum menemukan section pertama, masukkan ke header
+      if (!foundFirstSection) {
+        sections.header.push(trimmed);
+      } else {
+        sections[currentSection].push(trimmed);
+      }
+    });
+
+    return sections;
+  }
+
+  // Ekstraksi ringkasan profil AKURAT dari parsed sections
+  function extractSummaryFromCvSections(sections) {
+    // Prioritas 1: Gunakan section summary jika ada
+    if (sections.summary && sections.summary.length > 0) {
+      const summaryText = sections.summary.join(' ').trim();
+      if (summaryText.length > 20) {
+        return summaryText.substring(0, 350).trim();
+      }
+    }
+
+    // Prioritas 2: Ambil deskripsi pencapaian pertama dari experience
+    if (sections.experience && sections.experience.length > 2) {
+      // Skip baris pertama (biasanya judul/tanggal), ambil deskripsi
+      for (let i = 1; i < Math.min(sections.experience.length, 4); i++) {
+        const line = sections.experience[i].trim();
+        // Hindari baris yang hanya tanggal/lokasi/jabatan (biasanya pendek atau pola tertentu)
+        if (line.length > 60 && line.length < 350 && !line.match(/^\d{4}\s*[-–]\s*\d{4}/) && !line.match(/^\w+\s+\d{4}\s*[-–]/)) {
+          return line;
+        }
+      }
+    }
+
+    return '';
+  }
+
+  // Auto-detect level evidence berdasarkan parsed sections & skill count
+  function detectCvEvidenceLevel(sections, fullText, totalDetectedSkills) {
+    const lowerText = fullText.toLowerCase();
+    const experienceText = (sections.experience || []).join(' ').toLowerCase();
+    const summaryText = (sections.summary || []).join(' ').toLowerCase();
+    const combinedText = experienceText + ' ' + summaryText;
+
+    // Advanced (Mahir): senior/production experience atau banyak skill
+    const advancedKeywords = [
+      /\b(2\+?\s*(tahun|years?))\b/i,
+      /\b(3\+?\s*(tahun|years?))\b/i,
+      /\bsenior\b/i,
+      /\blead\b/i,
+      /\bketua\b/i,
+      /\barchitect\b/i,
+      /\bproduction\b/i
+    ];
+
+    for (const regex of advancedKeywords) {
+      if (regex.test(combinedText)) {
+        return 'advanced';
+      }
+    }
+
+    // Jika banyak skill (>=8) DAN ada minimal 2 entri experience
+    if (totalDetectedSkills >= 8 && sections.experience && sections.experience.length >= 4) {
+      return 'advanced';
+    }
+
+    // Intermediate (Menengah): praktik/proyek atau skill moderat
+    const intermediateKeywords = [
+      /\bintern(ship)?\b/i,
+      /\bmagang\b/i,
+      /\bfreelance\b/i,
+      /\bproyek\b/i,
+      /\bproject\b/i,
+      /\bpjbl\b/i,
+      /\bpbl\b/i,
+      /\bcapstone\b/i,
+      /\basisten\b/i,
+      /\bassistant\b/i,
+      /\b1\+?\s*(tahun|year)\b/i
+    ];
+
+    for (const regex of intermediateKeywords) {
+      if (regex.test(combinedText)) {
+        return 'intermediate';
+      }
+    }
+
+    // Jika skill cukup banyak (>=4), anggap intermediate
+    if (totalDetectedSkills >= 4) {
+      return 'intermediate';
+    }
+
+    // Default: Basic (Dasar)
+    return 'basic';
+  }
+
   async function extractAndMatchSkillsFromPdf(file) {
     const feedbackBox = document.getElementById("ats-scan-feedback");
     if (feedbackBox) {
@@ -500,20 +695,27 @@
       const arrayBuffer = await file.arrayBuffer();
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
       const pdf = await loadingTask.promise;
-      let fullText = "";
 
+      const allLines = [];
+
+      // Ekstraksi coordinate-aware dari setiap halaman
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
-        const pageStr = textContent.items.map((item) => item.str).join(" ");
-        fullText += " " + pageStr;
+        const pageLines = extractLinesFromPdfTextContent(textContent);
+        allLines.push(...pageLines);
       }
 
-      // Normalisasi teks
-      const cleanFullText = fullText.replace(/\s+/g, " ").trim();
+      // Gabungkan semua baris dan normalisasi
+      let fullText = allLines.join('\n');
+      fullText = defragmentSpacedWords(fullText);
+      const cleanFullText = fullText.replace(/\s+/g, ' ').trim();
       const lowerFullText = cleanFullText.toLowerCase();
 
-      // Pencocokan keahlian cerdas
+      // Parse CV ke dalam sections
+      const sections = parseCvSections(allLines);
+
+      // Pencocokan keahlian cerdas pada teks yang sudah bersih dari bug kerning
       const detectedSkillObjects = [];
 
       catalog.forEach((skill) => {
@@ -543,8 +745,8 @@
         }
       });
 
-      // Deteksi Ringkasan Profil dari Teks CV
-      detectedCvSummary = extractSummaryFromCvText(cleanFullText);
+      // Deteksi Ringkasan Profil AKURAT dari parsed sections
+      detectedCvSummary = extractSummaryFromCvSections(sections);
       if (detectedCvSummary) {
         if (!summaryInput.value.trim()) {
           summaryInput.value = detectedCvSummary;
@@ -556,7 +758,7 @@
         };
       }
 
-      // Seleksi Chip Keahlian
+      // Seleksi Chip Keahlian hingga 6/6
       let skillsToSelect = [];
       if (detectedSkillObjects.length > 6) {
         // Urutkan berdasarkan relevansi dengan Target Career mahasiswa
@@ -580,8 +782,8 @@
       skillsInput.value = JSON.stringify(selectedSkillIds);
       updateSelectedChipsUi();
 
-      // Auto-detect level evidence dari konten CV
-      const detectedLevel = detectEvidenceLevelFromCv(cleanFullText, detectedSkillObjects.length);
+      // Auto-detect level evidence dari sections & skill count
+      const detectedLevel = detectCvEvidenceLevel(sections, cleanFullText, detectedSkillObjects.length);
       levelSelect.value = detectedLevel;
 
       // Tampilkan Umpan Balik Visual Sukses
@@ -591,7 +793,7 @@
 
         const successText = document.createElement("div");
         const detectedNames = detectedSkillObjects.map((s) => s.name).join(", ");
-        successText.textContent = `✓ Berhasil memindai CV ATS (${file.name}): Terdeteksi ${detectedSkillObjects.length} skill [${detectedNames || "Tidak ada yang cocok"}].`;
+        successText.textContent = `✓ Berhasil memindai CV ATS (${file.name}): Terdeteksi ${detectedSkillObjects.length} skill${detectedNames ? ' [' + detectedNames + ']' : ''}.`;
 
         if (detectedSkillObjects.length > 6) {
           const noteSpan = document.createElement("span");
@@ -604,7 +806,7 @@
         const levelLabels = { basic: "Dasar", intermediate: "Menengah", advanced: "Mahir" };
         const levelInfo = document.createElement("span");
         levelInfo.style.cssText = "display: block; font-size: 11.5px; color: #047857; margin-top: 4px;";
-        levelInfo.textContent = `Level bukti disetel otomatis ke: ${levelLabels[detectedLevel]} (masih bisa kamu ubah manual).`;
+        levelInfo.textContent = `Level bukti disetel otomatis ke: ${levelLabels[detectedLevel]} (${detectedSkillObjects.length} skill terdeteksi, masih bisa kamu ubah manual).`;
         successText.appendChild(levelInfo);
 
         if (detectedCvSummary) {
@@ -627,79 +829,6 @@
       }
       UI.toast("Gagal memindai PDF CV", "error");
     }
-  }
-
-  // Auto-detect level evidence berdasarkan konten CV
-  function detectEvidenceLevelFromCv(text, totalMatchedSkills) {
-    const lowerText = text.toLowerCase();
-
-    // Advanced (Mahir): pengalaman senior/production atau banyak skill
-    const advancedKeywords = [
-      /\bsenior\b/i,
-      /\blead\b/i,
-      /\barchitect\b/i,
-      /\bproduction\b/i,
-      /\b[23]\+?\s*(tahun|years?)\b/i,
-      /\bjuara\b/i,
-      /\bchampion\b/i,
-    ];
-
-    for (const regex of advancedKeywords) {
-      if (regex.test(lowerText)) {
-        return "advanced";
-      }
-    }
-
-    // Jika banyak skill DAN ada bukti pengalaman kerja
-    if (totalMatchedSkills >= 8 && (/pengalaman kerja/i.test(lowerText) || /work experience/i.test(lowerText))) {
-      return "advanced";
-    }
-
-    // Intermediate (Menengah): pengalaman praktik/proyek atau skill moderat
-    const intermediateKeywords = [
-      /\bintern(ship)?\b/i,
-      /\bmagang\b/i,
-      /\bfreelance\b/i,
-      /\bproject\b/i,
-      /\bproyek\b/i,
-      /\bcapstone\b/i,
-      /\bpbl\b/i,
-      /\bpjbl\b/i,
-      /\basisten\b/i,
-      /\bassistant\b/i,
-      /\b1\+?\s*(tahun|year)\b/i,
-    ];
-
-    for (const regex of intermediateKeywords) {
-      if (regex.test(lowerText)) {
-        return "intermediate";
-      }
-    }
-
-    // Jika skill cukup banyak, anggap intermediate
-    if (totalMatchedSkills >= 4) {
-      return "intermediate";
-    }
-
-    // Default: Basic (Dasar)
-    return "basic";
-  }
-
-  // Ekstraksi ringkasan profil sederhana dari teks CV
-  function extractSummaryFromCvText(text) {
-    const summaryMatch = text.match(/(?:summary|professional summary|ringkasan|profil|about me|tentang saya)[:\s\-]+([^.!?\n]+(?:[.!?][^.!?\n]+){1,3})/i);
-    if (summaryMatch && summaryMatch[1]) {
-      return summaryMatch[1].trim().replace(/\s+/g, " ");
-    }
-    // Fallback: ambil potongan kalimat pertama yang relevan (tanpa email atau angka panjang)
-    const sentences = text.split(/(?<=[.!?])\s+/);
-    for (const s of sentences) {
-      const clean = s.trim();
-      if (clean.length > 40 && clean.length < 240 && !clean.includes("@") && !/\d{6,}/.test(clean)) {
-        return clean;
-      }
-    }
-    return "";
   }
 
   // =========================================================================
