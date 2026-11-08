@@ -1,7 +1,8 @@
-﻿<?php
+<?php
 // public/api/evidence.php
 // GET: Ambil evidence milik user + skill terkait
 // POST: Simpan evidence baru + relasi skill dalam transaksi
+// PUT: Update data evidence dan skill terkait
 // DELETE: Hapus evidence
 require_once __DIR__ . '/../../includes/auth/auth.php';
 require_once __DIR__ . '/../../includes/auth/csrf.php';
@@ -57,7 +58,7 @@ try {
         // Ambil skill terkait untuk setiap evidence
         foreach ($evidence as &$ev) {
             $ev['id'] = (int)$ev['id'];
-            $ev['metadata'] = json_decode($ev['metadata'], true);
+            $ev['metadata'] = json_decode($ev['metadata'], true) ?: [];
 
             // Ambil skill_ids dari evidence_skills
             $stmtSkills = $pdo->prepare('
@@ -175,7 +176,7 @@ try {
         }
     }
 
-    // PUT: Update evidence skill links
+    // PUT: Update evidence data & skill links
     if ($method === 'PUT') {
         if (!csrf_verify()) {
             http_response_code(403);
@@ -194,7 +195,7 @@ try {
         }
 
         // Verify ownership
-        $stmt = $pdo->prepare('SELECT user_id FROM evidence WHERE id = :evidence_id');
+        $stmt = $pdo->prepare('SELECT user_id, metadata, title, source_type, file_url FROM evidence WHERE id = :evidence_id');
         $stmt->execute([':evidence_id' => $evidence_id]);
         $evidence = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -204,27 +205,73 @@ try {
             exit;
         }
 
-        // Update skill links
+        // Update evidence fields & skill links
         $pdo->beginTransaction();
 
         try {
-            // Delete existing links
-            $stmt = $pdo->prepare('DELETE FROM evidence_skills WHERE evidence_id = :evidence_id');
-            $stmt->execute([':evidence_id' => $evidence_id]);
+            $currentMetadata = json_decode($evidence['metadata'] ?? '{}', true) ?: [];
+            $newMetadata = isset($input['metadata']) && is_array($input['metadata']) ? $input['metadata'] : $currentMetadata;
+            if (isset($input['description'])) {
+                $newMetadata['description'] = $input['description'];
+            }
 
-            // Insert new links
-            if (!empty($skill_ids) && is_array($skill_ids)) {
-                $stmtInsert = $pdo->prepare('
-                    INSERT INTO evidence_skills (evidence_id, skill_id)
-                    VALUES (:evidence_id, :skill_id)
-                    ON CONFLICT DO NOTHING
-                ');
+            $updateCols = [];
+            $params = [':evidence_id' => $evidence_id, ':user_id' => $user_id];
 
-                foreach ($skill_ids as $skill_id) {
-                    $stmtInsert->execute([
-                        ':evidence_id' => $evidence_id,
-                        ':skill_id' => (int)$skill_id
-                    ]);
+            if (isset($input['title']) && trim($input['title']) !== '') {
+                $updateCols[] = 'title = :title';
+                $params[':title'] = trim($input['title']);
+            }
+            if (isset($input['source_type'])) {
+                $valid_types = ['cv', 'project', 'portfolio', 'certificate', 'github', 'assessment'];
+                if (in_array($input['source_type'], $valid_types)) {
+                    $updateCols[] = 'source_type = :source_type';
+                    $params[':source_type'] = $input['source_type'];
+                }
+            }
+            if (array_key_exists('file_url', $input)) {
+                $updateCols[] = 'file_url = :file_url';
+                $params[':file_url'] = $input['file_url'];
+            }
+            if (isset($input['metadata']) || isset($input['description'])) {
+                $updateCols[] = 'metadata = :metadata';
+                $params[':metadata'] = json_encode($newMetadata, JSON_UNESCAPED_UNICODE);
+            }
+
+            if (!empty($updateCols)) {
+                $sql = 'UPDATE evidence SET ' . implode(', ', $updateCols) . ' WHERE id = :evidence_id AND user_id = :user_id';
+                $stmtUpdate = $pdo->prepare($sql);
+                $stmtUpdate->execute($params);
+            }
+
+            // Update skill links if provided
+            if (isset($input['skill_ids']) || !empty($newMetadata['skills'])) {
+                if (empty($skill_ids) && !empty($newMetadata['skills']) && is_array($newMetadata['skills'])) {
+                    $skillNames = $newMetadata['skills'];
+                    $placeholders = str_repeat('?,', count($skillNames) - 1) . '?';
+                    $stmtS = $pdo->prepare("SELECT id FROM skills WHERE name IN ($placeholders)");
+                    $stmtS->execute($skillNames);
+                    $skill_ids = $stmtS->fetchAll(PDO::FETCH_COLUMN);
+                }
+
+                // Delete existing links
+                $stmt = $pdo->prepare('DELETE FROM evidence_skills WHERE evidence_id = :evidence_id');
+                $stmt->execute([':evidence_id' => $evidence_id]);
+
+                // Insert new links
+                if (!empty($skill_ids) && is_array($skill_ids)) {
+                    $stmtInsert = $pdo->prepare('
+                        INSERT INTO evidence_skills (evidence_id, skill_id)
+                        VALUES (:evidence_id, :skill_id)
+                        ON CONFLICT DO NOTHING
+                    ');
+
+                    foreach ($skill_ids as $skill_id) {
+                        $stmtInsert->execute([
+                            ':evidence_id' => $evidence_id,
+                            ':skill_id' => (int)$skill_id
+                        ]);
+                    }
                 }
             }
 
@@ -232,7 +279,7 @@ try {
 
             echo json_encode([
                 'success' => true,
-                'message' => 'Evidence skills updated'
+                'message' => 'Evidence updated successfully'
             ]);
             exit;
 
