@@ -10,7 +10,7 @@ $role = 'admin';
 $path_prefix = '../';
 $admin_page = 'dashboard';
 $body_class = 'admin-body';
-$body_attrs = 'data-admin-page="dashboard" data-nav="dashboard"';
+$body_attrs = 'data-admin-page="dashboard"';
 $page_script = 'admin.js';
 
 require_once __DIR__ . '/../../includes/layouts/head.php';

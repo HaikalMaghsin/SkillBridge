@@ -1,10 +1,10 @@
 <?php
 // public/hr/candidates.php
-// Pipeline Kandidat · SkillBridge
+// Kandidat · SkillBridge
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('hr');
 
-$page_title = 'Pipeline Kandidat · SkillBridge';
+$page_title = 'Kandidat · SkillBridge';
 $role = 'hr';
 $path_prefix = '../';
 $rec_page = 'candidates';
@@ -30,7 +30,7 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
             </div>
           </div>
           <h1 class="rec-page-title">Daftar &amp; Kualifikasi Kandidat</h1>
-          <p class="rec-page-desc">Temukan kandidat yang sesuai, tinjau kecocokan skill, dan undang talenta terbaik untuk perusahaan Anda.</p>
+          <p class="rec-page-desc">Temukan kandidat yang sesuai dan tinjau kecocokan skill. Akses HR bersifat baca saja.</p>
         </div>
 
         <section class="rec-card">
@@ -82,7 +82,7 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M10 6.5v4.5M10 13.5h.01"/></svg>
           <div class="rec-info-strip-text">
             <span class="rec-info-strip-title">Kualifikasi berbasis skill &amp; evidence</span>
-            <span class="rec-info-strip-sub">Skill Utama Matched menunjukkan keterampilan yang sesuai dengan target role. Tinjau evidence kandidat sebelum mengirim undangan.</span>
+            <span class="rec-info-strip-sub">Skill Utama Matched menunjukkan keterampilan yang sesuai dengan target role. Tinjau evidence kandidat untuk kebutuhan peninjauan.</span>
           </div>
         </section>
       </main>

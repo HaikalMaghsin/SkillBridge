@@ -6,8 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const STATUS = {
     active: { cls: "", label: "Aktif" },
-    inactive: { cls: "", label: "Non-aktif" },
-    suspended: { cls: "admin-badge-danger", label: "Suspended" },
+    inactive: { cls: "admin-badge-danger", label: "Non-aktif" },
   };
 
   let allUsers = [];
@@ -81,11 +80,12 @@ document.addEventListener("DOMContentLoaded", () => {
               }),
               el("button", {
                 type: "button",
-                class: "admin-icon-btn admin-icon-btn-danger",
-                "data-action": "delete", "data-id": String(u.id), "aria-label": `Hapus ${u.name}`,
-                title: "Hapus",
+                class: `admin-icon-btn${u.status === "active" ? " admin-icon-btn-danger" : ""}`,
+                "data-action": "toggle", "data-id": String(u.id),
+                "aria-label": `${u.status === "active" ? "Nonaktifkan" : "Aktifkan"} ${u.name}`,
+                title: u.status === "active" ? "Nonaktifkan" : "Aktifkan",
                 innerHTML:
-                  '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5h10M5 3.5V2a1 1 0 011-1h2a1 1 0 011 1v1.5M3 3.5l.5 8.5h7l.5-8.5"/></svg>',
+                  '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 1.5v5"/><path d="M3.8 3.8a4.8 4.8 0 106.4 0"/></svg>',
               }),
             ]),
           ]),
@@ -140,14 +140,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (action === "edit") {
       openEditModal(u);
-    } else if (action === "delete") {
-      if (!confirm(`Hapus akun "${u.name}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+    } else if (action === "toggle") {
+      const nextActive = u.status !== "active";
+      const verb = nextActive ? "Aktifkan" : "Nonaktifkan";
+      if (!confirm(`${verb} akun "${u.name}"?`)) return;
       try {
-        await API.deleteAdminUser(u.id);
-        UI.toast(`Pengguna "${u.name}" berhasil dihapus`);
+        await API.updateAdminUser({ id: u.id, is_active: nextActive });
+        UI.toast(`Akun "${u.name}" ${nextActive ? "diaktifkan" : "dinonaktifkan"}`);
         await load();
       } catch (err) {
-        UI.toast("Gagal menghapus: " + err.message);
+        UI.toast(`Gagal ${verb.toLowerCase()}: ` + err.message);
       }
     }
   });
@@ -173,12 +175,16 @@ document.addEventListener("DOMContentLoaded", () => {
           }),
         ]),
         el("div", { class: "field" }, [
-          el("label", { for: "f-pass", text: "Password awal" }),
+          el("label", { for: "f-pass", text: "Password awal (8-72 karakter)" }),
           el("input", {
             type: "password",
             id: "f-pass",
             name: "password",
-            placeholder: "Minimal 8 karakter (default: password123)",
+            placeholder: "Minimal 8 karakter",
+            required: "required",
+            minlength: "8",
+            maxlength: "72",
+            autocomplete: "new-password",
           }),
         ]),
       ],
@@ -186,9 +192,13 @@ document.addEventListener("DOMContentLoaded", () => {
       onSubmit: async (close) => {
         const name = document.getElementById("f-name")?.value.trim();
         const email = document.getElementById("f-email")?.value.trim();
-        const password = document.getElementById("f-pass")?.value || "password123";
+        const password = document.getElementById("f-pass")?.value || "";
         if (!name || !email) {
           UI.toast("Nama dan email wajib diisi");
+          return false;
+        }
+        if (password.length < 8 || password.length > 72) {
+          UI.toast("Password wajib diisi 8-72 karakter");
           return false;
         }
         try {

@@ -15,9 +15,17 @@ const STATUS_LABEL = {
 };
 
 const ACTIVITY_BADGE = {
-  interview: "rec-badge--pink",
-  role: "rec-badge--indigo",
-  review: "rec-badge--gray",
+  candidate_status_update: "rec-badge--indigo",
+  candidate_shortlist: "rec-badge--indigo",
+  candidate_interview: "rec-badge--pink",
+  vacancy_created: "rec-badge--pink",
+};
+
+const ACTIVITY_LABEL = {
+  candidate_status_update: "Kandidat",
+  candidate_shortlist: "Kandidat",
+  candidate_interview: "Interview",
+  vacancy_created: "Target Role",
 };
 
 function initials(name) {
@@ -30,20 +38,41 @@ function initials(name) {
 }
 
 async function renderCompany() {
-  const c = await API.getRecruiterCompany();
-  document.getElementById("company-sub").textContent = `${c.name} · ${c.tagline}`;
+  const data = await API.getRecruiterCompany();
+  const c = data?.company;
+  const title = document.getElementById("company-title");
+  const badge = document.getElementById("company-badge");
+  if (title) title.textContent = c ? c.name : "Profil Perusahaan";
+  if (badge) badge.textContent = c ? "Terverifikasi" : "Belum terhubung";
+  document.getElementById("company-sub").textContent = c
+    ? `${c.name} · ${c.industry || "Mitra SkillBridge"}`
+    : "Belum terhubung ke perusahaan.";
 }
 
 async function renderStats() {
-  const s = await API.getRecruiterStats();
+  const [s, roles, candidates] = await Promise.all([
+    API.getRecruiterStats(),
+    API.getRecruiterRoles(),
+    API.getRecruiterCandidates(),
+  ]);
+  const metrics = {
+    teamSize: 0,
+    activeRecruiters: 0,
+    openRoles: 0,
+    totalPositions: 0,
+    ...s,
+  };
+  const mappedSkills = new Set(
+    (roles || []).flatMap((r) => r.skills || [])
+  ).size;
   const grid = document.getElementById("rec-stats-grid");
   clear(grid);
   const cards = [
-    { label: "Tim Recruiter", value: s.teamSize, context: `${s.activeRecruiters} aktif peninjauan kandidat` },
-    { label: "Role Dibuka", value: s.openRoles, context: "Target role yang dibuka perusahaan" },
-    { label: "Kursi Kosong", value: s.totalPositions, context: "Posisi yang menunggu kandidat" },
-    { label: "Kandidat Pipeline", value: s.pipelineCandidates, context: "Menunggu peninjauan tim" },
-    { label: "Skill Terpetakan", value: "15", primary: true, context: "Kebutuhan skill dari seluruh role aktif" },
+    { label: "Tim Recruiter", value: metrics.teamSize, context: `${metrics.activeRecruiters} aktif peninjauan kandidat` },
+    { label: "Role Dibuka", value: metrics.openRoles, context: "Target role yang dibuka perusahaan" },
+    { label: "Kursi Kosong", value: metrics.totalPositions, context: "Posisi yang menunggu kandidat" },
+    { label: "Kandidat Publik", value: (candidates || []).length, context: "Profil publik yang dapat ditinjau" },
+    { label: "Skill Terpetakan", value: mappedSkills, primary: true, context: "Kebutuhan skill dari seluruh role aktif" },
   ];
   for (const c of cards) {
     grid.appendChild(
@@ -72,34 +101,11 @@ async function renderTeam() {
     return;
   }
   for (const m of team.slice(0, 4)) {
-    let action;
-    if (m.status === "pending") {
-      action = el("button", {
-        type: "button",
-        class: "rec-row-action",
-        text: "Kirim Ulang",
-        onClick: () => {
-          UI.toast(`Undangan untuk ${m.name} dikirim ulang.`);
-        },
-      });
-    } else if (m.status === "inactive") {
-      action = el("button", {
-        type: "button",
-        class: "rec-row-action",
-        text: "Aktifkan",
-        onClick: async () => {
-          await API.setRecruiterStatus(m.id, "active");
-          UI.toast(`${m.name} diaktifkan.`);
-          load();
-        },
-      });
-    } else {
-      action = el("a", {
-        class: "rec-row-action",
-        href: "team.php",
-        text: "Kelola",
-      });
-    }
+    const action = el("a", {
+      class: "rec-row-action",
+      href: "team.php",
+      text: "Lihat",
+    });
 
     body.appendChild(
       el("div", { class: "rec-row" }, [
@@ -111,7 +117,7 @@ async function renderTeam() {
           ]),
         ]),
         el("div", { class: "rec-row-role" }, [
-          el("span", { class: "rec-role-text", text: m.role_label }),
+          el("span", { class: "rec-role-text", text: m.role || "Recruiter" }),
         ]),
         el("div", { class: "rec-row-status" }, [
           el("span", { class: `rec-badge ${STATUS_BADGE[m.status] || "rec-badge--gray"}`, text: STATUS_LABEL[m.status] || m.status }),
@@ -155,15 +161,18 @@ async function renderActivity() {
   const items = await API.getRecruiterActivity();
   const body = document.getElementById("rec-activity-body");
   clear(body);
-  for (const a of items.slice(0, 3)) {
+  for (const a of (items || []).slice(0, 3)) {
+    const action = a.action || "activity";
+    const label = ACTIVITY_LABEL[action] || action;
+    const text = `${a.recruiter || "—"} ${a.description || ""}`.trim();
     body.appendChild(
       el("div", { class: "rec-activity-item" }, [
-        el("span", { class: "rec-activity-time", text: a.time }),
+        el("span", { class: "rec-activity-time", text: a.timestamp || "—" }),
         el("div", { class: "rec-activity-content" }, [
-          el("span", { class: "rec-activity-text", text: `${a.actor} ${a.text}` }),
+          el("span", { class: "rec-activity-text", text }),
           el("span", {
-            class: `rec-badge rec-activity-badge ${ACTIVITY_BADGE[a.type] || "rec-badge--gray"}`,
-            text: a.type_label,
+            class: `rec-badge rec-activity-badge ${ACTIVITY_BADGE[action] || "rec-badge--gray"}`,
+            text: label,
           }),
         ]),
       ])
@@ -181,11 +190,6 @@ function renderDate() {
     `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
 }
 
-// Fokus ke form Manajemen Tim (form undang anggota ada di sana).
-function openAddRecruiter() {
-  window.location.href = "team.php#invite";
-}
-
 async function load() {
   renderDate();
   try {
@@ -194,7 +198,5 @@ async function load() {
     UI.toast("Gagal memuat data perusahaan: " + err.message);
   }
 }
-
-document.getElementById("btn-add-recruiter").addEventListener("click", openAddRecruiter);
 
 load();

@@ -30,7 +30,7 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
             </div>
           </div>
           <h1 class="rec-page-title">Pengaturan Akun &amp; Profil Perusahaan</h1>
-          <p class="rec-page-desc">Perbarui identitas perusahaan dan informasi yang ditampilkan kepada kandidat di SkillBridge.</p>
+          <p class="rec-page-desc">Lihat identitas perusahaan dan informasi yang ditampilkan kepada kandidat di SkillBridge. Akses HR bersifat baca saja.</p>
         </div>
 
         <div class="rec-tabs" role="tablist" aria-label="Pengaturan">
@@ -57,29 +57,28 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
               <div class="rec-logo-controls">
                 <span class="rec-logo-label">Logo Perusahaan</span>
                 <div class="rec-logo-actions">
-                  <button type="button" class="rec-cand-btn" id="btn-upload-logo" aria-label="Unggah logo perusahaan">Unggah Logo</button>
                   <span class="rec-logo-filename" id="company-logo-name">tech-indonesia.svg</span>
                 </div>
-                <p class="rec-logo-hint">PNG, JPG, atau SVG. Maksimal 2 MB · Disarankan 256 × 256 px.</p>
+                <p class="rec-logo-hint">Logo perusahaan hanya dapat dilihat. Hubungi admin SkillBridge untuk perubahan.</p>
               </div>
             </div>
 
             <form id="company-form" class="rec-field-grid">
               <div class="rec-field">
                 <label for="company-name">Nama Perusahaan</label>
-                <input id="company-name" type="text" value="PT Tech Indonesia" />
+                <input id="company-name" type="text" value="PT Tech Indonesia" readonly />
               </div>
               <div class="rec-field">
                 <label for="company-email">Domain Email Resmi</label>
-                <input id="company-email" type="text" value="company.com" />
+                <input id="company-email" type="text" value="company.com" readonly />
               </div>
               <div class="rec-field full">
                 <label for="company-location">Alamat &amp; Lokasi</label>
-                <input id="company-location" type="text" value="Jakarta Selatan, Indonesia" />
+                <input id="company-location" type="text" value="Jakarta Selatan, Indonesia" readonly />
               </div>
               <div class="rec-field full">
                 <label for="company-description">Deskripsi Perusahaan</label>
-                <textarea id="company-description" rows="4">PT Tech Indonesia adalah perusahaan teknologi yang mengembangkan solusi digital untuk membantu bisnis bertumbuh. Berbasis di Jakarta Selatan, kami membangun produk web, platform data, dan pengalaman digital yang berpusat pada pengguna. Kami membuka peluang bagi talenta di bidang engineering, desain, dan analisis data untuk berkolaborasi serta berkembang bersama tim kami.</textarea>
+                <textarea id="company-description" rows="4" readonly>PT Tech Indonesia adalah perusahaan teknologi yang mengembangkan solusi digital untuk membantu bisnis bertumbuh. Berbasis di Jakarta Selatan, kami membangun produk web, platform data, dan pengalaman digital yang berpusat pada pengguna. Kami membuka peluang bagi talenta di bidang engineering, desain, dan analisis data untuk berkolaborasi serta berkembang bersama tim kami.</textarea>
               </div>
             </form>
           </div>
@@ -106,10 +105,6 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
           </div>
         </section>
 
-        <div class="rec-save-bar">
-          <p class="rec-save-note">Perubahan profil akan ditampilkan pada informasi perusahaan Anda.</p>
-          <button type="button" class="rec-cand-btn rec-cand-btn--primary" id="btn-save-settings">Simpan Pengaturan</button>
-        </div>
       </main>
 
 <?php require_once __DIR__ . '/../../includes/layouts/hr_footer.php'; ?>

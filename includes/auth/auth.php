@@ -34,12 +34,79 @@ function app_role_to_db_role($role) {
     return $role === 'mahasiswa' ? 'user' : (string) $role;
 }
 
+/** Normalisasi boolean PostgreSQL ('t'/'f', 1/0, true/false) ke bool PHP. */
+function db_is_true($value) {
+    if (is_bool($value)) {
+        return $value;
+    }
+    return in_array($value, [1, '1', 't', 'true', 'TRUE', 'y', 'yes'], true);
+}
+
+/**
+ * Sinkronkan sesi dengan baris users terbaru (A4).
+ *
+ * - role, nama, dan email mengikuti database, bukan hanya nilai saat login;
+ * - akun yang dinonaktifkan atau sudah tidak ada langsung di-logout dari sesi;
+ * - bila database sedang tidak tersedia, sesi lama dipertahankan agar halaman
+ *   user tidak ikut mati; endpoint yang membutuhkan database tetap menolak.
+ */
+function sync_session_user() {
+    static $synced = false;
+
+    if (empty($_SESSION['user']['id'])) {
+        return false;
+    }
+    if ($synced) {
+        return true;
+    }
+    $synced = true;
+
+    if (demo_mode()) {
+        return true;
+    }
+
+    $pdo = get_db_connection();
+    if (!$pdo) {
+        error_log('Session sync skipped: database unavailable');
+        return true;
+    }
+
+    try {
+        $stmt = $pdo->prepare(
+            'SELECT id, name, email, role, is_active FROM users WHERE id = :id LIMIT 1'
+        );
+        $stmt->execute([':id' => (int) $_SESSION['user']['id']]);
+        $row = $stmt->fetch();
+    } catch (Exception $e) {
+        error_log('Session sync error: ' . $e->getMessage());
+        return true;
+    }
+
+    if (!$row || !db_is_true($row['is_active'])) {
+        unset($_SESSION['user']);
+        return false;
+    }
+
+    $role = db_role_to_app_role($row['role']);
+    $_SESSION['user'] = [
+        'id'         => (int) $row['id'],
+        'name'       => $row['name'],
+        'email'      => $row['email'],
+        'role'       => $role,
+        'role_label' => role_label($role),
+        'initials'   => make_initials($row['name']),
+    ];
+
+    return true;
+}
+
 function current_user() {
+    sync_session_user();
     return $_SESSION['user'] ?? null;
 }
 
 function is_logged_in() {
-    return !empty($_SESSION['user']);
+    return sync_session_user();
 }
 
 function get_user_role() {
@@ -133,7 +200,7 @@ function attempt_login($email, $password) {
     if ($pdo) {
         try {
             $stmt = $pdo->prepare(
-                'SELECT id, name, email, password_hash, role FROM users WHERE email = :email LIMIT 1'
+                'SELECT id, name, email, password_hash, role, is_active FROM users WHERE email = :email LIMIT 1'
             );
             $stmt->execute([':email' => $email]);
             $user = $stmt->fetch();
@@ -143,7 +210,7 @@ function attempt_login($email, $password) {
             $dummy_hash = $dummy_hash ?? password_hash(bin2hex(random_bytes(8)), PASSWORD_DEFAULT);
             $valid = password_verify($password, $user['password_hash'] ?? $dummy_hash);
 
-            if ($user && $valid) {
+            if ($user && $valid && db_is_true($user['is_active'])) {
                 session_regenerate_id(true);
                 $role = db_role_to_app_role($user['role']);
                 $_SESSION['user'] = [

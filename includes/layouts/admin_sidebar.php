@@ -37,13 +37,12 @@ $admin_page = $admin_page ?? 'dashboard';
         <a href="<?= e(base_url('admin/admins.php')) ?>" class="admin-nav-item <?= ($admin_page === 'admins') ? 'active' : '' ?>" data-nav="admins">Manajemen Administrator</a>
       </div>
     </details>
-    <details class="admin-nav-group cat-3" <?= in_array($admin_page, ['skills', 'careers', 'mapping', 'vacancies']) ? 'open' : '' ?>>
+    <details class="admin-nav-group cat-3" <?= in_array($admin_page, ['skills', 'careers', 'mapping']) ? 'open' : '' ?>>
       <summary class="admin-nav-group-head"><svg class="admin-nav-cat-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13V7.5l3.5-3.5 3.5 3.5V13"/><path d="M2.5 13h11"/><path d="M4.5 13v-2.5h4v2.5"/></svg><span class="admin-nav-group-title">Pengembangan Karier &amp; Keterampilan</span><svg class="admin-nav-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 3l3 3-3 3"/></svg></summary>
       <div class="admin-nav-group-body">
         <a href="<?= e(base_url('admin/skills.php')) ?>" class="admin-nav-item <?= ($admin_page === 'skills') ? 'active' : '' ?>" data-nav="skills">Manajemen Keterampilan</a>
         <a href="<?= e(base_url('admin/careers.php')) ?>" class="admin-nav-item <?= ($admin_page === 'careers') ? 'active' : '' ?>" data-nav="careers">Manajemen Target Karier</a>
         <a href="<?= e(base_url('admin/mapping.php')) ?>" class="admin-nav-item <?= ($admin_page === 'mapping') ? 'active' : '' ?>" data-nav="mapping">Career-Skill Mapping</a>
-        <a href="<?= e(base_url('admin/vacancies.php')) ?>" class="admin-nav-item <?= ($admin_page === 'vacancies') ? 'active' : '' ?>" data-nav="vacancies">Manajemen Lowongan</a>
       </div>
     </details>
     <details class="admin-nav-group cat-4" <?= ($admin_page === 'settings') ? 'open' : '' ?>>

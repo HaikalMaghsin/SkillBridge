@@ -12,7 +12,18 @@
     } catch {
       allSkills = [];
     }
+    fillCategoryFilter();
     applyFilter();
+  }
+
+  function fillCategoryFilter() {
+    const sel = document.getElementById("admin-cat-filter");
+    if (!sel) return;
+    const categories = [...new Set(allSkills.map((s) => s.category).filter(Boolean))].sort();
+    for (const category of categories) {
+      if ([...sel.options].some((o) => o.value === category)) continue;
+      sel.append(el("option", { value: category, text: category }));
+    }
   }
 
   function applyFilter() {
@@ -20,7 +31,7 @@
     const cat = document.getElementById("admin-cat-filter")?.value || "";
     const list = allSkills.filter((s) => {
       const matchQ = !q || s.name.toLowerCase().includes(q);
-      const matchCat = !cat || s.category === cat;
+      const matchCat = !cat || cat === "all" || s.category === cat;
       return matchQ && matchCat;
     });
     render(list);

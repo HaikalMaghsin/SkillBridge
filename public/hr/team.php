@@ -33,7 +33,8 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
           </div>
           <h1 class="rec-page-title">Manajemen Recruiter / Tim</h1>
           <p class="rec-page-desc">
-            Kelola anggota tim recruiter, peran masing-masing, dan status akses untuk peninjauan kandidat.
+            Lihat anggota tim recruiter, peran masing-masing, dan status akses untuk peninjauan kandidat.
+            Akses HR bersifat baca saja.
           </p>
         </div>
 
@@ -60,7 +61,6 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
             <option value="inactive">Nonaktif</option>
             <option value="pending">Pending</option>
           </select>
-          <button type="button" class="btn btn-accent btn-44" id="btn-invite-recruiter">Undang Recruiter</button>
         </div>
 
         <!-- Team table -->

@@ -44,7 +44,7 @@ function renderCards() {
       el("div", { class: "rec-role-card-skills" }, (r.skills || []).slice(0, 3).map(chip)),
       el("div", { class: "rec-role-card-foot" }, [
         el("span", { text: `${r.matches} kandidat cocok` }),
-        el("span", { class: "rec-pager-link", text: "Kelola →" }),
+        el("span", { class: "rec-pager-link", text: "Lihat →" }),
       ]),
     ]);
     wrap.append(card);
@@ -55,16 +55,9 @@ function selectRole(id) {
   selectedRoleId = id;
   const role = allRoles.find((r) => r.id === id);
   connectedIds = new Set();
-  // ponytail: mapping disimpan di localStorage per-role; upgrade ke API saat backend siap.
-  const saved = localStorage.getItem(`sb.rec.mapping.${id}`);
-  if (saved) {
-    try { connectedIds = new Set(JSON.parse(saved)); } catch { /* ignore */ }
-  } else if (role) {
-    // seed awal dari skill role
-    for (const name of role.skills || []) {
-      const s = catalogSkills.find((c) => c.name === name);
-      if (s) connectedIds.add(s.id);
-    }
+  for (const name of role?.skills || []) {
+    const s = catalogSkills.find((c) => c.name === name);
+    if (s) connectedIds.add(s.id);
   }
   renderCards();
   renderMapping(role);
@@ -80,10 +73,10 @@ function renderMapping(role) {
 
   clear(panel);
 
-  // Panel kiri: skill terhubung
+  // Panel kiri: skill terhubung (read-only)
   const left = el("div", { class: "rec-mapping-col" }, [
     el("h3", { class: "rec-mapping-col-title", text: "Skill Terhubung" }),
-    el("p", { class: "rec-mapping-col-sub", text: `${connectedIds.size} skill dipilih untuk role ini.` }),
+    el("p", { class: "rec-mapping-col-sub", text: `${connectedIds.size} skill terhubung untuk role ini.` }),
   ]);
   const list = el("div", { class: "rec-mapping-list" });
   if (!connectedIds.size) {
@@ -95,19 +88,13 @@ function renderMapping(role) {
       list.append(el("div", { class: "rec-mapping-item" }, [
         el("span", { class: "rec-mapping-item-name", text: s.name }),
         el("span", { class: "rec-mapping-item-cat", text: s.category }),
-        el("button", {
-          type: "button",
-          class: "rec-pager-link rec-pager-link--danger",
-          text: "Hapus",
-          onClick: () => { connectedIds.delete(sid); renderMapping(role); },
-        }),
       ]));
     }
   }
   left.append(list);
-  left.append(el("p", { class: "rec-info-note", text: "Skill yang terhubung menentukan kandidat mana yang muncul di pipeline role ini." }));
+  left.append(el("p", { class: "rec-info-note", text: "Skill yang terhubung menentukan kandidat mana yang muncul di pipeline role ini. HR hanya dapat melihat data ini." }));
 
-  // Panel kanan: katalog skill + checkbox
+  // Panel kanan: katalog skill (read-only)
   const right = el("div", { class: "rec-mapping-col" }, [
     el("h3", { class: "rec-mapping-col-title", text: "Panel Data Skill" }),
     el("input", {
@@ -136,11 +123,7 @@ function renderMapping(role) {
           type: "checkbox",
           class: "rec-check",
           ...(checked ? { checked: "checked" } : {}),
-          onChange: (e) => {
-            if (e.target.checked) connectedIds.add(s.id);
-            else connectedIds.delete(s.id);
-            renderMapping(role);
-          },
+          disabled: "disabled",
         }),
         el("span", { class: "rec-check-name", text: s.name }),
         el("span", { class: "rec-check-cat", text: s.category }),
@@ -149,7 +132,7 @@ function renderMapping(role) {
     }
     if (!shown) catList.append(el("p", { class: "rec-empty", text: "Tidak ada skill yang cocok." }));
     const c = document.getElementById("rec-skill-count");
-    if (c) c.textContent = `${connectedIds.size} skill dipilih dari ${catalogSkills.length} tersedia`;
+    if (c) c.textContent = `${connectedIds.size} skill terhubung dari ${catalogSkills.length} tersedia`;
   }
 
   panel.append(left, right);
@@ -172,16 +155,5 @@ async function load() {
   renderCards();
   selectRole(selectedRoleId);
 }
-
-document.getElementById("btn-save-mapping").addEventListener("click", () => {
-  if (selectedRoleId != null) {
-    localStorage.setItem(`sb.rec.mapping.${selectedRoleId}`, JSON.stringify([...connectedIds]));
-  }
-  UI.toast("Mapping skill tersimpan.");
-});
-document.getElementById("btn-cancel-mapping").addEventListener("click", () => {
-  selectRole(selectedRoleId);
-  UI.toast("Perubahan dibatalkan.");
-});
 
 load();

@@ -32,8 +32,8 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
           </div>
           <h1 class="rec-page-title">Panel Perusahaan &amp; Recruiter</h1>
           <p class="rec-page-desc">
-            Kelola profil perusahaan, anggota tim recruiter, target role, dan peninjauan kandidat SkillBridge
-            dari satu ruang kerja.
+            Lihat profil perusahaan, anggota tim recruiter, target role, dan peninjauan kandidat SkillBridge
+            dari satu ruang kerja. Akses HR bersifat baca saja.
           </p>
         </div>
 
@@ -49,7 +49,6 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
             </div>
             <p class="rec-company-sub" id="company-sub">PT Tech Indonesia · Mitra Resmi SkillBridge</p>
           </div>
-          <button type="button" class="btn btn-accent btn-44" id="btn-add-recruiter">Tambah Recruiter</button>
         </section>
 
         <!-- Metrics -->
@@ -66,7 +65,7 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
                 <h2 class="rec-card-title">Anggota Tim Recruiter</h2>
                 <p class="rec-card-sub" id="team-summary">—</p>
               </div>
-              <a href="team.php" class="rec-pager-link">Kelola Tim &rarr;</a>
+              <a href="team.php" class="rec-pager-link">Lihat Tim &rarr;</a>
             </div>
             <div class="rec-table">
               <div class="rec-table-head">
@@ -87,7 +86,7 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
                 <h2 class="rec-card-title">Target Role &amp; Skill Mapping Perusahaan</h2>
                 <p class="rec-card-sub" id="roles-summary">—</p>
               </div>
-              <a href="roles.php" class="rec-pager-link">Kelola Role &rarr;</a>
+              <a href="roles.php" class="rec-pager-link">Lihat Role &rarr;</a>
             </div>
             <div class="rec-role-head">
               <span class="rec-col-name">Target Role</span>
@@ -117,8 +116,8 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
         <section class="rec-info-strip rec-info-strip--pink">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M10 6.5v4.5M10 13.5h.01"/></svg>
           <div class="rec-info-strip-text">
-            <span class="rec-info-strip-title">Perubahan akses memengaruhi seluruh tim</span>
-            <span class="rec-info-strip-sub">Perubahan data recruiter dan penambahan target role akan berdampak pada akses peninjauan kandidat di seluruh tim perusahaan Anda.</span>
+            <span class="rec-info-strip-title">Akses baca saja</span>
+            <span class="rec-info-strip-sub">Data recruiter, target role, dan kandidat hanya dapat dilihat. Hubungi admin SkillBridge untuk perubahan data.</span>
           </div>
         </section>
 

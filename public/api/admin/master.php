@@ -135,6 +135,31 @@ try {
                 exit;
             }
 
+            // Jangan hapus skill yang masih dipakai; CASCADE tidak diubah.
+            $stmt = $pdo->prepare('
+                SELECT
+                    (SELECT COUNT(*) FROM user_skills WHERE skill_id = :id) AS user_skills,
+                    (SELECT COUNT(*) FROM evidence_skills WHERE skill_id = :id) AS evidence_skills,
+                    (SELECT COUNT(*) FROM career_skill_requirements WHERE skill_id = :id) AS mappings
+            ');
+            $stmt->execute([':id' => $id]);
+            $usage = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ((int)$usage['user_skills'] > 0
+                || (int)$usage['evidence_skills'] > 0
+                || (int)$usage['mappings'] > 0) {
+                http_response_code(409);
+                echo json_encode([
+                    'error' => 'Skill is still in use',
+                    'usage' => [
+                        'user_skills' => (int)$usage['user_skills'],
+                        'evidence_skills' => (int)$usage['evidence_skills'],
+                        'career_requirements' => (int)$usage['mappings'],
+                    ]
+                ]);
+                exit;
+            }
+
             $stmt = $pdo->prepare('DELETE FROM skills WHERE id = :id');
             $stmt->execute([':id' => $id]);
 
@@ -216,6 +241,31 @@ try {
             if (!$id) {
                 http_response_code(400);
                 echo json_encode(['error' => 'id is required']);
+                exit;
+            }
+
+            // Jangan hapus karier yang masih dipakai; CASCADE tidak diubah.
+            $stmt = $pdo->prepare('
+                SELECT
+                    (SELECT COUNT(*) FROM student_profiles WHERE target_career_id = :id) AS student_profiles,
+                    (SELECT COUNT(*) FROM career_skill_requirements WHERE career_id = :id) AS mappings,
+                    (SELECT COUNT(*) FROM job_vacancies WHERE career_id = :id) AS vacancies
+            ');
+            $stmt->execute([':id' => $id]);
+            $usage = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ((int)$usage['student_profiles'] > 0
+                || (int)$usage['mappings'] > 0
+                || (int)$usage['vacancies'] > 0) {
+                http_response_code(409);
+                echo json_encode([
+                    'error' => 'Career is still in use',
+                    'usage' => [
+                        'student_profiles' => (int)$usage['student_profiles'],
+                        'career_requirements' => (int)$usage['mappings'],
+                        'job_vacancies' => (int)$usage['vacancies'],
+                    ]
+                ]);
                 exit;
             }
 
