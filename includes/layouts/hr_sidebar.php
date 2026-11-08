@@ -46,15 +46,14 @@ $rec_page = $rec_page ?? 'profile';
         <a href="<?= e(base_url('hr/activity.php')) ?>" class="rec-nav-item <?= $rec_page === 'activity' ? 'active' : '' ?>">Log Aktivitas Recruiter</a>
       </div>
     </details>
-    <details class="rec-nav-group" <?= in_array($rec_page, ['roles', 'candidates']) ? 'open' : '' ?>>
+    <details class="rec-nav-group" <?= ($rec_page === 'candidates') ? 'open' : '' ?>>
       <summary class="rec-nav-group-head">
         <svg class="rec-nav-cat-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2"/></svg>
-        <span class="rec-nav-group-title">Rekrutmen &amp; Peran</span>
+        <span class="rec-nav-group-title">Rekrutmen</span>
         <svg class="rec-nav-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 3l3 3-3 3"/></svg>
       </summary>
       <div class="rec-nav-group-body">
-        <a href="<?= e(base_url('hr/roles.php')) ?>" class="rec-nav-item <?= $rec_page === 'roles' ? 'active' : '' ?>">Target Role &amp; Kebutuhan Skill</a>
-        <a href="<?= e(base_url('hr/candidates.php')) ?>" class="rec-nav-item <?= $rec_page === 'candidates' ? 'active' : '' ?>">Pipeline Kandidat</a>
+        <a href="<?= e(base_url('hr/candidates.php')) ?>" class="rec-nav-item <?= $rec_page === 'candidates' ? 'active' : '' ?>">Kandidat</a>
       </div>
     </details>
   </nav>
