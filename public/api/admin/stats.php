@@ -64,6 +64,10 @@ try {
     $stmt = $pdo->query("SELECT COUNT(*) FROM evidence");
     $totalEvidence = (int)$stmt->fetchColumn();
 
+    // Active vacancies
+    $stmt = $pdo->query("SELECT COUNT(*) FROM job_vacancies WHERE status = 'active'");
+    $activeVacancies = (int)$stmt->fetchColumn();
+
     // Recent registrations (last 7 days)
     $stmt = $pdo->query("
         SELECT COUNT(*) FROM users
@@ -80,6 +84,7 @@ try {
         'total_careers' => $totalCareers,
         'total_mappings' => $totalMappings,
         'total_evidence' => $totalEvidence,
+        'active_vacancies' => $activeVacancies,
         'recent_registrations' => $recentRegistrations
     ], JSON_UNESCAPED_UNICODE);
 

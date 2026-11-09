@@ -25,9 +25,8 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
         <div>
           <p class="admin-eyebrow">Lowongan</p>
           <h1 class="admin-page-title">Manajemen Lowongan</h1>
-          <p class="admin-page-desc">Pantau dan kelola semua lowongan kerja yang diposting diplatform SkillBridge.</p>
+          <p class="admin-page-desc">Pantau dan moderasi semua lowongan kerja yang diposting perusahaan mitra di platform SkillBridge.</p>
         </div>
-        <button class="btn btn-accent" type="button" id="btn-add-vacancy">+ Lowongan Baru</button>
       </div>
 
       <div class="admin-toolbar">
@@ -36,9 +35,9 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
         </div>
         <select id="vacancy-status-filter" class="admin-select">
           <option value="all">Semua status</option>
-          <option value="open">Dibuka</option>
+          <option value="active">Aktif</option>
+          <option value="inactive">Non-aktif</option>
           <option value="closed">Ditutup</option>
-          <option value="draft">Draft</option>
         </select>
       </div>
 
@@ -47,12 +46,11 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
           <table class="admin-table">
             <thead>
               <tr>
-                <th>Posisi</th>
+                <th>Posisi & Kategori</th>
                 <th>Perusahaan</th>
-                <th>Lokasi</th>
-                <th>Tipe</th>
-                <th>Pelamar</th>
+                <th>Kuota</th>
                 <th>Status</th>
+                <th>Diposting oleh</th>
                 <th>Dibuat</th>
                 <th class="admin-text-end">Aksi</th>
               </tr>

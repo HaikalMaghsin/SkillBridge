@@ -1,25 +1,65 @@
 // admin.js - render dashboard admin (Admin Console)
-// Data angka berasal dari API.getAdminStats.
+// Terhubung ke PostgreSQL untuk statistik real-time
 
 (async () => {
   const { el } = UI;
 
-  // ---- Stat cards ----
+  // ---- Stat cards dari PostgreSQL ----
   try {
-    const stats = await API.getAdminStats();
+    const response = await fetch(`${window.APP_BASE_URL}/api/admin/stats.php`, {
+      headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '' }
+    });
+
+    if (!response.ok) throw new Error('Failed to load stats');
+
+    const stats = await response.json();
     const grid = document.getElementById("admin-stats-grid");
+
     if (grid) {
       UI.clear(grid);
+
       const totalStudents = Number(stats.total_students ?? 0);
       const totalHR = Number(stats.total_hr ?? 0);
       const totalUsers = totalStudents + totalHR;
+
       const cards = [
-        { label: "Total pengguna", value: totalUsers, context: `${totalStudents} mahasiswa · ${totalHR} HR` },
-        { label: "Administrator", value: Number(stats.total_admins ?? 0), context: "Platform owner & admin" },
-        { label: "Keterampilan", value: Number(stats.total_skills ?? 0), context: "Record keterampilan master" },
-        { label: "Target karier", value: Number(stats.total_careers ?? 0), context: "Record target karier master" },
-        { label: "Relasi mapping", value: Number(stats.total_mappings ?? 0), context: "Relasi karier–keterampilan" },
+        {
+          label: "Total Pengguna",
+          value: totalUsers,
+          context: `${totalStudents} mahasiswa · ${totalHR} HR`
+        },
+        {
+          label: "Administrator",
+          value: Number(stats.total_admins ?? 0),
+          context: "Platform owner & admin"
+        },
+        {
+          label: "Keterampilan",
+          value: Number(stats.total_skills ?? 0),
+          context: "Master skill database"
+        },
+        {
+          label: "Target Karier",
+          value: Number(stats.total_careers ?? 0),
+          context: "Kategori karier master"
+        },
+        {
+          label: "Relasi Mapping",
+          value: Number(stats.total_mappings ?? 0),
+          context: "Karier–skill requirements"
+        },
+        {
+          label: "Evidence",
+          value: Number(stats.total_evidence ?? 0),
+          context: "Bukti kompetensi mahasiswa"
+        },
+        {
+          label: "Lowongan Aktif",
+          value: Number(stats.active_vacancies ?? 0),
+          context: "Job vacancies dari perusahaan"
+        },
       ];
+
       for (const c of cards) {
         grid.append(
           el("div", { class: "admin-stat-card" }, [
@@ -33,15 +73,14 @@
       }
     }
   } catch (err) {
-    // mode tanpa API tetap render angka static di HTML
+    console.error('Error loading admin stats:', err);
+    UI.toast('Gagal memuat statistik', 'error');
   }
 
-  // ---- System activity ----
+  // ---- Recent Activity (untuk fase mendatang - saat ini static) ----
   const systemRows = [
-    { time: "10.42", text: "Nadia Putri membuat akun", cat: "Pengguna" },
-    { time: "10.30", text: "Python ditambahkan ke Data Analyst", cat: "Mapping" },
-    { time: "09.58", text: "Deskripsi REST APIs diperbarui", cat: "Keterampilan" },
-    { time: "09.15", text: "Target karier Data Engineer dibuat", cat: "Target karier" },
+    { time: "Baru saja", text: "Sistem siap digunakan", cat: "Sistem" },
+    { time: "—", text: "Log aktivitas akan muncul di sini", cat: "Info" },
   ];
 
   const sysBody = document.getElementById("system-activity-body");
@@ -60,22 +99,12 @@
     }
   }
 
-  // ---- Admin activity ----
+  // ---- Admin activity (untuk fase mendatang - saat ini static) ----
   const adminRows = [
     {
-      actor: "Aditya Pratama · Admin",
-      detail: "Menambahkan Dimas Saputra · Admin Job",
-      time: "10.12",
-    },
-    {
-      actor: "Rani Wulandari · Admin SkillBridge",
-      detail: "Memperbarui deskripsi keterampilan",
-      time: "09.58",
-    },
-    {
-      actor: "Aditya Pratama · Admin",
-      detail: "Menonaktifkan akun Bima Santoso",
-      time: "Kemarin",
+      actor: "Administrator",
+      detail: "Dashboard Admin terhubung ke PostgreSQL",
+      time: "Baru saja",
     },
   ];
 

@@ -40,15 +40,16 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
         <form id="form-admin-profile">
           <div class="field">
             <label for="set-name">Nama lengkap</label>
-            <input type="text" id="set-name" name="name" value="Aditya Pratama" />
+            <input type="text" id="set-name" name="name" value="" required />
           </div>
           <div class="field">
             <label for="set-email">Email</label>
-            <input type="email" id="set-email" name="email" value="aditya@skillbridge.id" />
+            <input type="email" id="set-email" name="email" value="" required />
           </div>
           <div class="field">
             <label for="set-password">Password baru</label>
-            <input type="password" id="set-password" name="password" placeholder="Biarkan kosong jika tidak diubah" />
+            <input type="password" id="set-password" name="password" placeholder="Biarkan kosong jika tidak diubah" minlength="8" />
+            <small style="color: #6b7280; font-size: 13px;">Minimal 8 karakter jika ingin diubah</small>
           </div>
         </form>
         <div class="row-end" style="display:flex;justify-content:flex-end">

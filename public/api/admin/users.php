@@ -65,8 +65,46 @@ try {
         exit;
     }
 
-    // GET: List semua users
+    // GET: List users (dengan optional filter role)
     if ($method === 'GET') {
+        $roleFilter = $_GET['role'] ?? 'user';
+        $roleFilter = admin_normalize_role($roleFilter) ?? 'user';
+
+        // Query untuk admin: simple tanpa join
+        if ($roleFilter === 'admin') {
+            $stmt = $pdo->query("
+                SELECT
+                    u.id,
+                    u.name,
+                    u.email,
+                    u.role,
+                    u.is_active,
+                    u.created_at,
+                    u.updated_at
+                FROM users u
+                WHERE u.role = 'admin'
+                ORDER BY u.created_at DESC
+            ");
+            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            echo json_encode([
+                'users' => array_map(function($row) use ($user) {
+                    return [
+                        'id' => (int)$row['id'],
+                        'name' => $row['name'],
+                        'email' => $row['email'],
+                        'role' => $row['role'],
+                        'is_active' => db_is_true($row['is_active']),
+                        'created_at' => $row['created_at'],
+                        'updated_at' => $row['updated_at']
+                    ];
+                }, $users),
+                'current_user_id' => $user['id']
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        // Query untuk user/mahasiswa: dengan join profil & evidence
         $stmt = $pdo->query("
             SELECT
                 u.id,
@@ -75,6 +113,7 @@ try {
                 u.role,
                 u.is_active,
                 u.created_at,
+                u.updated_at,
                 sp.target_career_id,
                 c.name AS career_target,
                 COUNT(DISTINCT us.skill_id) AS skills_count,
@@ -85,7 +124,7 @@ try {
             LEFT JOIN user_skills us ON us.user_id = u.id AND us.status = 'confirmed'
             LEFT JOIN evidence e ON e.user_id = u.id
             WHERE u.role = 'user'
-            GROUP BY u.id, u.name, u.email, u.role, u.is_active, u.created_at, sp.target_career_id, c.name
+            GROUP BY u.id, u.name, u.email, u.role, u.is_active, u.created_at, u.updated_at, sp.target_career_id, c.name
             ORDER BY u.created_at DESC
         ");
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);

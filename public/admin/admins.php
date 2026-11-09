@@ -32,10 +32,10 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
 
       <div class="admin-toolbar">
         <div class="admin-search"><input type="text" id="admin-search" placeholder="Cari nama atau email..." /></div>
-        <select id="admin-role-filter" class="admin-select">
-          <option value="all">Semua peran</option>
-          <option value="job_admin">Admin Job</option>
-          <option value="skillbridge_admin">Admin SkillBridge</option>
+        <select id="admin-status-filter" class="admin-select">
+          <option value="all">Semua status</option>
+          <option value="active">Aktif</option>
+          <option value="inactive">Non-aktif</option>
         </select>
       </div>
 
@@ -45,11 +45,9 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
             <thead>
               <tr>
                 <th>Administrator</th>
-                <th>Peran</th>
-                <th>Perusahaan</th>
-                <th>Lowongan</th>
                 <th>Status</th>
                 <th>Dibuat</th>
+                <th>Diperbarui</th>
                 <th class="admin-text-end">Aksi</th>
               </tr>
             </thead>
