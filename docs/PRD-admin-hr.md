@@ -1,6 +1,8 @@
 # PRD: Perbaikan Modul Admin dan HR SkillBridge
 
-Disusun 5 November 2026. Pemilik: pengembang jalur Admin dan HR. Jalur User (mahasiswa) dikerjakan anggota tim lain dan tidak boleh terganggu.
+> **CATATAN EVOLUSI ARSITEKTUR (FASE 2):** Dokumen ini merupakan spesifikasi Fase 1 (Fondasi Keamanan Admin & Privasi Dasar HR). Untuk pengembangan Fase 2 (Integrasi Ekosistem 3 Role, Target Role Perusahaan, & Shortlist Kandidat), sistem mengacu sepenuhnya pada docs/RUMUSAN_FINAL_ARSITEKTUR_SKILLBRIDGE.md dan docs/SPEC_EVIDENCE_DAN_ATS_SCANNER.md.
+
+Disusun 5 November 2026. Jalur User (mahasiswa) dikembangkan secara paralel dan tidak boleh terganggu.
 
 ## 1. Latar belakang dan tujuan
 

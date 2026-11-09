@@ -1,5 +1,7 @@
 # CLAUDE.md — SkillBridge (PHP Native Multi-Role Architecture)
 
+> **CATATAN EVOLUSI ARSITEKTUR (FASE 2):** Dokumen docs/PRD-admin-hr.md merupakan spesifikasi Fase 1 (Fondasi Keamanan Admin & Privasi Dasar HR). Untuk pengembangan Fase 2 (Integrasi Ekosistem 3 Role, Target Role Perusahaan, & Shortlist Kandidat), sistem mengacu sepenuhnya pada docs/RUMUSAN_FINAL_ARSITEKTUR_SKILLBRIDGE.md dan docs/SPEC_EVIDENCE_DAN_ATS_SCANNER.md.
+
 Dokumen ini adalah sumber aturan utama (**AI Rules & Guardrails**) untuk AI Coding Assistant (Claude Code, Cursor, GitHub Copilot, Windsurf) dan seluruh anggota tim saat mengembangkan dan memigrasikan **SkillBridge** dari HTML statis ke **PHP 8.x Native Modular**.
 
 ## 1. Konteks Proyek
