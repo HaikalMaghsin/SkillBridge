@@ -1,6 +1,7 @@
 <?php
 // public/api/gap.php
 // GET: Ambil skill gap mahasiswa (skills you have vs what to explore)
+// Support mode: standar career OR spesifik vacancy
 require_once __DIR__ . '/../../includes/auth/auth.php';
 require_once __DIR__ . '/../../includes/config/database.php';
 
@@ -23,6 +24,8 @@ if ($user['role'] !== 'mahasiswa') {
     exit;
 }
 
+$vacancy_id = isset($_GET['vacancy_id']) ? (int)$_GET['vacancy_id'] : null;
+
 try {
     $pdo = get_db_connection();
 
@@ -32,33 +35,81 @@ try {
         exit;
     }
 
-    // Ambil target career
-    $stmt = $pdo->prepare('
-        SELECT
-            c.id,
-            c.name,
-            c.description
-        FROM student_profiles sp
-        JOIN careers c ON c.id = sp.target_career_id
-        WHERE sp.user_id = :user_id
-    ');
-    $stmt->execute([':user_id' => $user_id]);
-    $career = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Mode: Vacancy-specific atau Career standard
+    if ($vacancy_id) {
+        // Mode: Spesifik perusahaan (dari vacancy)
+        $stmt = $pdo->prepare('
+            SELECT
+                jv.id AS vacancy_id,
+                jv.title AS vacancy_title,
+                c.name AS company_name,
+                c.industry,
+                car.id AS career_id,
+                car.name AS career_name,
+                car.description AS career_description
+            FROM job_vacancies jv
+            JOIN companies c ON c.id = jv.company_id
+            JOIN careers car ON car.id = jv.career_id
+            WHERE jv.id = :vacancy_id AND jv.status = :status
+        ');
+        $stmt->execute([':vacancy_id' => $vacancy_id, ':status' => 'active']);
+        $vacancyData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$career) {
-        echo json_encode([
-            'career' => null,
-            'have' => [],
-            'explore' => []
-        ]);
-        exit;
+        if (!$vacancyData) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Vacancy not found']);
+            exit;
+        }
+
+        $career = [
+            'id' => (int)$vacancyData['career_id'],
+            'name' => $vacancyData['career_name'],
+            'description' => $vacancyData['career_description']
+        ];
+
+        $contextInfo = [
+            'mode' => 'vacancy',
+            'vacancy_id' => (int)$vacancyData['vacancy_id'],
+            'vacancy_title' => $vacancyData['vacancy_title'],
+            'company_name' => $vacancyData['company_name'],
+            'industry' => $vacancyData['industry']
+        ];
+
+    } else {
+        // Mode: Standar career dari student_profiles
+        $stmt = $pdo->prepare('
+            SELECT
+                c.id,
+                c.name,
+                c.description
+            FROM student_profiles sp
+            JOIN careers c ON c.id = sp.target_career_id
+            WHERE sp.user_id = :user_id
+        ');
+        $stmt->execute([':user_id' => $user_id]);
+        $career = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$career) {
+            echo json_encode([
+                'career' => null,
+                'have' => [],
+                'explore' => [],
+                'context' => ['mode' => 'standard']
+            ]);
+            exit;
+        }
+
+        $career = [
+            'id' => (int)$career['id'],
+            'name' => $career['name'],
+            'description' => $career['description']
+        ];
+
+        $contextInfo = ['mode' => 'standard'];
     }
 
-    $career = [
-        'id' => (int)$career['id'],
-        'name' => $career['name'],
-        'description' => $career['description']
-    ];
+    // Ambil skill requirements untuk career ini
+    $career_id = $career['id'];
 
     // Ambil skill yang sudah dimiliki (dari view v_skill_gap)
     $stmt = $pdo->prepare('
@@ -78,7 +129,7 @@ try {
     $stmt->execute([':user_id' => $user_id]);
     $have = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Ambil skill yang belum dimiliki (skill gap)
+    // Ambil skill yang belum dimiliki
     $stmt = $pdo->prepare('
         SELECT
             vsg.skill_id AS id,
@@ -87,13 +138,12 @@ try {
         FROM v_skill_gap vsg
         JOIN skills s ON s.id = vsg.skill_id
         WHERE vsg.user_id = :user_id AND vsg.has_skill = FALSE
-        GROUP BY vsg.skill_id, vsg.skill_name, s.category, s.name
         ORDER BY s.name
     ');
     $stmt->execute([':user_id' => $user_id]);
     $explore = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Transform hasil
+    // Transform
     $have = array_map(function($row) {
         return [
             'id' => (int)$row['id'],
@@ -114,7 +164,8 @@ try {
     echo json_encode([
         'career' => $career,
         'have' => $have,
-        'explore' => $explore
+        'explore' => $explore,
+        'context' => $contextInfo
     ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {

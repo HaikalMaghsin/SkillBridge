@@ -33,6 +33,9 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
         </a>
       </div>
 
+      <!-- HR Notification Section -->
+      <div id="pipeline-notifications" style="display: none"></div>
+
       <!-- Main Content: 2 columns -->
       <div class="dashboard-layout-grid" style="display: grid; grid-template-columns: 1fr 360px; gap: 24px">
         <!-- Left Column: 3 cards -->
