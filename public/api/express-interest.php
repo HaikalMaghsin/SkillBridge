@@ -79,7 +79,9 @@ try {
         // 1. Set is_public = TRUE untuk student_profiles
         $stmt = $pdo->prepare('
             UPDATE student_profiles
-            SET is_public = TRUE, updated_at = CURRENT_TIMESTAMP
+            SET is_public = TRUE,
+                public_token = COALESCE(public_token, gen_random_uuid()),
+                updated_at = CURRENT_TIMESTAMP
             WHERE user_id = :user_id
         ');
         $stmt->execute([':user_id' => $user_id]);
@@ -125,6 +127,10 @@ try {
 
 } catch (Exception $e) {
     error_log('API express-interest.php error: ' . $e->getMessage());
+    error_log('Stack trace: ' . $e->getTraceAsString());
     http_response_code(500);
-    echo json_encode(['error' => 'Internal server error']);
+    echo json_encode([
+        'error' => 'Internal server error',
+        'debug' => $_ENV['APP_ENV'] === 'development' ? $e->getMessage() : null
+    ]);
 }

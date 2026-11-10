@@ -32,7 +32,7 @@ $body_attrs = $body_attrs ?? '';
       <link rel="stylesheet" href="<?= asset('css/admin.css') ?>" />
     <?php endif; ?>
     <script>
-      window.APP_BASE_URL = <?= json_encode(base_url()) ?>;
+      window.APP_BASE_URL = <?= json_encode(rtrim(base_url(), '/')) ?>;
     </script>
     <?= $extra_head ?? '' ?>
   </head>

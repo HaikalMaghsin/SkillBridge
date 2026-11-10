@@ -52,14 +52,17 @@ try {
             jv.description,
             jv.requirements,
             jv.created_at,
+            c.id AS company_id,
             c.name AS company_name,
             c.industry,
-            c.website
+            c.website,
+            c.description AS company_description
         FROM job_vacancies jv
         JOIN companies c ON c.id = jv.company_id
         WHERE jv.career_id = :career_id
           AND jv.status = :status
         ORDER BY jv.created_at DESC
+        LIMIT 4
     ');
     $stmt->execute([
         ':career_id' => $career_id,
@@ -96,12 +99,46 @@ try {
             return in_array($skill['id'], $userSkillIds);
         });
 
+        $ownedCount = count($skillsOwned);
+        $totalCount = count($careerSkills);
+
+        // Calculate tier (internal only, not shown as percentage)
+        $matchRatio = $totalCount > 0 ? ($ownedCount / $totalCount) : 0;
+
+        if ($matchRatio >= 0.7) {
+            $tier = 1; // Strong Match
+            $tierLabel = 'Sangat Sesuai';
+            $tierColor = 'green';
+        } elseif ($matchRatio >= 0.4) {
+            $tier = 2; // Learning Opportunity
+            $tierLabel = 'Cocok untuk Magang / Intern';
+            $tierColor = 'orange';
+        } else {
+            $tier = 3; // Development Path
+            $tierLabel = 'Perlu Pengembangan';
+            $tierColor = 'blue';
+        }
+
+        // Determine job type from title
+        $jobType = 'Full-time';
+        if (stripos($v['title'], 'Intern') !== false || stripos($v['title'], 'Magang') !== false) {
+            $jobType = 'Internship';
+        } elseif (stripos($v['title'], 'Trainee') !== false || stripos($v['title'], 'Training') !== false) {
+            $jobType = 'Trainee Program';
+        } elseif (stripos($v['title'], 'Junior') !== false || stripos($v['title'], 'Fresh Graduate') !== false) {
+            $jobType = 'Fresh Graduate';
+        }
+
         return [
             'id' => (int)$v['id'],
             'title' => $v['title'],
+            'job_type' => $jobType,
+            'company_id' => (int)$v['company_id'],
             'company_name' => $v['company_name'],
+            'company_description' => $v['company_description'],
             'industry' => $v['industry'],
             'website' => $v['website'],
+            'location' => 'Remote / Hybrid', // Default, bisa diupdate nanti
             'positions' => (int)$v['positions'],
             'description' => $v['description'],
             'requirements' => $v['requirements'],
@@ -112,8 +149,12 @@ try {
                     'owned' => in_array($s['id'], $userSkillIds)
                 ];
             }, $careerSkills),
-            'skills_owned_count' => count($skillsOwned),
-            'skills_total_count' => count($careerSkills),
+            'skills_owned_count' => $ownedCount,
+            'skills_total_count' => $totalCount,
+            'tier' => $tier,
+            'tier_label' => $tierLabel,
+            'tier_color' => $tierColor,
+            'tier_description' => "Memenuhi {$ownedCount} dari {$totalCount} skill",
             'created_at' => $v['created_at']
         ];
     }, $vacancies);

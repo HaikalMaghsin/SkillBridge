@@ -719,6 +719,11 @@ small {
   box-shadow: 0 14px 34px rgba(0, 0, 43, 0.06);
 }
 
+.vacancy-card:hover {
+  border-color: var(--primary) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
 .career-card.is-selected {
   grid-column: 1 / -1;
   border: 1.5px solid var(--accent);
