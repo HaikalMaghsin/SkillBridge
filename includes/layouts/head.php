@@ -1,7 +1,7 @@
 <?php
 // includes/layouts/head.php
 // Head HTML bersama untuk seluruh role (Public, Mahasiswa, HR, Admin)
-// Sesuai PRD Bagian 4 & CLAUDE.md Bagian 3
+// Sesuai PRD Bagian 4
 
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../auth/csrf.php';

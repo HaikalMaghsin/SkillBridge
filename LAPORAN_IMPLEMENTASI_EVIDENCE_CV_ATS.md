@@ -177,7 +177,7 @@ Payload data yang dikirimkan ke `API.addEvidence()` kompatibel penuh dengan skem
 
 ---
 
-## 4. Audit Log & Acuan Reviewer (Claude)
+## 4. Audit Log & Acuan Reviewer
 
 ### 4.1. Output `git log -n 2 --stat`
 ```text

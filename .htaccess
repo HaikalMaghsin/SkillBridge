@@ -7,6 +7,6 @@ Options -Indexes
   RewriteEngine On
   # Folder & file internal tidak boleh diakses lewat web
   RewriteRule ^(includes|db|tools|docker|docs)(/|$) - [F,L]
-  RewriteRule ^(\.|Dockerfile|CLAUDE\.md|README\.md) - [F,L]
+  RewriteRule ^(\.|Dockerfile|README\.md) - [F,L]
   RewriteRule \.(sql|md|env)$ - [F,L]
 </IfModule>

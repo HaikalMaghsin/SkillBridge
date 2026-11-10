@@ -1,6 +1,6 @@
 # Spesifikasi Teknis & Aturan AI: Modul Bukti Kompetensi (Evidence) & CV ATS Scanner
 
-> **Catatan Integrasi (Zero Duplication):** Dokumen ini adalah **spesifikasi khusus modul Evidence (`public/mahasiswa/evidence.php`, `public/js/pages/evidence.js`, `public/api/evidence.php`)**. Aturan global proyek (Native PHP 8.x, Vanilla JS, Native CSS3, larangan framework, dan RBAC 3 Role) tetap mengacu pada `CLAUDE.md` dan `MASTER_BLUEPRINT_SKILLBRIDGE_PRD_DAN_AI_RULES.md`.
+> **Catatan Integrasi (Zero Duplication):** Dokumen ini adalah **spesifikasi khusus modul Evidence (`public/mahasiswa/evidence.php`, `public/js/pages/evidence.js`, `public/api/evidence.php`)**. Aturan global proyek (Native PHP 8.x, Vanilla JS, Native CSS3, larangan framework, dan RBAC 3 Role) tetap mengacu pada `MASTER_BLUEPRINT_SKILLBRIDGE_PRD_DAN_AI_RULES.md`.
 
 ---
 

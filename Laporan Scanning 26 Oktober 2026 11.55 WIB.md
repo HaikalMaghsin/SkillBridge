@@ -3,14 +3,14 @@
 **Waktu Scanning:** 11:55 WIB  
 **Target Sistem:** SkillBridge (PHP 8.x Native Modular Multi-Role)  
 **Tautan Repositori / Workspace:** `D:\Skillbridge`  
-**Dokumen Acuan:** `docs/PRD.md`, `CLAUDE.md`, `db/schema.sql`  
+**Dokumen Acuan:** `docs/PRD.md`, `ARCH_RULES.md`, `db/schema.sql`  
 **Auditor / Scanner:** Antigravity AI Pair Programming System  
 
 ---
 
 ## 1. RINGKASAN EKSEKUTIF (EXECUTIVE SUMMARY)
 
-Berdasarkan pemeriksaan menyeluruh terhadap seluruh komponen kode sumber (*source code*), struktur basis data (*PostgreSQL*), antarmuka pengguna (*frontend JavaScript/DOM*), sistem autentikasi, serta kepatuhan terhadap dokumen spesifikasi (*PRD.md* dan *CLAUDE.md*), ditemukan bahwa **sistem saat ini berada dalam kondisi transisi yang terfragmentasi (setengah matang)**.
+Berdasarkan pemeriksaan menyeluruh terhadap seluruh komponen kode sumber (*source code*), struktur basis data (*PostgreSQL*), antarmuka pengguna (*frontend JavaScript/DOM*), sistem autentikasi, serta kepatuhan terhadap dokumen spesifikasi (*PRD.md* dan *ARCH_RULES.md*), ditemukan bahwa **sistem saat ini berada dalam kondisi transisi yang terfragmentasi (setengah matang)**.
 
 Meskipun sistem telah memiliki tampilan visual yang rapi dan skema database inti yang baik, terdapat **kesenjangan mendasar (architectural gap)** yang menjadi penyebab utama sistem terasa lemah, tidak terintegrasi, dan memiliki banyak bug:
 
@@ -62,13 +62,13 @@ Peran mahasiswa ditujukan untuk memetakan keterampilan, memilih satu target kari
    - **Kelemahan:** Nilai nama ("Jhon Doe"), email ("jhondoe@gmail.com"), kampus ("Politeknik Negeri Malang"), jurusan ("Information Technology"), dan semester ("3") tertulis mati (*hardcoded*) di dalam HTML dan di-fallback pada JS. Nilai sesi `current_user()['name']` dari login PHP tidak di-render ke halaman ini.
    - **Fitur Ganti Password Palsu:** Modal *Change Password* di [`profile.js#L179-L180`](file:///D:/Skillbridge/public/js/pages/profile.js#L179-L180) hanya memvalidasi panjang string di client dan memunculkan toast `"Password updated"`, tanpa pernah mengirim password baru ke server/database.
 
-4. **[RULE VIOLATION] Pelanggaran Batasan Fitur Non-Scope (PRD & CLAUDE.md)**:
+4. **[RULE VIOLATION] Pelanggaran Batasan Fitur Non-Scope (PRD & ARCH_RULES.md)**:
    - **Lokasi:** [`public/js/pages/career.js#L94`](file:///D:/Skillbridge/public/js/pages/career.js#L94)
    - **Kelemahan:** Ditemukan kode:
      ```javascript
      card.append(el("p", { class: "career-card-count", text: `${matched} of ${skillNames.length} skills covered` }));
      ```
-   - **Dampak:** Melanggar secara langsung **CLAUDE.md Bagian 5.4** dan **PRD.md Bagian 3.2**:
+   - **Dampak:** Melanggar secara langsung **ARCH_RULES.md Bagian 5.4** dan **PRD.md Bagian 3.2**:
      > *"DILARANG membuat skor kesiapan karier dalam bentuk persentase kecocokan (match rate %), progress bar persentase, atau rasio 'x of y skills covered'"*.
 
 5. **[LOGIC BUG] Pemotongan Sepihak Daftar Skill Gap (*Truncation Bug*)**:
@@ -208,9 +208,9 @@ Konsol Admin Platform dirancang untuk platform owner guna mengelola data master 
 
 ---
 
-## 5. KEPATUHAN ARSITEKTUR & TEMPLATE (CLAUDE.md CONFORMANCE)
+## 5. KEPATUHAN ARSITEKTUR & TEMPLATE (ARCH_RULES.md CONFORMANCE)
 
-| Aturan di CLAUDE.md | Status Kepatuhan | Temuan Pelanggaran |
+| Aturan di ARCH_RULES.md | Status Kepatuhan | Temuan Pelanggaran |
 | :--- | :---: | :--- |
 | **No PHP/CSS/JS External Frameworks** | ✅ **PATUH** | Bersih dari Bootstrap, Tailwind, React, Vue, jQuery, dan framework PHP. |
 | **Pencegahan SQL Injection** | ✅ **PATUH** | `auth.php`, `register.php`, dan `create_admin.php` menggunakan PDO Prepared Statements dengan parameter binding. |

@@ -77,7 +77,7 @@ Kedua dokumen diberi catatan evolusi arsitektur di baris paling atas untuk menje
 
 ```
 Modified:
- M CLAUDE.md                           # Catatan evolusi arsitektur
+ M docs/PRD.md                         # Catatan evolusi arsitektur
  M db/schema.sql                        # Tambah kolom is_active
  M docs/PRD-admin-hr.md                 # Catatan evolusi arsitektur
  M includes/config/app.php              # Fix base_url() regex (tambah api)
@@ -115,7 +115,7 @@ COMMENT ON COLUMN users.is_active IS
 
 - [x] Semua file PHP lolos syntax check (`php -l`)
 - [x] File debug publik dihapus
-- [x] Evolution notice ditambahkan ke PRD-admin-hr.md dan CLAUDE.md
+- [x] Evolution notice ditambahkan ke PRD-admin-hr.md dan dokumentasi arsitektur
 - [x] Menu HR & Admin Phase 2 ditampilkan kembali
 - [x] HR API write handlers dipulihkan dengan CSRF protection
 - [x] base_url() regex mencakup `/api/`
