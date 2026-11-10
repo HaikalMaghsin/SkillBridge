@@ -70,8 +70,8 @@ function render() {
 async function load() {
   renderDate();
   try {
-    const items = await API.getRecruiterActivity();
-    allActivity = Array.isArray(items) ? items : [];
+    const res = await API.getRecruiterActivity();
+    allActivity = Array.isArray(res) ? res : (res.activities || []);
   } catch {
     allActivity = [];
   }

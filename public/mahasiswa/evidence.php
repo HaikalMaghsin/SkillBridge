@@ -96,8 +96,8 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
               <input type="hidden" id="input-type" name="type" value="cv" required>
             </div>
 
-            <!-- Demo Banner Opsional -->
-            <div id="demo-banner" style="padding: 12px 16px; border: 2px dashed #A5B4FC; background: #F8F7FF; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s">
+            <!-- Demo Banner Opsional (Dinonaktifkan) -->
+            <div id="demo-banner" style="display: none !important; padding: 12px 16px; border: 2px dashed #A5B4FC; background: #F8F7FF; border-radius: 8px; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s">
               <div style="display: flex; align-items: center; gap: 10px">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1l2 6h6l-5 4 2 6-5-4-5 4 2-6-5-4h6z" fill="#818CF8"/></svg>
                 <span style="font-size: 13px; font-weight: 600; color: #6366F1">Isi dengan contoh CV (Demo)</span>

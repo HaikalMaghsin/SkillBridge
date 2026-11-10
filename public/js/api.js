@@ -428,6 +428,27 @@ const API = (() => {
     return await fetchAPI('hr/roles.php');
   }
 
+  async function createRecruiterRole(data) {
+    return await fetchAPI('hr/roles.php', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async function updateRecruiterRole(data) {
+    return await fetchAPI('hr/roles.php', {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async function deleteRecruiterRole(id) {
+    return await fetchAPI('hr/roles.php', {
+      method: 'DELETE',
+      body: JSON.stringify({ id })
+    });
+  }
+
   async function getRecruiterActivity() {
     return await fetchAPI('hr/activity.php');
   }
@@ -516,10 +537,13 @@ const API = (() => {
     setAdminRecordStatus,
     removeAdminRecord,
 
-    // Recruiter (read-only)
+    // Recruiter
     getRecruiterCompany,
     getRecruiterTeam,
     getRecruiterRoles,
+    createRecruiterRole,
+    updateRecruiterRole,
+    deleteRecruiterRole,
     getRecruiterActivity,
     getRecruiterCandidates,
     getRecruiterCandidate,

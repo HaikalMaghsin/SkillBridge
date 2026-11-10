@@ -957,33 +957,35 @@
     };
   });
 
-  // Tombol Isi Data Demo
-  demoBanner.onclick = () => {
-    titleInput.value = "CV Full Stack Developer - ATS Optimized";
-    summaryInput.value = "Pengalaman dalam rekayasa perangkat lunak web full-stack menggunakan JavaScript, Node.js, SQL, dan REST APIs. Terbiasa membangun aplikasi yang terukur, responsif, dan terintegrasi dengan database relasional.";
-    levelSelect.value = "intermediate";
+  // Tombol Isi Data Demo (Opsional/Disabled)
+  if (demoBanner) {
+    demoBanner.onclick = () => {
+      titleInput.value = "CV Full Stack Developer - ATS Optimized";
+      summaryInput.value = "Pengalaman dalam rekayasa perangkat lunak web full-stack menggunakan JavaScript, Node.js, SQL, dan REST APIs. Terbiasa membangun aplikasi yang terukur, responsif, dan terintegrasi dengan database relasional.";
+      levelSelect.value = "intermediate";
 
-    // Auto-select 5 demo skills dari katalog
-    const demoSkillNames = ["JavaScript", "Node.js", "SQL", "REST APIs", "Git"];
-    selectedSkillIds = catalog
-      .filter((s) => demoSkillNames.includes(s.name))
-      .map((s) => s.id);
+      // Auto-select 5 demo skills dari katalog
+      const demoSkillNames = ["JavaScript", "Node.js", "SQL", "REST APIs", "Git"];
+      selectedSkillIds = catalog
+        .filter((s) => demoSkillNames.includes(s.name))
+        .map((s) => s.id);
 
-    // Fallback jika id tidak ketemu
-    if (selectedSkillIds.length === 0 && catalog.length > 0) {
-      selectedSkillIds = catalog.slice(0, 4).map((s) => s.id);
-    }
+      // Fallback jika id tidak ketemu
+      if (selectedSkillIds.length === 0 && catalog.length > 0) {
+        selectedSkillIds = catalog.slice(0, 4).map((s) => s.id);
+      }
 
-    skillsInput.value = JSON.stringify(selectedSkillIds);
-    updateSelectedChipsUi();
+      skillsInput.value = JSON.stringify(selectedSkillIds);
+      updateSelectedChipsUi();
 
-    // Set demo attachment
-    hiddenAttachment.value = "CV_Demo_Fullstack_ATS.pdf";
-    const dropzoneLabel = attachmentSection.querySelector(".upload-dropzone span");
-    if (dropzoneLabel) dropzoneLabel.textContent = "Berkas demo: CV_Demo_Fullstack_ATS.pdf";
+      // Set demo attachment
+      hiddenAttachment.value = "CV_Demo_Fullstack_ATS.pdf";
+      const dropzoneLabel = attachmentSection.querySelector(".upload-dropzone span");
+      if (dropzoneLabel) dropzoneLabel.textContent = "Berkas demo: CV_Demo_Fullstack_ATS.pdf";
 
-    UI.toast("Formulir berhasil diisi dengan contoh CV demo");
-  };
+      UI.toast("Formulir berhasil diisi dengan contoh CV demo");
+    };
+  }
 
   // Buka Modal Tambah
   btnAddEvidence.onclick = () => {

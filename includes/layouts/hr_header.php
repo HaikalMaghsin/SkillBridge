@@ -18,7 +18,13 @@ $rec_title = $rec_title ?? 'Perusahaan Partner';
     </div>
     <span class="rec-role-pill">Company Admin</span>
   </div>
-  <div class="rec-header-right">
+  <div class="rec-header-right" style="display: flex; align-items: center; gap: 12px">
+    <!-- Notification Bell Button -->
+    <a href="<?= e(base_url('hr/candidates.php?status=New')) ?>" id="hr-notif-link" title="Pelamar Baru" style="position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: var(--surface-secondary, #f1f5f9); color: var(--text-primary); text-decoration: none; transition: background 0.2s">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+      <span id="hr-notif-badge" style="display: none; position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; border-radius: 9px; background: #ef4444; color: white; font-size: 10px; font-weight: 800; display: none; align-items: center; justify-content: center; padding: 0 4px; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4)">0</span>
+    </a>
+
     <div class="rec-header-profile-text">
       <span class="rec-header-name"><?= htmlspecialchars($user['name'] ?? 'Aditya Pratama') ?></span>
       <span class="rec-header-role"><?= htmlspecialchars($user['role_label'] ?? 'Admin Perusahaan · PT Tech Indonesia') ?></span>

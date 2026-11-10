@@ -158,20 +158,43 @@ async function renderRoles() {
 }
 
 async function renderActivity() {
-  const items = await API.getRecruiterActivity();
+  const res = await API.getRecruiterActivity();
+  const items = Array.isArray(res) ? res : (res.activities || []);
+  const newCount = res && typeof res.new_count === 'number' ? res.new_count : 0;
+
+  // Update notification badge in header
+  const notifBadge = document.getElementById("hr-notif-badge");
+  if (notifBadge) {
+    if (newCount > 0) {
+      notifBadge.textContent = String(newCount);
+      notifBadge.style.display = "flex";
+    } else {
+      notifBadge.style.display = "none";
+    }
+  }
+
   const body = document.getElementById("rec-activity-body");
+  if (!body) return;
   clear(body);
-  for (const a of (items || []).slice(0, 3)) {
+
+  if (items.length === 0) {
+    body.appendChild(el("p", { class: "rec-empty", text: "Belum ada aktivitas recruiter terbaru." }));
+    return;
+  }
+
+  for (const a of items.slice(0, 4)) {
     const action = a.action || "activity";
-    const label = ACTIVITY_LABEL[action] || action;
-    const text = `${a.recruiter || "—"} ${a.description || ""}`.trim();
+    const label = a.type === 'application' ? 'Pelamar Baru' : (ACTIVITY_LABEL[action] || action);
+    const text = a.description || `${a.actor || a.recruiter || "—"} melakukan pembaruan`;
+    const time = a.time || a.timestamp || "Baru saja";
+
     body.appendChild(
       el("div", { class: "rec-activity-item" }, [
-        el("span", { class: "rec-activity-time", text: a.timestamp || "—" }),
+        el("span", { class: "rec-activity-time", text: typeof time === 'string' && time.includes('T') ? time.split('T')[0] : time }),
         el("div", { class: "rec-activity-content" }, [
           el("span", { class: "rec-activity-text", text }),
           el("span", {
-            class: `rec-badge rec-activity-badge ${ACTIVITY_BADGE[action] || "rec-badge--gray"}`,
+            class: `rec-badge rec-activity-badge ${a.type === 'application' ? 'rec-badge--pink' : (ACTIVITY_BADGE[action] || "rec-badge--gray")}`,
             text: label,
           }),
         ]),

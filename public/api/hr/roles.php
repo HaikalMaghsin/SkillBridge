@@ -109,6 +109,7 @@ try {
                 'id' => (int)$r['id'],
                 'name' => $r['title'],
                 'category' => $r['career_name'] ?? 'General',
+                'career_id' => $r['career_id'] ? (int)$r['career_id'] : null,
                 'positions' => (int)$r['positions'],
                 'status' => $r['status'],
                 'description' => $r['description'],
@@ -200,6 +201,7 @@ try {
 
         $vacancy_id = isset($input['id']) ? (int)$input['id'] : null;
         $title = trim($input['title'] ?? '');
+        $career_id = isset($input['career_id']) && $input['career_id'] ? (int)$input['career_id'] : null;
         $positions = isset($input['positions']) ? (int)$input['positions'] : 1;
         $status = trim($input['status'] ?? 'active');
         $description = trim($input['description'] ?? '');
@@ -224,6 +226,7 @@ try {
         $stmt = $pdo->prepare('
             UPDATE job_vacancies
             SET title = :title,
+                career_id = COALESCE(:career_id, career_id),
                 positions = :positions,
                 status = :status,
                 description = :description,
@@ -233,6 +236,7 @@ try {
         ');
         $stmt->execute([
             ':title' => $title,
+            ':career_id' => $career_id,
             ':positions' => $positions,
             ':status' => $status,
             ':description' => $description,
