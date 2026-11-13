@@ -1,6 +1,6 @@
 <?php
 // public/api/my-skills.php
-// GET: Ambil skill mahasiswa + evidence_count
+// GET: Ambil skill mahasiswa + evidence_count + triangulasi Strong vs Growing
 // POST: Tambah skill baru
 // DELETE: Hapus skill
 require_once __DIR__ . '/../../includes/auth/auth.php';
@@ -37,7 +37,7 @@ try {
         exit;
     }
 
-    // GET: Ambil daftar skill milik user + evidence_count
+    // GET: Ambil daftar skill milik user + evidence_count + triangulasi status
     if ($method === 'GET') {
         $stmt = $pdo->prepare('
             SELECT
@@ -47,7 +47,9 @@ try {
                 s.category,
                 us.source,
                 us.status,
-                COUNT(DISTINCT es.evidence_id) AS evidence_count,
+                COUNT(DISTINCT e.id) AS evidence_count,
+                COUNT(DISTINCT e.source_type) AS distinct_source_count,
+                COUNT(DISTINCT CASE WHEN e.source_type IN (\'project\', \'github\', \'portfolio\') THEN e.id ELSE NULL END) AS practical_count,
                 us.created_at
             FROM user_skills us
             JOIN skills s ON s.id = us.skill_id
@@ -60,18 +62,60 @@ try {
         $stmt->execute([':user_id' => $user_id, ':status' => 'confirmed']);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $skills = array_map(function($row) {
+        // Fetch all linked evidence for each skill for this user
+        $stmtEv = $pdo->prepare('
+            SELECT
+                es.skill_id,
+                e.id,
+                e.title,
+                e.source_type,
+                e.file_url,
+                e.metadata
+            FROM evidence_skills es
+            JOIN evidence e ON e.id = es.evidence_id
+            WHERE e.user_id = :user_id
+            ORDER BY e.created_at DESC
+        ');
+        $stmtEv->execute([':user_id' => $user_id]);
+        $evRows = $stmtEv->fetchAll(PDO::FETCH_ASSOC);
+
+        $evidenceBySkill = [];
+        foreach ($evRows as $ev) {
+            $meta = is_string($ev['metadata']) ? json_decode($ev['metadata'], true) : ($ev['metadata'] ?: []);
+            $evidenceBySkill[(int)$ev['skill_id']][] = [
+                'id'          => (int)$ev['id'],
+                'title'       => $ev['title'],
+                'source_type' => $ev['source_type'],
+                'file_url'    => $ev['file_url'],
+                'level'       => $meta['level'] ?? 'intermediate',
+                'description' => $meta['description'] ?? '',
+            ];
+        }
+
+        $skills = array_map(function($row) use ($evidenceBySkill) {
             $count = (int)$row['evidence_count'];
+            $distinctSources = (int)$row['distinct_source_count'];
+            $practicalCount = (int)$row['practical_count'];
+
+            // Triangulasi Bukti Kompetensi:
+            // Strong HANYA jika evidence_count >= 2 DAN (distinct_source_count >= 2 ATAU practical_count >= 2)
+            $isStrong = ($count >= 2) && ($distinctSources >= 2 || $practicalCount >= 2);
+            $label = $isStrong ? 'Strong' : 'Growing';
+
+            $sid = (int)$row['skill_id'];
             return [
-                'id' => (int)$row['id'],
-                'skill_id' => (int)$row['skill_id'],
-                'name' => $row['skill_name'],
-                'category' => $row['category'],
-                'source' => $row['source'],
-                'status' => $row['status'],
-                'evidence_count' => $count,
-                'label' => $count >= 2 ? 'Strong' : 'Growing',
-                'created_at' => $row['created_at']
+                'id'                    => (int)$row['id'],
+                'skill_id'              => $sid,
+                'name'                  => $row['skill_name'],
+                'category'              => $row['category'],
+                'source'                => $row['source'],
+                'status'                => $row['status'],
+                'evidence_count'        => $count,
+                'distinct_source_count' => $distinctSources,
+                'practical_count'       => $practicalCount,
+                'label'                 => $label,
+                'linked_evidence'       => $evidenceBySkill[$sid] ?? [],
+                'created_at'            => $row['created_at']
             ];
         }, $rows);
 
@@ -101,15 +145,26 @@ try {
         $stmt->execute([':skill_id' => $skill_id]);
         if (!$stmt->fetch()) {
             http_response_code(404);
-            echo json_encode(['error' => 'Skill not found']);
+            echo json_encode(['error' => 'Skill not found in catalog']);
             exit;
         }
 
-        // Insert skill (ON CONFLICT ignore jika sudah ada)
+        // Cek apakah sudah dimiliki
+        $stmt = $pdo->prepare('
+            SELECT id FROM user_skills
+            WHERE user_id = :user_id AND skill_id = :skill_id
+        ');
+        $stmt->execute([':user_id' => $user_id, ':skill_id' => $skill_id]);
+        if ($stmt->fetch()) {
+            http_response_code(409);
+            echo json_encode(['error' => 'Skill already added']);
+            exit;
+        }
+
+        // Tambah ke user_skills
         $stmt = $pdo->prepare('
             INSERT INTO user_skills (user_id, skill_id, source, status)
             VALUES (:user_id, :skill_id, :source, :status)
-            ON CONFLICT (user_id, skill_id) DO NOTHING
             RETURNING id
         ');
         $stmt->execute([

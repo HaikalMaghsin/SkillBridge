@@ -97,23 +97,23 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
       </main>
 
       <!-- ===== MODAL DETAIL KANDIDAT ===== -->
-      <div id="candidate-detail-modal" style="display: none; position: fixed; inset: 0; z-index: 9999">
+      <div id="candidate-detail-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; z-index: 9999">
         <!-- Backdrop -->
         <div id="candidate-modal-backdrop" style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px)"></div>
 
         <!-- Modal Dialog -->
-        <div style="position: relative; max-width: 680px; width: 90%; max-height: 90vh; overflow-y: auto; margin: 40px auto; background: var(--surface, #ffffff); border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid var(--border-light, #e2e8f0)">
+        <div class="modal-card" style="position: relative; max-width: 680px; width: 90%; max-height: calc(100vh - 40px); display: flex; flex-direction: column; overflow: hidden; margin: auto; background: var(--surface, #ffffff); border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid var(--border-light, #e2e8f0)">
           
           <!-- Modal Header -->
-          <div style="padding: 24px 28px; border-bottom: 1px solid var(--border-light, #e2e8f0); display: flex; justify-content: space-between; align-items: flex-start; gap: 16px">
+          <div style="flex-shrink: 0; padding: 20px 28px; border-bottom: 1px solid var(--border-light, #e2e8f0); display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; background: #ffffff;">
             <div style="display: flex; gap: 16px; align-items: center">
-              <div id="modal-candidate-avatar" style="width: 56px; height: 56px; border-radius: 14px; background: var(--primary, #4338ca); color: white; display: grid; place-items: center; font-size: 24px; font-weight: 700; flex-shrink: 0">
+              <div id="modal-candidate-avatar" style="width: 56px; height: 56px; border-radius: 14px; background: var(--primary, #4338ca); color: white; display: grid; place-items: center; font-size: 24px; font-weight: 700; flex-shrink: 0; overflow: hidden;">
                 A
               </div>
               <div>
                 <h2 id="modal-candidate-name" style="font-size: 20px; font-weight: 700; color: var(--text-primary, #0f172a); margin: 0 0 4px">Nama Kandidat</h2>
                 <p id="modal-candidate-email" style="font-size: 13px; color: var(--text-muted, #64748b); margin: 0 0 6px">email@example.com</p>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
                   <span id="modal-target-role" class="rec-badge rec-badge--indigo" style="font-size: 11px">Target Role</span>
                   <span id="modal-status-badge" style="font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px">Status</span>
                   <span id="modal-tier-badge" style="font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px">Tier</span>
@@ -123,9 +123,14 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
             <button type="button" id="candidate-modal-close" style="background: none; border: none; font-size: 24px; line-height: 1; color: var(--text-muted, #64748b); cursor: pointer; padding: 4px; border-radius: 8px">&times;</button>
           </div>
 
-          <!-- Modal Body -->
-          <div style="padding: 24px 28px; display: grid; gap: 20px">
+          <!-- Modal Body (Scrollable) -->
+          <div style="padding: 24px 28px; flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; display: grid; gap: 20px;">
             
+            <!-- Student Response Banner -->
+            <div id="modal-candidate-response" style="display: none; padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 600;">
+              <!-- Diisi otomatis oleh hr-candidates.js -->
+            </div>
+
             <!-- Quick Stats -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 16px; background: var(--tint-gray, #f8fafc); border-radius: 12px; border: 1px solid var(--border-light, #e2e8f0)">
               <div>
@@ -157,15 +162,30 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
               </div>
             </div>
 
-            <!-- Catatan Recruiter -->
-            <div>
-              <label for="modal-notes" style="display: block; font-size: 14px; font-weight: 700; color: var(--text-primary, #0f172a); margin-bottom: 6px">Catatan Reviewer / HR</label>
-              <textarea id="modal-notes" rows="3" placeholder="Tambahkan catatan hasil review portofolio atau jadwal wawancara di sini..." style="width: 100%; box-sizing: border-box; padding: 10px 14px; border: 1px solid var(--border-light, #e2e8f0); border-radius: 10px; font-family: inherit; font-size: 14px; resize: vertical"></textarea>
+            <!-- Detail Keputusan Sebelumnya (jika ada) -->
+            <div id="modal-prev-decision" style="display: none; padding: 14px 16px; border-radius: 10px; background: var(--tint-gray, #f8fafc); border: 1px solid var(--border-light, #e2e8f0)">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Riwayat Keputusan HR Terakhir:</span>
+                <span id="modal-prev-decision-status" class="badge" style="font-size: 11px; padding: 2px 8px;">—</span>
+              </div>
+              <p id="modal-prev-decision-text" style="font-size: 13px; color: var(--text-primary); margin: 0; line-height: 1.5;">—</p>
             </div>
+
+            <!-- Catatan Singkat Recruiter -->
+            <div>
+              <label for="modal-notes" style="display: block; font-size: 14px; font-weight: 700; color: var(--text-primary, #0f172a); margin-bottom: 6px">Catatan Internal Reviewer / HR</label>
+              <textarea id="modal-notes" rows="2" placeholder="Catatan internal tim HR mengenai kandidat ini..." style="width: 100%; box-sizing: border-box; padding: 10px 14px; border: 1px solid var(--border-light, #e2e8f0); border-radius: 10px; font-family: inherit; font-size: 13px; resize: vertical"></textarea>
+            </div>
+
+            <!-- Sub-Form Dinamis Keputusan HR -->
+            <div id="hr-decision-form-panel" style="display: none; padding: 18px 20px; border: 2px solid var(--primary, #4338ca); border-radius: 12px; background: #ffffff; box-shadow: 0 6px 20px rgba(0,0,0,0.06); animation: slideUp 0.2s ease;">
+              <!-- Diisi otomatis secara dinamis sesuai tombol status yang diklik -->
+            </div>
+
           </div>
 
           <!-- Modal Footer (Actions) -->
-          <div style="padding: 20px 28px; border-top: 1px solid var(--border-light, #e2e8f0); background: var(--tint-gray, #f8fafc); border-radius: 0 0 20px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px">
+          <div style="flex-shrink: 0; padding: 16px 28px; border-top: 1px solid var(--border-light, #e2e8f0); background: var(--tint-gray, #f8fafc); border-radius: 0 0 20px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px">
             <span style="font-size: 13px; font-weight: 600; color: var(--text-muted, #64748b)">Update Status:</span>
             <div style="display: flex; gap: 8px; flex-wrap: wrap">
               <button type="button" id="modal-btn-reject" class="btn btn-danger btn-36" style="font-size: 13px">Tolak</button>

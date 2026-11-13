@@ -73,7 +73,7 @@ function sync_session_user() {
 
     try {
         $stmt = $pdo->prepare(
-            'SELECT id, name, email, role, is_active FROM users WHERE id = :id LIMIT 1'
+            'SELECT id, name, email, role, is_active, avatar_url FROM users WHERE id = :id LIMIT 1'
         );
         $stmt->execute([':id' => (int) $_SESSION['user']['id']]);
         $row = $stmt->fetch();
@@ -95,6 +95,7 @@ function sync_session_user() {
         'role'       => $role,
         'role_label' => role_label($role),
         'initials'   => make_initials($row['name']),
+        'avatar_url' => $row['avatar_url'] ?? null,
     ];
 
     return true;
@@ -200,7 +201,7 @@ function attempt_login($email, $password) {
     if ($pdo) {
         try {
             $stmt = $pdo->prepare(
-                'SELECT id, name, email, password_hash, role, is_active FROM users WHERE email = :email LIMIT 1'
+                'SELECT id, name, email, password_hash, role, is_active, avatar_url FROM users WHERE email = :email LIMIT 1'
             );
             $stmt->execute([':email' => $email]);
             $user = $stmt->fetch();
@@ -220,6 +221,7 @@ function attempt_login($email, $password) {
                     'role'       => $role,
                     'role_label' => role_label($role),
                     'initials'   => make_initials($user['name']),
+                    'avatar_url' => $user['avatar_url'] ?? null,
                 ];
                 return ['success' => true, 'role' => $role];
             }

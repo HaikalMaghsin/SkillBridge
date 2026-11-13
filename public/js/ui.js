@@ -55,24 +55,48 @@ const UI = (() => {
     setTimeout(() => box.remove(), 2600);
   }
 
-  // modal({ title, body, submitLabel, onSubmit }) -> dialog dengan focus trap.
-  function modal({ title, body = [], submitLabel = "Save", cancelLabel = "Cancel", onSubmit }) {
+  // modal({ id, title, body, submitLabel, onSubmit, footer }) -> dialog dengan focus trap.
+  function modal({ id = null, title, body = [], submitLabel = "Save", cancelLabel = "Cancel", onSubmit, footer = null }) {
     const previouslyFocused = document.activeElement;
 
     const cancelBtn = el("button", { type: "button", class: "btn btn-secondary", text: cancelLabel, onClick: () => close() });
-    const submitBtn = el("button", { type: "submit", class: "btn btn-accent", text: submitLabel });
+    const submitBtn = submitLabel ? el("button", { type: "submit", class: "btn btn-accent", text: submitLabel }) : null;
+    const closeIconBtn = el("button", {
+      type: "button",
+      class: "modal-close-btn",
+      "aria-label": "Close modal",
+      innerHTML: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>`,
+      onClick: () => close()
+    });
 
-    const form = el("form", { class: "modal-form", novalidate: "novalidate" }, [
-      ...body,
-      el("div", { class: "modal-actions" }, [cancelBtn, submitBtn])
+    const header = el("div", { class: "modal-header" }, [
+      el("h3", { class: "modal-title", text: title }),
+      closeIconBtn
     ]);
 
-    const dialog = el("div", { class: "modal", role: "dialog", "aria-modal": "true", "aria-label": title }, [
-      el("h3", { class: "modal-title", text: title }),
+    const modalBody = el("div", { class: "modal-body" }, body);
+    
+    let footerChildren = [];
+    if (typeof footer === "function") {
+      footerChildren = footer(close);
+    } else if (Array.isArray(footer)) {
+      footerChildren = footer;
+    } else {
+      footerChildren = [cancelBtn, submitBtn].filter(Boolean);
+    }
+    const modalFooter = el("div", { class: "modal-footer modal-actions" }, footerChildren);
+
+    const form = el("form", { class: "modal-form-wrapper", style: "display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden;", novalidate: "novalidate" }, [
+      modalBody,
+      modalFooter
+    ]);
+
+    const dialog = el("div", { id: id || undefined, class: "modal modal-card", role: "dialog", "aria-modal": "true", "aria-label": title }, [
+      header,
       form
     ]);
 
-    const overlay = el("div", { class: "modal-overlay" }, [dialog]);
+    const overlay = el("div", { class: "modal-overlay is-open" }, [dialog]);
 
     function focusables() {
       return [...dialog.querySelectorAll("button, input, select, textarea, a[href]")].filter(
@@ -103,6 +127,9 @@ const UI = (() => {
     function close() {
       document.removeEventListener("keydown", onKeydown);
       overlay.remove();
+      if (!document.querySelector(".modal-overlay") && !document.querySelector(".modal-backdrop.is-open")) {
+        document.body.classList.remove("modal-open");
+      }
       if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
     }
 
@@ -141,6 +168,7 @@ const UI = (() => {
     });
 
     document.addEventListener("keydown", onKeydown);
+    document.body.classList.add("modal-open");
     document.body.append(overlay);
     (focusables()[0] || dialog).focus();
     return close;

@@ -32,6 +32,24 @@ function render(data) {
   document.getElementById("cand-role").textContent = c.target_role || "Belum Ditentukan";
   document.getElementById("cand-email").textContent = c.email || "—";
 
+  const avatarWrap = document.getElementById("cand-avatar-wrap");
+  if (avatarWrap) {
+    clear(avatarWrap);
+    if (c.avatar_url) {
+      avatarWrap.append(el("img", {
+        src: c.avatar_url,
+        alt: c.name || "Candidate Avatar",
+        style: "width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 2px solid var(--rec-border, #e2e8f0)"
+      }));
+    } else {
+      const initials = (c.name || "K").split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+      avatarWrap.append(el("div", {
+        style: "width: 52px; height: 52px; border-radius: 50%; background: #6366f1; color: #ffffff; display: grid; place-items: center; font-weight: 700; font-size: 18px",
+        text: initials
+      }));
+    }
+  }
+
   const skillWrap = document.getElementById("cand-skills");
   clear(skillWrap);
   if (!skills.length) {

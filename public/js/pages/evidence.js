@@ -994,6 +994,7 @@
     submitBtn.textContent = "Simpan Bukti";
     resetForm();
     modal.style.display = "grid";
+    document.body.classList.add("modal-open");
   };
 
   // Buka Modal Edit
@@ -1037,11 +1038,13 @@
     updateSelectedChipsUi();
 
     modal.style.display = "grid";
+    document.body.classList.add("modal-open");
   }
 
   // Tutup Modal
   function closeModal() {
     modal.style.display = "none";
+    document.body.classList.remove("modal-open");
     resetForm();
   }
 
@@ -1189,5 +1192,21 @@
       submitBtn.textContent = editEvidenceId ? "Perbarui Bukti" : "Simpan Bukti";
     }
   };
+
+  // Auto-open modal jika URL berisi parameter ?skill_id=...
+  const urlParams = new URLSearchParams(window.location.search);
+  const targetSkillId = urlParams.get("skill_id");
+  if (targetSkillId) {
+    const sId = parseInt(targetSkillId, 10);
+    if (!isNaN(sId)) {
+      btnAddEvidence.click();
+      if (!selectedSkillIds.includes(sId)) {
+        selectedSkillIds.push(sId);
+      }
+      skillsInput.value = JSON.stringify(selectedSkillIds);
+      renderSkillChips();
+      updateSelectedChipsUi();
+    }
+  }
 
 })();

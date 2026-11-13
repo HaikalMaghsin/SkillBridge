@@ -43,9 +43,12 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
             <a href="candidates.php" class="rec-pager-link">&larr; Kembali ke daftar</a>
           </div>
           <div class="rec-field-grid">
-            <div class="rec-field">
-              <label>Nama</label>
-              <p class="rec-row-name-main" id="cand-name">—</p>
+            <div class="rec-field" style="display: flex; gap: 14px; align-items: center">
+              <div id="cand-avatar-wrap"></div>
+              <div>
+                <label>Nama</label>
+                <p class="rec-row-name-main" id="cand-name">—</p>
+              </div>
             </div>
             <div class="rec-field">
               <label>Target Role</label>

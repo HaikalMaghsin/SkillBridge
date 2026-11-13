@@ -247,6 +247,39 @@ const API = (() => {
     });
   }
 
+  // POST api/profile.php { action: 'upload_avatar', avatar_base64 }
+  async function uploadAvatar(avatar_base64) {
+    return await fetchAPI('profile.php', {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'upload_avatar',
+        avatar_base64
+      })
+    });
+  }
+
+  // GET api/pipeline-status.php
+  async function getPipelineStatus() {
+    try {
+      return await fetchAPI('pipeline-status.php');
+    } catch (e) {
+      console.error('Failed to get pipeline status:', e);
+      return [];
+    }
+  }
+
+  // POST api/pipeline-status.php { pipeline_id, response, reply_note }
+  async function respondPipeline(pipelineId, response, replyNote = '') {
+    return await fetchAPI('pipeline-status.php', {
+      method: 'POST',
+      body: JSON.stringify({
+        pipeline_id: pipelineId,
+        response,
+        reply_note: replyNote
+      })
+    });
+  }
+
   // ============ ADMIN: Skills & Careers Management ============
 
   async function getMasterSkills() {
@@ -507,8 +540,13 @@ const API = (() => {
     // Profile
     getProfile,
     updateProfile,
+    uploadAvatar,
     changePassword,
     updateVisibility,
+
+    // Student Pipeline
+    getPipelineStatus,
+    respondPipeline,
 
     // Admin - Stats & Users
     getAdminStats,

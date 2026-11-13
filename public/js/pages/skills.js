@@ -331,185 +331,203 @@
     return row;
   }
 
-  // Modal Edit Skill
+  // Modal Detail Keterampilan & Bukti Pendukung (Triangulasi Kompetensi)
   async function showEditSkillModal(skill) {
-    const allSkills = await API.getSkillCatalog();
-    const allEvidence = await API.getEvidence();
-    const mySkills = await API.getMySkills();
+    let mySkills = [];
+    let allEvidence = [];
+    try {
+      [mySkills, allEvidence] = await Promise.all([
+        API.getMySkills(),
+        API.getEvidence()
+      ]);
+    } catch {
+      mySkills = [];
+      allEvidence = [];
+    }
 
-    // Find current user_skill entry
-    const currentSkill = mySkills.find(s => s.skill_id === skill.id);
+    // Ambil detail keahlian aktif beserta bukti pendukung yang sudah ditautkan
+    const currentSkill = mySkills.find((s) => s.skill_id === skill.id) || {
+      label: "Growing",
+      evidence_count: 0,
+      distinct_source_count: 0,
+      practical_count: 0,
+      linked_evidence: []
+    };
 
-    // Get evidence linked to this skill
-    const linkedEvidenceIds = new Set();
-    allEvidence.forEach(ev => {
-      if (ev.skill_ids && ev.skill_ids.includes(skill.id)) {
-        linkedEvidenceIds.add(ev.id);
-      }
-    });
+    let linkedEv = currentSkill.linked_evidence || [];
+    if (linkedEv.length === 0 && allEvidence.length > 0) {
+      linkedEv = allEvidence
+        .filter((ev) => ev.skill_ids && ev.skill_ids.includes(skill.id))
+        .map((ev) => ({
+          id: ev.id,
+          title: ev.title,
+          source_type: ev.source_type,
+          file_url: ev.file_url,
+          level: ev.metadata?.level || "intermediate"
+        }));
+    }
 
-    let selectedSkillId = skill.id;
-    let selectedEvidenceIds = new Set(linkedEvidenceIds);
+    const isStrong = currentSkill.label === "Strong";
+    const count = linkedEv.length;
 
-    // Skill selector
-    const skillSelect = el("select", {
-      id: "edit-skill-select",
-      style: "width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px"
-    });
+    // Badge status
+    const statusBadgeClass = isStrong ? "badge-strong" : "badge-growing";
 
-    allSkills.forEach(s => {
-      const option = el("option", { value: s.id, text: s.name });
-      if (s.id === skill.id) option.selected = true;
-      skillSelect.appendChild(option);
-    });
+    // Header info modal
+    const headerInfo = el("div", {
+      style: "display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border);"
+    }, [
+      el("div", { style: "display: flex; align-items: center; gap: 12px" }, [
+        skillAvatar(skill, { size: 42 }),
+        el("div", {}, [
+          el("h3", { style: "font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0", text: skill.name }),
+          el("span", { style: "font-size: 12px; color: var(--text-muted)", text: `Kategori: ${skill.category || "General"}` })
+        ])
+      ]),
+      el("span", {
+        class: `badge ${statusBadgeClass}`,
+        style: "font-size: 12px; padding: 5px 12px; font-weight: 700;",
+        text: currentSkill.label
+      })
+    ]);
 
-    skillSelect.addEventListener("change", (e) => {
-      selectedSkillId = Number(e.target.value);
-    });
-
-    // Evidence checkboxes
-    const evidenceList = el("div", { style: "display: grid; gap: 8px; max-height: 300px; overflow-y: auto" });
-
-    if (allEvidence.length === 0) {
-      evidenceList.append(el("p", { style: "color: var(--text-muted); font-size: 14px; padding: 12px; text-align: center", text: "No evidence yet. Add evidence first to link with skills." }));
+    // Kotak Penjelasan Syarat Triangulasi
+    let explanationText = "";
+    if (isStrong) {
+      explanationText = "Keahlian ini telah terverifikasi Strong melalui triangulasi bukti kompetensi yang beragam (didukung minimal 2 bukti dari kategori sumber berbeda atau karya nyata).";
     } else {
-      allEvidence.forEach(ev => {
-        const isLinked = linkedEvidenceIds.has(ev.id);
-        const checkbox = el("input", { type: "checkbox", id: `ev-${ev.id}`, checked: isLinked });
+      if (count === 0) {
+        explanationText = "Status masih Growing. Belum ada bukti yang ditautkan ke keahlian ini. Tambahkan minimal 2 bukti dari minimal 2 kategori sumber berbeda (seperti CV + Proyek/GitHub atau Sertifikat) melalui halaman Evidence agar naik menjadi Strong.";
+      } else if (count === 1) {
+        const firstType = linkedEv[0]?.source_type?.toUpperCase() || "CV";
+        explanationText = `Status masih Growing. Saat ini baru didukung oleh 1 bukti (${firstType}). Tambahkan minimal 1 bukti dari sumber berbeda (seperti Proyek/GitHub atau Sertifikat) melalui halaman Evidence agar status keahlian naik menjadi Strong.`;
+      } else {
+        explanationText = "Status masih Growing. Keahlian ini memiliki bukti namun belum memenuhi triangulasi minimal 2 jenis sumber berbeda atau proyek nyata. Tambahkan bukti proyek/kode untuk mencapai status Strong.";
+      }
+    }
 
-        checkbox.addEventListener("change", (e) => {
-          if (e.target.checked) {
-            selectedEvidenceIds.add(ev.id);
-          } else {
-            selectedEvidenceIds.delete(ev.id);
-          }
-          updateStatusPreview();
-        });
+    const statusCard = el("div", {
+      style: `padding: 14px 16px; border-radius: 10px; font-size: 13px; line-height: 1.5; ${
+        isStrong
+          ? "background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534;"
+          : "background: #fefce8; border: 1px solid #fef08a; color: #854d0e;"
+      }`
+    }, [
+      el("div", { style: "font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px" }, [
+        el("span", { text: isStrong ? "✓ Bukti Terverifikasi Kuat (Strong)" : "ℹ Syarat Menuju Status Strong" })
+      ]),
+      el("p", { style: "margin: 0", text: explanationText })
+    ]);
 
-        const label = el("label", {
-          for: `ev-${ev.id}`,
-          style: "display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: background 0.2s",
-          onMouseOver: (e) => e.currentTarget.style.background = "var(--tint-gray)",
-          onMouseOut: (e) => e.currentTarget.style.background = "transparent"
+    // Daftar Bukti Pendukung Terkait (Linked Evidence)
+    const typeLabels = {
+      cv: "CV",
+      project: "Proyek",
+      github: "GitHub",
+      portfolio: "Portofolio",
+      certificate: "Sertifikat",
+      assessment: "Asesmen"
+    };
+
+    const evidenceContainer = el("div", { style: "display: grid; gap: 10px;" });
+
+    if (linkedEv.length === 0) {
+      evidenceContainer.append(
+        el("div", {
+          style: "padding: 24px; text-align: center; border: 1px dashed var(--border); border-radius: 10px; color: var(--text-muted); font-size: 13px;"
         }, [
-          checkbox,
-          el("div", { style: "flex: 1" }, [
-            el("p", { style: "font-size: 14px; font-weight: 600", text: ev.title }),
-            el("p", { style: "font-size: 12px; color: var(--text-muted)", text: ev.source_type })
+          el("p", { style: "margin: 0 0 6px; font-weight: 600;", text: "Belum ada bukti pendukung yang terhubung." }),
+          el("p", { style: "margin: 0; font-size: 12px;", text: "Klik tombol di bawah untuk menambahkan bukti baru di halaman Evidence." })
+        ])
+      );
+    } else {
+      linkedEv.forEach((ev) => {
+        const typeLabel = typeLabels[ev.source_type] || (ev.source_type ? ev.source_type.toUpperCase() : "BUKTI");
+        const levelText = ev.level ? ev.level.charAt(0).toUpperCase() + ev.level.slice(1) : "Menengah";
+
+        const rowCard = el("div", {
+          style: "display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); width: 100%; box-sizing: border-box;"
+        }, [
+          el("div", { style: "display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;" }, [
+            el("span", {
+              style: "display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; background: var(--tint-blue, #eef2ff); color: var(--primary, #4338ca); flex-shrink: 0;",
+              text: typeLabel
+            }),
+            el("span", {
+              style: "font-size: 14px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;",
+              text: ev.title
+            })
+          ]),
+          el("div", { style: "display: flex; align-items: center; gap: 8px; flex-shrink: 0;" }, [
+            el("span", {
+              style: "font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: var(--tint-gray); color: var(--text-muted);",
+              text: levelText
+            }),
+            ev.file_url ? el("a", {
+              href: ev.file_url,
+              target: "_blank",
+              rel: "noopener",
+              style: "font-size: 12px; color: var(--primary); text-decoration: none; font-weight: 600;",
+              text: "Lihat ↗"
+            }) : null
           ])
         ]);
 
-        evidenceList.append(label);
+        evidenceContainer.append(rowCard);
       });
     }
 
-    // Status preview
-    const statusBadge = el("span", {
-      id: "status-preview",
-      class: "badge",
-      style: "font-size: 13px; padding: 6px 12px"
-    });
-
-    function updateStatusPreview() {
-      const count = selectedEvidenceIds.size;
-      const isStrong = count >= 2;
-      statusBadge.className = `badge ${isStrong ? "badge-strong" : "badge-growing"}`;
-      statusBadge.textContent = isStrong ? "Strong" : "Growing";
-    }
-
-    updateStatusPreview();
-
-    const errorEl = el("p", { class: "field-error", style: "display: none; color: var(--danger); font-size: 13px; margin-top: 8px" });
+    const evidenceSection = el("div", {}, [
+      el("div", { style: "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;" }, [
+        el("label", { style: "font-size: 14px; font-weight: 700; color: var(--text-primary);", text: "Bukti Pendukung Terkait" }),
+        el("span", { style: "font-size: 12px; color: var(--text-muted); font-weight: 600;", text: `${linkedEv.length} bukti` })
+      ]),
+      evidenceContainer
+    ]);
 
     UI.modal({
-      title: "Edit Skill",
+      title: "Detail Keterampilan & Bukti Pendukung",
       body: [
-        el("div", { class: "field" }, [
-          el("label", { for: "edit-skill-select", text: "Change Skill" }),
-          skillSelect
-        ]),
-        el("div", { class: "field", style: "margin-top: 20px" }, [
-          el("label", { text: "Linked Evidence" }),
-          el("p", { style: "font-size: 13px; color: var(--text-muted); margin-bottom: 12px", text: "Select evidence that demonstrates this skill" }),
-          evidenceList
-        ]),
-        el("div", { style: "margin-top: 16px; padding: 12px; background: var(--tint-gray); border-radius: var(--radius); display: flex; align-items: center; justify-content: space-between" }, [
-          el("span", { style: "font-size: 14px; font-weight: 600", text: "Status Preview:" }),
-          statusBadge
-        ]),
-        errorEl
+        headerInfo,
+        statusCard,
+        evidenceSection
       ],
-      submitLabel: "Save Changes",
-      cancelLabel: "Cancel",
-      onSubmit: async (close, form) => {
-        errorEl.style.display = "none";
-
-        try {
-          // If skill changed, remove old and add new
-          if (selectedSkillId !== skill.id) {
-            await API.removeSkill(skill.id);
-            await API.addSkill(selectedSkillId);
-          }
-
-          // Update evidence links for the skill
-          for (const ev of allEvidence) {
-            const wasLinked = linkedEvidenceIds.has(ev.id);
-            const isNowLinked = selectedEvidenceIds.has(ev.id);
-
-            if (wasLinked !== isNowLinked) {
-              // Rebuild skill_ids for this evidence
-              const newSkillIds = [...(ev.skill_ids || [])];
-
-              if (isNowLinked && !newSkillIds.includes(selectedSkillId)) {
-                newSkillIds.push(selectedSkillId);
-              } else if (!isNowLinked) {
-                const idx = newSkillIds.indexOf(selectedSkillId);
-                if (idx > -1) newSkillIds.splice(idx, 1);
-              }
-
-              await API.updateEvidenceSkills(ev.id, newSkillIds);
-            }
-          }
-
-          UI.toast("Skill updated successfully!");
-          setTimeout(() => window.location.reload(), 300);
-          return true;
-
-        } catch (err) {
-          errorEl.textContent = `Error: ${err.message}`;
-          errorEl.style.display = "block";
-          return false;
-        }
-      }
-    });
-
-    // Add delete button to modal footer
-    setTimeout(() => {
-      const modalActions = document.querySelector('.modal-actions');
-      if (modalActions) {
+      footer: (close) => {
         const deleteBtn = el("button", {
           type: "button",
           class: "btn btn-danger",
-          text: "Delete Skill",
+          id: "btn-delete-skill",
           style: "margin-right: auto",
+          text: "Hapus Skill",
           onClick: async () => {
-            if (!confirm(`Remove "${skill.name}" from your skills?`)) return;
-
+            if (!confirm(`Hapus "${skill.name}" dari daftar keahlian Anda?`)) return;
             try {
-              await API.removeSkill(skill.id);
-              UI.toast("Skill removed");
-              // Close modal by removing overlay from DOM
-              const overlay = document.querySelector('.modal-overlay');
-              if (overlay) overlay.remove();
+              await API.removeMySkill(skill.id);
+              UI.toast(`Keahlian "${skill.name}" berhasil dihapus.`);
+              close();
               setTimeout(() => window.location.reload(), 300);
             } catch (err) {
-              alert(`Error: ${err.message}`);
+              UI.toast(`Gagal menghapus skill: ${err.message}`, "error");
             }
           }
         });
 
-        modalActions.insertBefore(deleteBtn, modalActions.firstChild);
+        const addEvidenceBtn = el("a", {
+          href: `evidence.php?skill_id=${skill.id}`,
+          class: "btn btn-primary",
+          style: "text-decoration: none; display: inline-flex; align-items: center; font-size: 13px;",
+          text: "+ Tambah Bukti di Halaman Evidence"
+        });
+
+        const closeBtn = el("button", {
+          type: "button",
+          class: "btn btn-secondary",
+          text: "Tutup",
+          onClick: () => close()
+        });
+
+        return [deleteBtn, addEvidenceBtn, closeBtn];
       }
-    }, 10);
+    });
   }
 })();

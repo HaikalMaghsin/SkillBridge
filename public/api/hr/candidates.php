@@ -57,11 +57,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 cp.id AS pipeline_id,
                 cp.status,
                 cp.notes,
+                cp.decision_payload,
+                cp.candidate_response,
+                cp.candidate_reply_note,
                 cp.created_at,
                 cp.updated_at,
                 u.id AS user_id,
                 u.name AS candidate_name,
                 u.email AS candidate_email,
+                u.avatar_url,
                 sp.target_career_id,
                 sp.public_token,
                 sp.is_public,
@@ -157,6 +161,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 $portfolio_url = base_url('p.php?token=' . $candidate['public_token']);
             }
 
+            $decPayload = $candidate['decision_payload'];
+            if (is_string($decPayload)) {
+                $decPayload = json_decode($decPayload, true) ?: [];
+            } elseif (!is_array($decPayload)) {
+                $decPayload = [];
+            }
+
             // Provide both flattened fields and nested objects for 100% frontend compatibility
             $result[] = [
                 'id' => (int)$candidate['id'],
@@ -164,6 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'user_id' => $candidate_user_id,
                 'name' => $candidate['candidate_name'],
                 'email' => $candidate['candidate_email'],
+                'avatar_url' => $candidate['avatar_url'] ?? null,
                 'target_role' => $candidate['target_career_name'] ?: 'Belum Ditentukan',
                 'target_career_name' => $candidate['target_career_name'] ?: 'Belum Ditentukan',
                 'target_career_id' => $candidate['target_career_id'] ? (int)$candidate['target_career_id'] : null,
@@ -171,6 +183,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'vacancy_title' => $candidate['vacancy_title'] ?: '',
                 'status' => $candidate['status'] ?: 'New',
                 'notes' => $candidate['notes'] ?: '',
+                'decision_payload' => $decPayload,
+                'candidate_response' => $candidate['candidate_response'] ?? 'pending',
+                'candidate_reply_note' => $candidate['candidate_reply_note'] ?? '',
                 'tier' => $tier,
                 'tier_label' => $tier_label,
                 'tier_description' => "Memenuhi {$skills_owned_count} dari {$skills_total_count} skill",
@@ -196,6 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     'user_id' => $candidate_user_id,
                     'name' => $candidate['candidate_name'],
                     'email' => $candidate['candidate_email'],
+                    'avatar_url' => $candidate['avatar_url'] ?? null,
                     'target_career_id' => $candidate['target_career_id'] ? (int)$candidate['target_career_id'] : null,
                     'target_career_name' => $candidate['target_career_name'],
                     'public_token' => $candidate['public_token'],
@@ -245,11 +261,116 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $vacancy_id = isset($input['vacancy_id']) ? (int)$input['vacancy_id'] : null;
         $new_status = trim($input['status'] ?? '');
         $notes = isset($input['notes']) ? trim($input['notes']) : null;
+        $decision_payload = isset($input['decision_payload']) && is_array($input['decision_payload']) ? $input['decision_payload'] : [];
 
         if (!$new_status) {
             http_response_code(400);
             echo json_encode(['error' => 'Status is required']);
             exit;
+        }
+
+        // Validasi field wajib sesuai status keputusan HR
+        if ($new_status === 'Shortlisted') {
+            $reason = trim($decision_payload['reason'] ?? $input['reason'] ?? $notes ?? '');
+            if (!$reason) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Alasan shortlist wajib diisi.']);
+                exit;
+            }
+            $decision_payload['reason'] = $reason;
+            $decision_payload['next_step'] = trim($decision_payload['next_step'] ?? $input['next_step'] ?? '');
+            if (!$notes) {
+                $notes = "Shortlisted: {$reason}" . ($decision_payload['next_step'] ? " (Tahap berikutnya: {$decision_payload['next_step']})" : "");
+            }
+        } elseif ($new_status === 'Interview') {
+            $mode = trim($decision_payload['interview_mode'] ?? $input['interview_mode'] ?? 'online');
+            $date = trim($decision_payload['interview_date'] ?? $input['interview_date'] ?? '');
+            $time = trim($decision_payload['interview_time'] ?? $input['interview_time'] ?? '');
+            $interviewer = trim($decision_payload['interviewer_name'] ?? $input['interviewer_name'] ?? '');
+            $message = trim($decision_payload['interview_message'] ?? $input['interview_message'] ?? '');
+
+            if (!$date || !$time || !$interviewer || !$message) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Tanggal, waktu, nama pewawancara, dan pesan persiapan interview wajib diisi.']);
+                exit;
+            }
+
+            $decision_payload['interview_mode'] = $mode;
+            $decision_payload['interview_date'] = $date;
+            $decision_payload['interview_time'] = $time;
+            $decision_payload['interviewer_name'] = $interviewer;
+            $decision_payload['interview_message'] = $message;
+
+            if ($mode === 'online') {
+                $creator = trim($decision_payload['meeting_creator'] ?? $input['meeting_creator'] ?? 'hr_provided');
+                $platform = trim($decision_payload['meeting_platform'] ?? $input['meeting_platform'] ?? 'Google Meet');
+                $meetingUrl = trim($decision_payload['meeting_url'] ?? $input['meeting_url'] ?? '');
+
+                if ($creator === 'hr_provided' && !$meetingUrl) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Tautan meeting wajib diisi jika link disediakan oleh HR.']);
+                    exit;
+                }
+
+                $decision_payload['meeting_creator'] = $creator;
+                $decision_payload['meeting_platform'] = $platform;
+                $decision_payload['meeting_url'] = $meetingUrl;
+
+                if (!$notes) {
+                    $notes = "Undangan Interview Online ({$platform}): {$date} {$time} WIB bersama {$interviewer}." . ($meetingUrl ? " Link: {$meetingUrl}" : "");
+                }
+            } else {
+                $address = trim($decision_payload['location_detail'] ?? $decision_payload['offline_address'] ?? $input['offline_address'] ?? '');
+                $items = trim($decision_payload['offline_items'] ?? $input['offline_items'] ?? '');
+
+                if (!$address) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Alamat lengkap lokasi interview wajib diisi.']);
+                    exit;
+                }
+
+                $decision_payload['location_detail'] = $address;
+                $decision_payload['offline_address'] = $address;
+                $decision_payload['offline_items'] = $items;
+
+                if (!$notes) {
+                    $notes = "Undangan Interview Offline di {$address}: {$date} {$time} WIB bersama {$interviewer}.";
+                }
+            }
+        } elseif ($new_status === 'Accepted') {
+            $acceptMsg = trim($decision_payload['accept_message'] ?? $input['accept_message'] ?? '');
+            $startDate = trim($decision_payload['start_date'] ?? $input['start_date'] ?? '');
+            $contactInfo = trim($decision_payload['contact_info'] ?? $input['contact_info'] ?? '');
+
+            if (!$acceptMsg || !$startDate || !$contactInfo) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Pesan penerimaan, tanggal mulai onboarding, dan kontak HR wajib diisi.']);
+                exit;
+            }
+
+            $decision_payload['accept_message'] = $acceptMsg;
+            $decision_payload['start_date'] = $startDate;
+            $decision_payload['contact_info'] = $contactInfo;
+
+            if (!$notes) {
+                $notes = "Diterima / Offering. Mulai: {$startDate}. Kontak: {$contactInfo}. {$acceptMsg}";
+            }
+        } elseif ($new_status === 'Rejected') {
+            $rejectReason = trim($decision_payload['reject_reason'] ?? $input['reject_reason'] ?? '');
+            $feedback = trim($decision_payload['feedback'] ?? $input['feedback'] ?? '');
+
+            if (!$rejectReason || !$feedback) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Kategori alasan dan saran evaluasi penolakan wajib diisi.']);
+                exit;
+            }
+
+            $decision_payload['reject_reason'] = $rejectReason;
+            $decision_payload['feedback'] = $feedback;
+
+            if (!$notes) {
+                $notes = "Evaluasi: {$rejectReason}. Feedback: {$feedback}";
+            }
         }
 
         // Verify HR company
@@ -284,22 +405,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        // Update status in candidate_pipelines
+        // Update status in candidate_pipelines with structured decision_payload and reset student response
         $stmt = $pdo->prepare('
             UPDATE candidate_pipelines
             SET status = :status,
-                notes = COALESCE(:notes, notes),
+                notes = :notes,
+                decision_payload = :decision_payload,
+                candidate_response = \'pending\',
+                candidate_reply_note = NULL,
                 updated_by = :updated_by,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = :pipeline_id AND company_id = :company_id
             RETURNING user_id, vacancy_id
         ');
         $stmt->execute([
-            ':status' => $new_status,
-            ':notes' => $notes,
-            ':updated_by' => $user_id,
-            ':pipeline_id' => $pipeline_id,
-            ':company_id' => $company_id
+            ':status'           => $new_status,
+            ':notes'            => $notes,
+            ':decision_payload' => json_encode($decision_payload, JSON_UNESCAPED_UNICODE),
+            ':updated_by'       => $user_id,
+            ':pipeline_id'      => $pipeline_id,
+            ':company_id'       => $company_id
         ]);
 
         $updatedRow = $stmt->fetch(PDO::FETCH_ASSOC);

@@ -29,6 +29,12 @@ $rec_title = $rec_title ?? 'Perusahaan Partner';
       <span class="rec-header-name"><?= htmlspecialchars($user['name'] ?? 'Aditya Pratama') ?></span>
       <span class="rec-header-role"><?= htmlspecialchars($user['role_label'] ?? 'Admin Perusahaan · PT Tech Indonesia') ?></span>
     </div>
-    <div class="rec-avatar"><?= htmlspecialchars($user['initials'] ?? 'AP') ?></div>
+    <div class="rec-avatar" style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
+      <?php if (!empty($user['avatar_url'])): ?>
+        <img src="<?= e($user['avatar_url']) ?>" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;">
+      <?php else: ?>
+        <?= htmlspecialchars($user['initials'] ?? 'AP') ?>
+      <?php endif; ?>
+    </div>
   </div>
 </header>

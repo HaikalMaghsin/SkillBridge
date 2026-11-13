@@ -47,7 +47,13 @@ $nav_items = [
         <div class="navbar-profile-name"><?= htmlspecialchars($user['name'] ?? 'Jhon Doe') ?></div>
         <div class="navbar-profile-email"><?= htmlspecialchars($user['email'] ?? 'jhondoe@gmail.com') ?></div>
       </div>
-      <div class="navbar-avatar"><?= htmlspecialchars($user['initials'] ?? 'JD') ?></div>
+      <div class="navbar-avatar" style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
+        <?php if (!empty($user['avatar_url'])): ?>
+          <img src="<?= e($user['avatar_url']) ?>" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;">
+        <?php else: ?>
+          <?= htmlspecialchars($user['initials'] ?? 'JD') ?>
+        <?php endif; ?>
+      </div>
     </a>
     <a href="<?= e(base_url('logout.php')) ?>" title="Keluar / Logout" style="color: var(--text-muted); display: grid; place-items: center; padding: 4px; border-radius: 6px; transition: color 0.15s ease;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-muted)'">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">

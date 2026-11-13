@@ -126,12 +126,14 @@ try {
             'id' => (int)$career['id'],
             'name' => $career['name'],
             'description' => $career['description'],
-            'skills' => []
+            'skills' => [],
+            'skill_ids' => []
         ];
     }
 
     foreach ($mappings as $mapping) {
         $careersMap[$mapping['career_id']]['skills'][] = $mapping['skill_name'];
+        $careersMap[$mapping['career_id']]['skill_ids'][] = (int)$mapping['skill_id'];
     }
 
     $careersWithSkills = array_values($careersMap);

@@ -33,7 +33,7 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
       <div class="admin-card">
         <div class="admin-toolbar">
           <div class="admin-search" style="flex:1;min-width:200px">
-            <input type="search" id="admin-search" placeholder="Cari karier..."
+            <input type="search" id="admin-search" placeholder="Cari karier atau keterampilan..."
               style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:var(--admin-surface);font-size:14px" />
           </div>
         </div>

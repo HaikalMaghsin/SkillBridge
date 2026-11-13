@@ -1,10 +1,11 @@
 <?php
 // public/api/profile.php
 // GET: Ambil profil pengguna aktif
-// POST: Update profil (info, password, visibility)
+// POST: Update profil (info, password, visibility, upload avatar)
 require_once __DIR__ . '/../../includes/auth/auth.php';
 require_once __DIR__ . '/../../includes/auth/csrf.php';
 require_once __DIR__ . '/../../includes/config/database.php';
+require_once __DIR__ . '/../../includes/config/r2.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -30,8 +31,7 @@ try {
 
     // GET: Ambil profil lengkap
     if ($method === 'GET') {
-        // Ambil data user
-        $stmt = $pdo->prepare('SELECT id, name, email, role, created_at FROM users WHERE id = :user_id');
+        $stmt = $pdo->prepare('SELECT id, name, email, role, avatar_url, created_at FROM users WHERE id = :user_id');
         $stmt->execute([':user_id' => $user_id]);
         $userRow = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -46,27 +46,33 @@ try {
             'name' => $userRow['name'],
             'email' => $userRow['email'],
             'role' => db_role_to_app_role($userRow['role']),
+            'avatar_url' => $userRow['avatar_url'],
             'created_at' => $userRow['created_at']
         ];
 
         // Jika mahasiswa, ambil juga student_profiles
         if ($user['role'] === 'mahasiswa') {
             $stmt = $pdo->prepare('
-                SELECT target_career_id, is_public, public_token
+                SELECT target_career_id, is_public, public_token, institution, study_program, semester, location, phone, bio
                 FROM student_profiles
                 WHERE user_id = :user_id
             ');
             $stmt->execute([':user_id' => $user_id]);
             $studentProfile = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($studentProfile) {
-                $profile['target_career_id'] = $studentProfile['target_career_id'] ? (int)$studentProfile['target_career_id'] : null;
-                $profile['is_public'] = (bool)$studentProfile['is_public'];
-                $profile['public_token'] = $studentProfile['public_token'];
+            $profile['institution'] = $studentProfile['institution'] ?? 'Politeknik Negeri Malang';
+            $profile['study_program'] = $studentProfile['study_program'] ?? 'Teknik Informatika';
+            $profile['program'] = $profile['study_program']; // alias untuk kompatibilitas frontend
+            $profile['semester'] = isset($studentProfile['semester']) ? (int)$studentProfile['semester'] : 3;
+            $profile['location'] = $studentProfile['location'] ?? 'Malang, Indonesia';
+            $profile['phone'] = $studentProfile['phone'] ?? null;
+            $profile['bio'] = $studentProfile['bio'] ?? null;
+            $profile['target_career_id'] = !empty($studentProfile['target_career_id']) ? (int)$studentProfile['target_career_id'] : null;
+            $profile['is_public'] = !empty($studentProfile['is_public']);
+            $profile['public_token'] = $studentProfile['public_token'] ?? null;
 
-                if ($profile['is_public'] && $profile['public_token']) {
-                    $profile['public_url'] = base_url('p.php?token=' . $studentProfile['public_token']);
-                }
+            if ($profile['is_public'] && $profile['public_token']) {
+                $profile['public_url'] = base_url('p.php?token=' . $studentProfile['public_token']);
             }
         }
 
@@ -82,13 +88,19 @@ try {
             exit;
         }
 
-        $input = json_decode(file_get_contents('php://input'), true);
+        $input = json_decode(file_get_contents('php://input'), true) ?: [];
         $action = $input['action'] ?? '';
 
-        // Update info (name, email)
+        // Update info (name, email, profiling)
         if ($action === 'update_info') {
             $name = trim($input['name'] ?? '');
             $email = trim($input['email'] ?? '');
+            $institution = trim($input['institution'] ?? 'Politeknik Negeri Malang');
+            $study_program = trim($input['study_program'] ?? $input['program'] ?? 'Teknik Informatika');
+            $semester = isset($input['semester']) ? (int)$input['semester'] : 3;
+            $location = trim($input['location'] ?? 'Malang, Indonesia');
+            $phone = isset($input['phone']) ? trim($input['phone']) : null;
+            $bio = isset($input['bio']) ? trim($input['bio']) : null;
 
             if (!$name || !$email) {
                 http_response_code(400);
@@ -120,7 +132,74 @@ try {
             $_SESSION['user']['name'] = $name;
             $_SESSION['user']['email'] = $email;
 
+            if ($user['role'] === 'mahasiswa') {
+                $stmtProfile = $pdo->prepare('
+                    INSERT INTO student_profiles (user_id, institution, study_program, semester, location, phone, bio)
+                    VALUES (:user_id, :institution, :study_program, :semester, :location, :phone, :bio)
+                    ON CONFLICT (user_id)
+                    DO UPDATE SET
+                        institution = EXCLUDED.institution,
+                        study_program = EXCLUDED.study_program,
+                        semester = EXCLUDED.semester,
+                        location = EXCLUDED.location,
+                        phone = COALESCE(EXCLUDED.phone, student_profiles.phone),
+                        bio = COALESCE(EXCLUDED.bio, student_profiles.bio),
+                        updated_at = CURRENT_TIMESTAMP
+                ');
+                $stmtProfile->execute([
+                    ':user_id'       => $user_id,
+                    ':institution'   => $institution,
+                    ':study_program' => $study_program,
+                    ':semester'      => $semester,
+                    ':location'      => $location,
+                    ':phone'         => $phone,
+                    ':bio'           => $bio,
+                ]);
+            }
+
             echo json_encode(['success' => true, 'message' => 'Profile updated']);
+            exit;
+        }
+
+        // Upload avatar image
+        if ($action === 'upload_avatar') {
+            $raw = $input['avatar_base64'] ?? '';
+            if (!$raw) {
+                http_response_code(400);
+                echo json_encode(['error' => 'No image data provided']);
+                exit;
+            }
+
+            $contentType = 'image/webp';
+            if (preg_match('/^data:(image\/\w+);base64,/', $raw, $matches)) {
+                $contentType = $matches[1];
+                $raw = substr($raw, strpos($raw, ',') + 1);
+            }
+            $binary = base64_decode($raw);
+            if (!$binary) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid image base64 data']);
+                exit;
+            }
+
+            $ext = ($contentType === 'image/jpeg' || $contentType === 'image/jpg') ? 'jpg' : (($contentType === 'image/png') ? 'png' : 'webp');
+            $objectKey = "avatars/user_{$user_id}_" . time() . ".{$ext}";
+
+            $uploadRes = r2_upload_bytes($objectKey, $binary, $contentType);
+            $avatarUrl = $uploadRes['url'];
+
+            // Update users table
+            $stmt = $pdo->prepare('UPDATE users SET avatar_url = :url, updated_at = CURRENT_TIMESTAMP WHERE id = :user_id');
+            $stmt->execute([':url' => $avatarUrl, ':user_id' => $user_id]);
+
+            $_SESSION['user']['avatar_url'] = $avatarUrl;
+
+            echo json_encode([
+                'success'    => true,
+                'message'    => 'Avatar updated successfully',
+                'avatar_url' => $avatarUrl,
+                'storage'    => $uploadRes['storage'] ?? 'data_uri'
+            ]);
             exit;
         }
 
@@ -174,7 +253,6 @@ try {
 
             // Jika set public, pastikan ada public_token
             if ($is_public) {
-                // Generate token jika belum ada
                 $stmt = $pdo->prepare('SELECT public_token FROM student_profiles WHERE user_id = :user_id');
                 $stmt->execute([':user_id' => $user_id]);
                 $existing = $stmt->fetch(PDO::FETCH_ASSOC);

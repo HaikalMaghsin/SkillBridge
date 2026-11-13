@@ -54,6 +54,7 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     role          user_role NOT NULL DEFAULT 'user',
     is_active     BOOLEAN NOT NULL DEFAULT TRUE,
+    avatar_url    TEXT DEFAULT NULL,
     created_at    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -66,6 +67,12 @@ CREATE TRIGGER trg_users_updated_at
 CREATE TABLE student_profiles (
     user_id          INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     target_career_id INT REFERENCES careers(id) ON DELETE SET NULL,
+    institution      VARCHAR(150) DEFAULT 'Politeknik Negeri Malang',
+    study_program    VARCHAR(150) DEFAULT 'Teknik Informatika',
+    semester         INT DEFAULT 3,
+    location         VARCHAR(150) DEFAULT 'Malang, Indonesia',
+    phone            VARCHAR(50) DEFAULT NULL,
+    bio              TEXT DEFAULT NULL,
     is_public        BOOLEAN NOT NULL DEFAULT FALSE,
     public_token     UUID UNIQUE,
     updated_at       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -211,9 +218,12 @@ CREATE TABLE candidate_pipelines (
     company_id      INT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
     vacancy_id      INT REFERENCES job_vacancies(id) ON DELETE SET NULL,
     user_id         INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    status          VARCHAR(20) NOT NULL DEFAULT 'Shortlisted', -- Shortlisted, Interview, Accepted, Rejected
-    notes           TEXT,
-    updated_by      INT REFERENCES users(id) ON DELETE SET NULL,
+    status              VARCHAR(20) NOT NULL DEFAULT 'Shortlisted', -- Shortlisted, Interview, Accepted, Rejected
+    notes               TEXT,
+    decision_payload    JSONB DEFAULT '{}'::jsonb,
+    candidate_response  VARCHAR(40) DEFAULT 'pending',
+    candidate_reply_note TEXT DEFAULT NULL,
+    updated_by          INT REFERENCES users(id) ON DELETE SET NULL,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (company_id, user_id, vacancy_id)

@@ -49,6 +49,7 @@ try {
             u.id,
             u.name,
             u.email,
+            u.avatar_url,
             COALESCE(c.name, 'Belum Ditentukan') AS target_role
         FROM users u
         JOIN student_profiles sp ON sp.user_id = u.id AND sp.is_public = TRUE

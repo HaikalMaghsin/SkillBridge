@@ -117,7 +117,9 @@ try {
             vsg.skill_id AS id,
             vsg.skill_name AS name,
             s.category,
-            COUNT(DISTINCT es.evidence_id) AS evidence_count
+            COUNT(DISTINCT e.id) AS evidence_count,
+            COUNT(DISTINCT e.source_type) AS distinct_source_count,
+            COUNT(DISTINCT CASE WHEN e.source_type IN (\'project\', \'github\', \'portfolio\') THEN e.id ELSE NULL END) AS practical_count
         FROM v_skill_gap vsg
         JOIN skills s ON s.id = vsg.skill_id
         LEFT JOIN evidence_skills es ON es.skill_id = vsg.skill_id
@@ -145,11 +147,16 @@ try {
 
     // Transform
     $have = array_map(function($row) {
+        $count = (int)$row['evidence_count'];
+        $distinctSources = (int)$row['distinct_source_count'];
+        $practicalCount = (int)$row['practical_count'];
+        $isStrong = ($count >= 2) && ($distinctSources >= 2 || $practicalCount >= 2);
         return [
             'id' => (int)$row['id'],
             'name' => $row['name'],
             'category' => $row['category'],
-            'evidence_count' => (int)$row['evidence_count']
+            'evidence_count' => $count,
+            'label' => $isStrong ? 'Strong' : 'Growing'
         ];
     }, $have);
 

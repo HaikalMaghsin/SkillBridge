@@ -173,6 +173,7 @@ try {
         if ($method === 'POST') {
             $name = trim($input['name'] ?? '');
             $description = trim($input['description'] ?? '');
+            $skill_ids = isset($input['skill_ids']) && is_array($input['skill_ids']) ? $input['skill_ids'] : [];
 
             if (!$name) {
                 http_response_code(400);
@@ -181,7 +182,7 @@ try {
             }
 
             // Cek duplikat nama
-            $stmt = $pdo->prepare('SELECT id FROM careers WHERE name = :name');
+            $stmt = $pdo->prepare('SELECT id FROM careers WHERE LOWER(name) = LOWER(:name)');
             $stmt->execute([':name' => $name]);
             if ($stmt->fetch()) {
                 http_response_code(409);
@@ -189,30 +190,56 @@ try {
                 exit;
             }
 
-            $stmt = $pdo->prepare('
-                INSERT INTO careers (name, description)
-                VALUES (:name, :description)
-                RETURNING id
-            ');
-            $stmt->execute([
-                ':name' => $name,
-                ':description' => $description
-            ]);
+            $pdo->beginTransaction();
+            try {
+                $stmt = $pdo->prepare('
+                    INSERT INTO careers (name, description)
+                    VALUES (:name, :description)
+                    RETURNING id
+                ');
+                $stmt->execute([
+                    ':name' => $name,
+                    ':description' => $description
+                ]);
 
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                $career_id = (int)$result['id'];
 
-            echo json_encode([
-                'success' => true,
-                'id' => (int)$result['id'],
-                'message' => 'Career created'
-            ]);
-            exit;
+                if (!empty($skill_ids)) {
+                    $stmtMap = $pdo->prepare('
+                        INSERT INTO career_skill_requirements (career_id, skill_id, is_mandatory)
+                        VALUES (:cid, :sid, TRUE)
+                        ON CONFLICT (career_id, skill_id) DO NOTHING
+                    ');
+                    foreach ($skill_ids as $sid) {
+                        $sid = (int)$sid;
+                        if ($sid > 0) {
+                            $stmtMap->execute([':cid' => $career_id, ':sid' => $sid]);
+                        }
+                    }
+                }
+
+                $pdo->commit();
+
+                echo json_encode([
+                    'success' => true,
+                    'id' => $career_id,
+                    'message' => 'Career created with skills synced'
+                ]);
+                exit;
+            } catch (Exception $e) {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+                throw $e;
+            }
         }
 
         if ($method === 'PUT') {
             $id = isset($input['id']) ? (int)$input['id'] : null;
             $name = trim($input['name'] ?? '');
             $description = trim($input['description'] ?? '');
+            $skill_ids = isset($input['skill_ids']) && is_array($input['skill_ids']) ? $input['skill_ids'] : null;
 
             if (!$id || !$name) {
                 http_response_code(400);
@@ -220,19 +247,58 @@ try {
                 exit;
             }
 
-            $stmt = $pdo->prepare('
-                UPDATE careers
-                SET name = :name, description = :description
-                WHERE id = :id
-            ');
-            $stmt->execute([
-                ':id' => $id,
-                ':name' => $name,
-                ':description' => $description
-            ]);
+            // Cek duplikat nama dengan karier lain
+            $stmt = $pdo->prepare('SELECT id FROM careers WHERE LOWER(name) = LOWER(:name) AND id != :id');
+            $stmt->execute([':name' => $name, ':id' => $id]);
+            if ($stmt->fetch()) {
+                http_response_code(409);
+                echo json_encode(['error' => 'Another career with this name already exists']);
+                exit;
+            }
 
-            echo json_encode(['success' => true, 'message' => 'Career updated']);
-            exit;
+            $pdo->beginTransaction();
+            try {
+                $stmt = $pdo->prepare('
+                    UPDATE careers
+                    SET name = :name, description = :description
+                    WHERE id = :id
+                ');
+                $stmt->execute([
+                    ':id' => $id,
+                    ':name' => $name,
+                    ':description' => $description
+                ]);
+
+                // Sync career_skill_requirements jika skill_ids dikirim
+                if ($skill_ids !== null) {
+                    $delStmt = $pdo->prepare('DELETE FROM career_skill_requirements WHERE career_id = :id');
+                    $delStmt->execute([':id' => $id]);
+
+                    if (!empty($skill_ids)) {
+                        $stmtMap = $pdo->prepare('
+                            INSERT INTO career_skill_requirements (career_id, skill_id, is_mandatory)
+                            VALUES (:cid, :sid, TRUE)
+                            ON CONFLICT (career_id, skill_id) DO NOTHING
+                        ');
+                        foreach ($skill_ids as $sid) {
+                            $sid = (int)$sid;
+                            if ($sid > 0) {
+                                $stmtMap->execute([':cid' => $id, ':sid' => $sid]);
+                            }
+                        }
+                    }
+                }
+
+                $pdo->commit();
+
+                echo json_encode(['success' => true, 'message' => 'Career and skill requirements updated']);
+                exit;
+            } catch (Exception $e) {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+                throw $e;
+            }
         }
 
         if ($method === 'DELETE') {
@@ -244,36 +310,46 @@ try {
                 exit;
             }
 
-            // Jangan hapus karier yang masih dipakai; CASCADE tidak diubah.
+            // Cek apakah karier masih dipakai oleh siswa atau lowongan
             $stmt = $pdo->prepare('
                 SELECT
                     (SELECT COUNT(*) FROM student_profiles WHERE target_career_id = :id) AS student_profiles,
-                    (SELECT COUNT(*) FROM career_skill_requirements WHERE career_id = :id) AS mappings,
                     (SELECT COUNT(*) FROM job_vacancies WHERE career_id = :id) AS vacancies
             ');
             $stmt->execute([':id' => $id]);
             $usage = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ((int)$usage['student_profiles'] > 0
-                || (int)$usage['mappings'] > 0
-                || (int)$usage['vacancies'] > 0) {
+            if ((int)$usage['student_profiles'] > 0 || (int)$usage['vacancies'] > 0) {
                 http_response_code(409);
                 echo json_encode([
-                    'error' => 'Career is still in use',
+                    'error' => 'Career is still in use by students or vacancies',
                     'usage' => [
                         'student_profiles' => (int)$usage['student_profiles'],
-                        'career_requirements' => (int)$usage['mappings'],
                         'job_vacancies' => (int)$usage['vacancies'],
                     ]
                 ]);
                 exit;
             }
 
-            $stmt = $pdo->prepare('DELETE FROM careers WHERE id = :id');
-            $stmt->execute([':id' => $id]);
+            $pdo->beginTransaction();
+            try {
+                // Hapus mapping skill requirement
+                $delReq = $pdo->prepare('DELETE FROM career_skill_requirements WHERE career_id = :id');
+                $delReq->execute([':id' => $id]);
 
-            echo json_encode(['success' => true, 'message' => 'Career deleted']);
-            exit;
+                $stmt = $pdo->prepare('DELETE FROM careers WHERE id = :id');
+                $stmt->execute([':id' => $id]);
+
+                $pdo->commit();
+
+                echo json_encode(['success' => true, 'message' => 'Career deleted']);
+                exit;
+            } catch (Exception $e) {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+                throw $e;
+            }
         }
     }
 

@@ -13,12 +13,12 @@
       profile = {
         name: data.name,
         email: data.email,
-        institution: "Politeknik Negeri Malang", // TODO: add to backend
-        program: "Information Technology",
-        semester: "3",
-        location: "Malang, Indonesia",
-        memberSince: "January 2026",
-        photo: null,
+        institution: data.institution || "Politeknik Negeri Malang",
+        program: data.study_program || data.program || "Teknik Informatika",
+        semester: String(data.semester || "3"),
+        location: data.location || "Malang, Indonesia",
+        memberSince: data.created_at ? new Date(data.created_at).toLocaleDateString("id-ID", { month: "long", year: "numeric" }) : "Januari 2026",
+        photo: data.avatar_url || null,
         is_public: data.is_public || false,
         public_url: data.public_url || null
       };
@@ -29,10 +29,10 @@
         name: "Student",
         email: "student@example.com",
         institution: "Politeknik Negeri Malang",
-        program: "Information Technology",
+        program: "Teknik Informatika",
         semester: "3",
         location: "Malang, Indonesia",
-        memberSince: "January 2026",
+        memberSince: "Januari 2026",
         photo: null,
         is_public: false
       };
@@ -124,6 +124,10 @@
 
         const name = inputs["edit-name"].value.trim();
         const email = inputs["edit-email"].value.trim();
+        const institution = inputs["edit-institution"].value.trim();
+        const study_program = inputs["edit-program"].value.trim();
+        const semester = parseInt(inputs["edit-semester"].value.trim(), 10) || 3;
+        const location = inputs["edit-location"].value.trim();
 
         if (!name || !email) {
           errorEl.textContent = "Name and email are required.";
@@ -138,16 +142,23 @@
         }
 
         try {
-          // Call backend API
-          await API.updateProfile({ name, email });
+          // Call backend API with all fields
+          await API.updateProfile({
+            name,
+            email,
+            institution,
+            study_program,
+            semester,
+            location
+          });
 
           // Update local state
           profile.name = name;
           profile.email = email;
-          profile.institution = inputs["edit-institution"].value.trim();
-          profile.program = inputs["edit-program"].value.trim();
-          profile.semester = inputs["edit-semester"].value.trim();
-          profile.location = inputs["edit-location"].value.trim();
+          profile.institution = institution;
+          profile.program = study_program;
+          profile.semester = String(semester);
+          profile.location = location;
 
           render();
           UI.toast("Profile updated successfully!");
@@ -157,8 +168,6 @@
           errorEl.style.display = "block";
           return false;
         }
-        UI.toast("Profile updated");
-        return true;
       },
     });
   }
@@ -283,50 +292,105 @@
     });
   }
 
-  // ---- Change Photo (file input -> data URL preview, local only) ----
+  // Helper: crop to center square & compress to WebP via HTML5 Canvas
+  function cropAndCompressImage(file, size = 256, quality = 0.85) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext("2d");
+
+          const naturalW = img.naturalWidth || img.width;
+          const naturalH = img.naturalHeight || img.height;
+          const minDim = Math.min(naturalW, naturalH);
+          const sx = (naturalW - minDim) / 2;
+          const sy = (naturalH - minDim) / 2;
+
+          ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+          const dataUrl = canvas.toDataURL("image/webp", quality);
+          resolve(dataUrl);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ---- Change Photo (file input -> crop canvas -> R2/backend) ----
   function openChangePhoto() {
     const input = el("input", { type: "file", id: "photo-file", accept: "image/png,image/jpeg,image/webp" });
     const preview = el("div", {
-      style: "width: 64px; height: 64px; border-radius: 50%; background: var(--tint-gray); display: grid; place-items: center; overflow: hidden; color: var(--text-muted); font-size: 12px",
+      style: "width: 80px; height: 80px; border-radius: 50%; background: var(--tint-gray); display: grid; place-items: center; overflow: hidden; color: var(--text-muted); font-size: 12px; border: 2px solid var(--border)",
       text: "Preview",
     });
     const errorEl = el("p", { class: "field-error", style: "display: none" });
+    let preparedDataUrl = null;
 
-    input.addEventListener("change", () => {
+    input.addEventListener("change", async () => {
       const file = input.files && input.files[0];
       errorEl.style.display = "none";
       if (!file) return;
-      if (file.size > 2 * 1024 * 1024) {
-        errorEl.textContent = "Image must be under 2 MB.";
+      if (file.size > 8 * 1024 * 1024) {
+        errorEl.textContent = "Image must be under 8 MB.";
         errorEl.style.display = "block";
         input.value = "";
         return;
       }
-      const reader = new FileReader();
-      reader.onload = () => {
+      try {
+        preparedDataUrl = await cropAndCompressImage(file, 256, 0.85);
         UI.clear(preview);
-        preview.append(el("img", { src: reader.result, alt: "Preview", style: "width: 100%; height: 100%; object-fit: cover" }));
-        preview.dataset.dataurl = reader.result;
-      };
-      reader.readAsDataURL(file);
+        preview.append(el("img", { src: preparedDataUrl, alt: "Preview", style: "width: 100%; height: 100%; object-fit: cover" }));
+      } catch (err) {
+        errorEl.textContent = "Failed to process image.";
+        errorEl.style.display = "block";
+      }
     });
 
     UI.modal({
       title: "Change Photo",
       body: [
-        el("div", { style: "display: flex; gap: 16px; align-items: center" }, [preview, el("div", {}, [el("p", { style: "font-size: 13px; color: var(--text-muted)", text: "PNG, JPG or WEBP, max 2 MB." })])]),
-        el("div", { class: "field" }, [el("label", { for: "photo-file", text: "Choose image" }), input]),
+        el("div", { style: "display: flex; gap: 16px; align-items: center" }, [
+          preview,
+          el("div", {}, [
+            el("p", { style: "font-size: 14px; font-weight: 600; color: var(--text-primary)", text: "Upload New Avatar" }),
+            el("p", { style: "font-size: 13px; color: var(--text-muted); margin-top: 2px", text: "JPG, PNG, or WEBP. Automatically center-cropped & compressed." })
+          ])
+        ]),
+        el("div", { class: "field" }, [el("label", { for: "photo-file", text: "Pilih file foto" }), input]),
         errorEl,
       ],
       submitLabel: "Save photo",
-      onSubmit: () => {
-        const dataurl = preview.dataset.dataurl || null;
-        profile = { ...profile, photo: dataurl };
-        saveProfile(profile);
-        // Backend: POST multipart api/profile/photo.php; data URL is local-only placeholder
-        render();
-        UI.toast(dataurl ? "Photo updated" : "No photo selected");
-        return true;
+      onSubmit: async () => {
+        if (!preparedDataUrl) {
+          errorEl.textContent = "Pilih file gambar terlebih dahulu.";
+          errorEl.style.display = "block";
+          return false;
+        }
+
+        try {
+          const res = await API.uploadAvatar(preparedDataUrl);
+          profile.photo = res.avatar_url;
+          renderAvatar();
+
+          // Sync navbar avatar image
+          const navAvatar = document.querySelector(".navbar-avatar");
+          if (navAvatar) {
+            navAvatar.innerHTML = `<img src="${res.avatar_url}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;">`;
+          }
+
+          UI.toast("Foto profil berhasil diperbarui!");
+          return true;
+        } catch (err) {
+          errorEl.textContent = err.message || "Gagal mengunggah foto profil.";
+          errorEl.style.display = "block";
+          return false;
+        }
       },
     });
   }

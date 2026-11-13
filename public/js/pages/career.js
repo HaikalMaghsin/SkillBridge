@@ -272,7 +272,7 @@
 
     // Show modal
     document.getElementById('vacancy-detail-modal').style.display = 'block';
-    document.body.style.overflow = 'hidden';
+    document.body.classList.add('modal-open');
   }
 
   function setupModalActions(vacancy) {
@@ -360,6 +360,7 @@
 
   function hideVacancyModal() {
     document.getElementById('vacancy-detail-modal').style.display = 'none';
+    document.body.classList.remove('modal-open');
     document.body.style.overflow = '';
     currentVacancy = null;
   }
@@ -379,12 +380,13 @@
 
   function showState2Modal() {
     document.getElementById('role-selection-modal').style.display = 'block';
-    document.body.style.overflow = 'hidden';
+    document.body.classList.add('modal-open');
     renderCareerGrid('modal-career-grid', true);
   }
 
   function hideRoleModal() {
     document.getElementById('role-selection-modal').style.display = 'none';
+    document.body.classList.remove('modal-open');
     document.body.style.overflow = '';
   }
 
