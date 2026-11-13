@@ -44,7 +44,10 @@
 
       if (response.success) {
         alert(`Success! ${response.skills_added} skills added to your profile.`);
-        window.location.href = API.BASE_URL + 'mahasiswa/skills.php';
+        const baseUrl = (typeof window !== "undefined" && window.APP_BASE_URL !== undefined)
+          ? (window.APP_BASE_URL === "/" ? "" : window.APP_BASE_URL.replace(/\/+$/, ""))
+          : "";
+        window.location.href = baseUrl + '/mahasiswa/skills.php';
       } else {
         alert('Failed to save skills. Please try again.');
         confirmBtn.disabled = false;

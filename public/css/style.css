@@ -1070,11 +1070,7 @@ small {
   background: #059669;
 }
 
-body.modal-open,
-html:has(.modal-overlay.is-open),
-html:has(.modal-backdrop.is-open),
-html:has(.modal.active),
-html:has(.modal-overlay:not([hidden]):not(.hidden)) {
+body.modal-open {
   overflow: hidden !important;
 }
 

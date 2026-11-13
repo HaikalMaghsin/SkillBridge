@@ -81,15 +81,46 @@ try {
         $stmt = $pdo->query('SELECT id, name, category FROM skills ORDER BY name');
         $all_skills = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Simple keyword matching (case-insensitive)
+        // Simple keyword & synonym matching
         $content_lower = mb_strtolower($content);
         $detected = [];
 
+        $synonyms = [
+            'JavaScript' => ['\bjs\b', '\bjavascript\b', '\bes6\b', '\becmascript\b'],
+            'TypeScript' => ['\bts\b', '\btypescript\b'],
+            'Node.js' => ['\bnode(\.?js)?\b', '\bnodejs\b'],
+            'Express.js' => ['\bexpress(\.?js)?\b', '\bexpressjs\b'],
+            'SQL' => ['\bsql\b', '\bmysql\b', '\bmariadb\b', '\bpostgres(ql)?\b', '\bsqlite\b'],
+            'PostgreSQL' => ['\bpostgres(ql)?\b', '\bpsql\b'],
+            'REST APIs' => ['\brest(ful)?(\s*apis?)?\b', '\bweb apis?\b', '\brest api\b'],
+            'HTML' => ['\bhtml5?\b'],
+            'CSS' => ['\bcss3?\b', '\bsass\b', '\bscss\b', '\btailwind(css)?\b', '\bbootstrap\b'],
+            'Git' => ['\bgit\b', '\bgithub\b', '\bgitlab\b'],
+            'Figma' => ['\bfigma\b'],
+            'PHP' => ['\bphp\b', '\blaravel\b', '\bsymfony\b', '\bcodeigniter\b'],
+            'Python' => ['\bpython\b', '\bdjango\b', '\bflask\b', '\bfastapi\b'],
+            'React' => ['\breact(\.?js)?\b', '\breactjs\b'],
+            'Docker' => ['\bdocker\b'],
+            'UI/UX Design' => ['\bui/ux\b', '\bui\b', '\bux\b', '\buser experience\b', '\buser interface\b'],
+        ];
+
         foreach ($all_skills as $skill) {
+            $matched = false;
             $skill_name_lower = mb_strtolower($skill['name']);
 
-            // Check if skill name appears in content
+            // 1. Direct substring
             if (mb_strpos($content_lower, $skill_name_lower) !== false) {
+                $matched = true;
+            } elseif (isset($synonyms[$skill['name']])) {
+                foreach ($synonyms[$skill['name']] as $pat) {
+                    if (preg_match('#' . $pat . '#i', $content)) {
+                        $matched = true;
+                        break;
+                    }
+                }
+            }
+
+            if ($matched) {
                 $detected[] = [
                     'id' => (int)$skill['id'],
                     'name' => $skill['name'],

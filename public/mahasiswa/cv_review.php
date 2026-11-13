@@ -10,9 +10,21 @@ $detected_skills = $_SESSION['cv_detected_skills'] ?? [];
 $cv_data = $_SESSION['cv_upload_data'] ?? null;
 
 // Redirect jika tidak ada data
-if (!$cv_data || empty($detected_skills)) {
+if (!$cv_data) {
     header('Location: ' . base_url('mahasiswa/cv.php'));
     exit;
+}
+
+// Jika tidak ada detected skills, ambil katalog lengkap agar mahasiswa bisa memilih secara mandiri
+$manual_selection = false;
+if (empty($detected_skills)) {
+    require_once __DIR__ . '/../../includes/config/database.php';
+    $pdo = get_db_connection();
+    if ($pdo) {
+        $stmtCatalog = $pdo->query('SELECT id, name, category FROM skills ORDER BY category, name');
+        $detected_skills = $stmtCatalog->fetchAll(PDO::FETCH_ASSOC);
+        $manual_selection = true;
+    }
 }
 
 $page_title = 'Review CV Skills · SkillBridge';
@@ -28,7 +40,11 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
   <header class="page-head">
     <div>
       <h1 class="page-title">Review Detected Skills</h1>
-      <p class="page-subtitle">We found <?= count($detected_skills) ?> matching skills in your CV. Select which ones to add to your profile.</p>
+      <?php if ($manual_selection): ?>
+        <p class="page-subtitle">Silakan pilih keahlian yang relevan dari dokumen CV Anda untuk ditambahkan ke profil.</p>
+      <?php else: ?>
+        <p class="page-subtitle">We found <?= count($detected_skills) ?> matching skills in your CV. Select which ones to add to your profile.</p>
+      <?php endif; ?>
     </div>
   </header>
 
@@ -45,7 +61,7 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
           <?php endif; ?>
         </div>
         <span class="badge" style="background: var(--tint-indigo); color: var(--primary);">
-          <?= count($detected_skills) ?> skills detected
+          <?= count($detected_skills) ?> skills <?= $manual_selection ? 'available' : 'detected' ?>
         </span>
       </div>
 
@@ -53,7 +69,7 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
       <div id="detected-skills-list" style="display: grid; gap: 12px;">
         <?php foreach ($detected_skills as $skill): ?>
         <label class="skill-checkbox-item" data-skill-id="<?= (int)$skill['id'] ?>">
-          <input type="checkbox" name="skill_ids[]" value="<?= (int)$skill['id'] ?>" checked />
+          <input type="checkbox" name="skill_ids[]" value="<?= (int)$skill['id'] ?>" <?= $manual_selection ? '' : 'checked' ?> />
           <div class="skill-checkbox-content">
             <div class="skill-checkbox-name"><?= e($skill['name']) ?></div>
             <div class="skill-checkbox-category"><?= e($skill['category']) ?></div>
@@ -158,3 +174,9 @@ window.CV_DATA = <?= json_encode([
 </script>
 
 <?php require_once __DIR__ . '/../../includes/layouts/mahasiswa_footer.php'; ?>
+
+    <script src="<?= e(asset('js/ui.js')) ?>"></script>
+    <script src="<?= e(asset('js/api.js')) ?>"></script>
+    <script src="<?= e(asset('js/pages/cv_review.js')) ?>"></script>
+  </body>
+</html>

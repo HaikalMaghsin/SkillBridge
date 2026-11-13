@@ -112,3 +112,16 @@ Example:
 </main>
 
 <?php require_once __DIR__ . '/../../includes/layouts/mahasiswa_footer.php'; ?>
+
+    <!-- Mozilla PDF.js v3.11.174 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+      if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+    </script>
+    <script src="<?= e(asset('js/ui.js')) ?>"></script>
+    <script src="<?= e(asset('js/api.js')) ?>"></script>
+    <script src="<?= e(asset('js/pages/cv.js')) ?>"></script>
+  </body>
+</html>

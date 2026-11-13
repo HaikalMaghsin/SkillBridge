@@ -1,4 +1,4 @@
-// pages/cv.js - CV Upload page with Cloudflare R2 file storage
+// pages/cv.js - CV Upload page with Cloudflare R2 file storage & PDF.js extraction
 (async () => {
   const form = document.getElementById('cv-upload-form');
   const submitBtn = document.getElementById('submit-btn');
@@ -10,6 +10,80 @@
 
   let uploadedFileBase64 = null;
   let uploadedFileName = null;
+
+  // Helper ekstraksi teks dari berkas PDF menggunakan Mozilla PDF.js
+  async function extractTextFromPdf(file) {
+    if (typeof pdfjsLib === 'undefined') {
+      console.warn('pdfjsLib is not defined');
+      return null;
+    }
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdf = await loadingTask.promise;
+      const allLines = [];
+
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+
+        // Kelompokkan item berdasarkan koordinat Y
+        const items = textContent.items
+          .filter(item => typeof item.str === 'string' && item.str.trim() && item.transform)
+          .map(item => ({
+            str: item.str,
+            x: item.transform[4],
+            y: item.transform[5],
+            width: item.width || 0,
+            height: Math.abs(item.transform[3]) || 10
+          }));
+
+        const lines = [];
+        items.forEach(item => {
+          let foundLine = lines.find(line => Math.abs(item.y - line.y) <= 3.5);
+          if (!foundLine) {
+            foundLine = { y: item.y, items: [] };
+            lines.push(foundLine);
+          }
+          foundLine.items.push(item);
+        });
+
+        lines.sort((a, b) => b.y - a.y);
+        lines.forEach(line => {
+          line.items.sort((a, b) => a.x - b.x);
+        });
+
+        const reconstructed = lines.map(line => {
+          let text = '';
+          line.items.forEach((item, idx) => {
+            if (idx === 0) {
+              text = item.str;
+            } else {
+              const prev = line.items[idx - 1];
+              const gap = item.x - (prev.x + prev.width);
+              if (gap < 2.2 || prev.str.endsWith('-') || /^[,.;:!?)\]}]/.test(item.str)) {
+                text += item.str;
+              } else {
+                text += ' ' + item.str;
+              }
+            }
+          });
+          return text;
+        });
+
+        allLines.push(...reconstructed);
+      }
+
+      let fullText = allLines.join('\n');
+      // Defragment kata berjarak spasi seperti "P y t h o n" -> "Python"
+      fullText = fullText.replace(/\b([A-Za-z])\s+([A-Za-z])\s+([A-Za-z])(?:\s+([A-Za-z]))*\b/g, match => match.replace(/\s+/g, ''));
+      return fullText.trim();
+    } catch (e) {
+      console.warn('PDF text extraction error:', e);
+      return null;
+    }
+  }
 
   if (fileInput) {
     fileInput.addEventListener('change', async () => {
@@ -23,10 +97,8 @@
           titleInput.value = `CV ATS — ${cleanName}`;
         }
 
-        // Auto-fill ringkasan dasar jika kosong agar validasi required lolos
-        if (!contentInput.value) {
-          contentInput.value = `Berkas CV: ${file.name}\nDiunggah untuk ekstraksi keterampilan dan verifikasi portofolio.`;
-        }
+        // Tampilkan placeholder loading pada konten
+        contentInput.placeholder = 'Sedang memindai dan mengekstrak teks dari dokumen CV PDF dengan Mozilla PDF.js...';
 
         // Baca file ke Base64 Data URL untuk Cloudflare R2
         try {
@@ -38,6 +110,19 @@
           });
         } catch (err) {
           console.error("Gagal membaca berkas CV:", err);
+        }
+
+        // Ekstraksi teks dari PDF
+        if (file.name.toLowerCase().endsWith('.pdf')) {
+          const extractedText = await extractTextFromPdf(file);
+          if (extractedText && extractedText.length > 20) {
+            contentInput.value = extractedText;
+            if (typeof UI !== 'undefined' && UI.toast) {
+              UI.toast('✓ Dokumen PDF berhasil dipindai dan teks diekstrak!');
+            }
+          } else if (!contentInput.value) {
+            contentInput.value = `Berkas CV: ${file.name}\nDiunggah untuk ekstraksi keterampilan dan verifikasi portofolio.`;
+          }
         }
       }
     });
@@ -57,6 +142,16 @@
         uploadedFileName = fileInput.files[0].name;
       } catch (err) {
         console.error("Gagal membaca berkas CV saat submit:", err);
+      }
+    }
+
+    // Jika user upload PDF tapi contentInput masih kosong, coba ekstrak teks sekali lagi
+    if (fileInput && fileInput.files && fileInput.files[0] && !contentInput.value.trim()) {
+      const extractedText = await extractTextFromPdf(fileInput.files[0]);
+      if (extractedText && extractedText.length > 20) {
+        contentInput.value = extractedText;
+      } else {
+        contentInput.value = `Berkas CV: ${fileInput.files[0].name}\nDiunggah untuk ekstraksi keterampilan dan verifikasi portofolio.`;
       }
     }
 

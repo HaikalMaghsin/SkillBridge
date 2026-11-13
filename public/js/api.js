@@ -128,6 +128,13 @@ const API = (() => {
       skill_ids: rawSkills
     };
 
+    if (data.file_base64) {
+      payload.file_base64 = data.file_base64;
+    }
+    if (data.file_name) {
+      payload.file_name = data.file_name;
+    }
+
     return await fetchAPI('evidence.php', {
       method: 'POST',
       body: JSON.stringify(payload)
@@ -149,6 +156,13 @@ const API = (() => {
       },
       skill_ids: rawSkills
     };
+
+    if (data.file_base64) {
+      payload.file_base64 = data.file_base64;
+    }
+    if (data.file_name) {
+      payload.file_name = data.file_name;
+    }
 
     return await fetchAPI('evidence.php', {
       method: 'PUT',
@@ -509,6 +523,8 @@ const API = (() => {
 
   return {
     // Core
+    getBaseUrl,
+    BASE_URL: getBaseUrl(),
     csrfToken,
 
     // Skills & Careers
