@@ -324,6 +324,7 @@
 
       dropzone.append(iconDiv, textPrimary, textSub, fileInput);
 
+      fileInput.onclick = (e) => e.stopPropagation();
       dropzone.onclick = () => fileInput.click();
       dropzone.onkeydown = (e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -419,18 +420,23 @@
       fileInput.accept = ".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg";
       fileInput.style.cssText = "font-size: 13px; color: #334155;";
 
-      fileInput.onchange = () => {
+      fileInput.onchange = async () => {
         if (fileInput.files && fileInput.files[0]) {
           const file = fileInput.files[0];
           hiddenAttachment.value = file.name;
           currentUploadedFile = file;
           urlInput.value = ""; // Bersihkan url jika memilih file
 
-          const reader = new FileReader();
-          reader.onload = () => {
-            currentUploadedFileDataUrl = reader.result;
-          };
-          reader.readAsDataURL(file);
+          try {
+            currentUploadedFileDataUrl = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+          } catch (readErr) {
+            console.error("Gagal membaca berkas:", readErr);
+          }
         }
       };
 
@@ -481,11 +487,16 @@
     if (labelElement) labelElement.textContent = `Berkas terpilih: ${file.name}`;
 
     // Baca file ke Base64 Data URL untuk sinkronisasi upload Cloudflare R2
-    const reader = new FileReader();
-    reader.onload = () => {
-      currentUploadedFileDataUrl = reader.result;
-    };
-    reader.readAsDataURL(file);
+    try {
+      currentUploadedFileDataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    } catch (readErr) {
+      console.error("Gagal membaca berkas ke data URL:", readErr);
+    }
 
     // Otomatis isi judul jika masih kosong
     const cleanFileName = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]+/g, " ");
@@ -1155,6 +1166,20 @@
         fileName: currentUploadedFile ? currentUploadedFile.name : null
       }
     };
+
+    // Pastikan berkas terbaca sebelum payload dikirim
+    if (currentUploadedFile && !currentUploadedFileDataUrl) {
+      try {
+        currentUploadedFileDataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(currentUploadedFile);
+        });
+      } catch (err) {
+        console.error("Gagal membaca berkas saat submit:", err);
+      }
+    }
 
     if (currentUploadedFile && currentUploadedFileDataUrl) {
       payload.file_base64 = currentUploadedFileDataUrl;
