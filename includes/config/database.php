@@ -11,7 +11,7 @@
 // Loader .env sederhana (opsional, untuk lokal/shared hosting). Tidak menimpa env yang sudah ada.
 (function () {
     $file = __DIR__ . '/../../.env';
-    if (!is_readable($file)) {
+    if (!file_exists($file)) {
         return;
     }
     foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
@@ -21,8 +21,10 @@
         }
         [$key, $value] = array_map('trim', explode('=', $line, 2));
         $value = trim($value, "\"'");
-        if ($key !== '' && getenv($key) === false) {
+        if ($key !== '') {
             putenv($key . '=' . $value);
+            $_ENV[$key] = $value;
+            $_SERVER[$key] = $value;
         }
     }
 })();
