@@ -39,6 +39,7 @@
   let currentType = "cv";
   let editEvidenceId = null;
   let currentUploadedFile = null;
+  let currentUploadedFileDataUrl = null;
   let detectedCvSummary = "";
 
   // Kamus Alias & Sinonim Cerdas untuk Pemindaian CV ATS
@@ -420,9 +421,16 @@
 
       fileInput.onchange = () => {
         if (fileInput.files && fileInput.files[0]) {
-          hiddenAttachment.value = fileInput.files[0].name;
-          currentUploadedFile = fileInput.files[0];
+          const file = fileInput.files[0];
+          hiddenAttachment.value = file.name;
+          currentUploadedFile = file;
           urlInput.value = ""; // Bersihkan url jika memilih file
+
+          const reader = new FileReader();
+          reader.onload = () => {
+            currentUploadedFileDataUrl = reader.result;
+          };
+          reader.readAsDataURL(file);
         }
       };
 
@@ -471,6 +479,13 @@
     currentUploadedFile = file;
     hiddenAttachment.value = file.name;
     if (labelElement) labelElement.textContent = `Berkas terpilih: ${file.name}`;
+
+    // Baca file ke Base64 Data URL untuk sinkronisasi upload Cloudflare R2
+    const reader = new FileReader();
+    reader.onload = () => {
+      currentUploadedFileDataUrl = reader.result;
+    };
+    reader.readAsDataURL(file);
 
     // Otomatis isi judul jika masih kosong
     const cleanFileName = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]+/g, " ");
@@ -1055,6 +1070,7 @@
     skillsInput.value = "";
     hiddenAttachment.value = "";
     currentUploadedFile = null;
+    currentUploadedFileDataUrl = null;
     detectedCvSummary = "";
     btnApplySummaryCv.style.display = "none";
     skillSearchInput.value = "";
@@ -1139,6 +1155,11 @@
         fileName: currentUploadedFile ? currentUploadedFile.name : null
       }
     };
+
+    if (currentUploadedFile && currentUploadedFileDataUrl) {
+      payload.file_base64 = currentUploadedFileDataUrl;
+      payload.file_name = currentUploadedFile.name;
+    }
 
     submitBtn.disabled = true;
     submitBtn.textContent = "Menyimpan...";

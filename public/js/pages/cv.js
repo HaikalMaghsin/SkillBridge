@@ -1,10 +1,37 @@
-// pages/cv.js - CV Upload page
-
+// pages/cv.js - CV Upload page with Cloudflare R2 file storage
 (async () => {
   const form = document.getElementById('cv-upload-form');
   const submitBtn = document.getElementById('submit-btn');
+  const fileInput = document.getElementById('cv-file');
+  const titleInput = document.getElementById('cv-title');
+  const contentInput = document.getElementById('cv-content');
 
   if (!form) return;
+
+  let uploadedFileBase64 = null;
+  let uploadedFileName = null;
+
+  if (fileInput) {
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        uploadedFileName = file.name;
+
+        // Auto-fill title jika kosong
+        if (!titleInput.value) {
+          const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ');
+          titleInput.value = `CV ATS — ${cleanName}`;
+        }
+
+        // Baca file ke Base64 Data URL untuk Cloudflare R2
+        const reader = new FileReader();
+        reader.onload = () => {
+          uploadedFileBase64 = reader.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -16,9 +43,14 @@
       content: formData.get('content')
     };
 
+    if (uploadedFileBase64 && uploadedFileName) {
+      data.file_base64 = uploadedFileBase64;
+      data.file_name = uploadedFileName;
+    }
+
     // Validate
     if (!data.title || !data.content) {
-      alert('Please fill in all required fields');
+      alert('Mohon isi Judul CV dan Konten/Ringkasan CV');
       return;
     }
 
@@ -29,7 +61,7 @@
         <circle cx="8" cy="8" r="6" opacity="0.25"/>
         <path d="M8 2a6 6 0 0 1 6 6"/>
       </svg>
-      Analyzing CV...
+      Mengunggah ke Cloudflare R2 & Menganalisis CV...
     `;
 
     try {
@@ -37,9 +69,10 @@
 
       if (response.success) {
         // Redirect to review page
-        window.location.href = API.BASE_URL + 'mahasiswa/cv_review.php';
+        const baseUrl = (typeof window !== "undefined" && window.APP_BASE_URL !== undefined) ? window.APP_BASE_URL.replace(/\/+$/, "") : "";
+        window.location.href = baseUrl + '/mahasiswa/cv_review.php';
       } else {
-        alert('Failed to analyze CV. Please try again.');
+        alert('Gagal memproses CV. Silakan coba lagi.');
         submitBtn.disabled = false;
         submitBtn.innerHTML = `
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -50,7 +83,7 @@
       }
     } catch (error) {
       console.error('CV extraction error:', error);
-      alert('An error occurred. Please try again.');
+      alert('Terjadi kesalahan: ' + error.message);
       submitBtn.disabled = false;
       submitBtn.innerHTML = `
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">

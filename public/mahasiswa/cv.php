@@ -44,7 +44,19 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
         </div>
 
         <div class="form-field">
-          <label for="cv-url" class="form-label">CV Link (Optional)</label>
+          <label for="cv-file" class="form-label">Upload Berkas CV PDF (Tersimpan ke Cloudflare R2)</label>
+          <input
+            type="file"
+            id="cv-file"
+            name="file"
+            accept=".pdf,application/pdf"
+            class="form-input"
+          />
+          <p class="form-hint">Unggah berkas CV PDF asli Anda. Berkas akan otomatis disimpan aman di Cloudflare R2.</p>
+        </div>
+
+        <div class="form-field">
+          <label for="cv-url" class="form-label">CV Link (Opsional jika upload berkas di atas)</label>
           <input
             type="url"
             id="cv-url"
@@ -52,7 +64,7 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
             class="form-input"
             placeholder="https://drive.google.com/your-cv.pdf"
           />
-          <p class="form-hint">Link to your CV file (Google Drive, Dropbox, personal website, etc.)</p>
+          <p class="form-hint">Atau masukkan tautan ke berkas CV Anda (Google Drive, Dropbox, website pribadi, dll.)</p>
         </div>
 
         <div class="form-field">

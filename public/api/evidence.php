@@ -7,6 +7,7 @@
 require_once __DIR__ . '/../../includes/auth/auth.php';
 require_once __DIR__ . '/../../includes/auth/csrf.php';
 require_once __DIR__ . '/../../includes/config/database.php';
+require_once __DIR__ . '/../../includes/config/r2.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -119,6 +120,33 @@ try {
             exit;
         }
 
+        // Upload berkas (CV / Sertifikat / Dokumen) langsung ke Cloudflare R2 jika file_base64 disertakan
+        if (!empty($input['file_base64'])) {
+            $dataUri = $input['file_base64'];
+            $origName = preg_replace('/[^a-zA-Z0-9_\.-]/', '_', $input['file_name'] ?? 'evidence.pdf');
+            $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION) ?: 'pdf');
+
+            if (preg_match('#^data:([^;]+);base64,(.+)$#s', $dataUri, $matches)) {
+                $mime = $matches[1];
+                $binary = base64_decode($matches[2]);
+            } else {
+                $mime = ($ext === 'pdf') ? 'application/pdf' : 'image/webp';
+                $binary = base64_decode($dataUri);
+            }
+
+            if ($binary !== false) {
+                $folder = ($source_type === 'cv') ? 'cv' : 'evidence';
+                $safeName = pathinfo($origName, PATHINFO_FILENAME);
+                $objectKey = "{$folder}/user_{$user_id}_" . time() . "_{$safeName}.{$ext}";
+                $uploadRes = r2_upload_bytes($objectKey, $binary, $mime);
+                if (!empty($uploadRes['url'])) {
+                    $file_url = $uploadRes['url'];
+                    $metadata['storage'] = $uploadRes['storage'] ?? 'r2';
+                    $metadata['r2_key'] = $objectKey;
+                }
+            }
+        }
+
         // Tambahkan description ke metadata
         if (!isset($metadata['description'])) {
             $metadata['description'] = $description;
@@ -229,7 +257,35 @@ try {
                     $params[':source_type'] = $input['source_type'];
                 }
             }
-            if (array_key_exists('file_url', $input)) {
+
+            // Upload berkas baru ke Cloudflare R2 jika disertakan saat edit
+            if (!empty($input['file_base64'])) {
+                $dataUri = $input['file_base64'];
+                $origName = preg_replace('/[^a-zA-Z0-9_\.-]/', '_', $input['file_name'] ?? 'evidence.pdf');
+                $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION) ?: 'pdf');
+
+                if (preg_match('#^data:([^;]+);base64,(.+)$#s', $dataUri, $matches)) {
+                    $mime = $matches[1];
+                    $binary = base64_decode($matches[2]);
+                } else {
+                    $mime = ($ext === 'pdf') ? 'application/pdf' : 'image/webp';
+                    $binary = base64_decode($dataUri);
+                }
+
+                if ($binary !== false) {
+                    $srcType = $input['source_type'] ?? $evidence['source_type'] ?? 'evidence';
+                    $folder = ($srcType === 'cv') ? 'cv' : 'evidence';
+                    $safeName = pathinfo($origName, PATHINFO_FILENAME);
+                    $objectKey = "{$folder}/user_{$user_id}_" . time() . "_{$safeName}.{$ext}";
+                    $uploadRes = r2_upload_bytes($objectKey, $binary, $mime);
+                    if (!empty($uploadRes['url'])) {
+                        $updateCols[] = 'file_url = :file_url';
+                        $params[':file_url'] = $uploadRes['url'];
+                        $newMetadata['storage'] = $uploadRes['storage'] ?? 'r2';
+                        $newMetadata['r2_key'] = $objectKey;
+                    }
+                }
+            } elseif (array_key_exists('file_url', $input)) {
                 $updateCols[] = 'file_url = :file_url';
                 $params[':file_url'] = $input['file_url'];
             }

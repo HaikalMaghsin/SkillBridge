@@ -5,6 +5,7 @@
 require_once __DIR__ . '/../../includes/auth/auth.php';
 require_once __DIR__ . '/../../includes/auth/csrf.php';
 require_once __DIR__ . '/../../includes/config/database.php';
+require_once __DIR__ . '/../../includes/config/r2.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -47,6 +48,28 @@ try {
         $title = trim($input['title'] ?? '');
         $url = trim($input['url'] ?? '');
         $content = trim($input['content'] ?? '');
+        $file_base64 = $input['file_base64'] ?? '';
+        $file_name = preg_replace('/[^a-zA-Z0-9_\.-]/', '_', $input['file_name'] ?? 'cv.pdf');
+
+        // Jika ada berkas biner dikirim, upload langsung ke Cloudflare R2
+        if (!empty($file_base64)) {
+            $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION) ?: 'pdf');
+            if (preg_match('#^data:([^;]+);base64,(.+)$#s', $file_base64, $matches)) {
+                $mime = $matches[1];
+                $binary = base64_decode($matches[2]);
+            } else {
+                $mime = 'application/pdf';
+                $binary = base64_decode($file_base64);
+            }
+
+            if ($binary !== false) {
+                $objectKey = "cv/user_{$user_id}_" . time() . "_{$file_name}";
+                $uploadRes = r2_upload_bytes($objectKey, $binary, $mime);
+                if (!empty($uploadRes['url'])) {
+                    $url = $uploadRes['url'];
+                }
+            }
+        }
 
         if (!$title || !$content) {
             http_response_code(400);
@@ -104,6 +127,28 @@ try {
         $title = trim($input['title'] ?? '');
         $url = trim($input['url'] ?? '');
         $content = trim($input['content'] ?? '');
+        $file_base64 = $input['file_base64'] ?? '';
+        $file_name = preg_replace('/[^a-zA-Z0-9_\.-]/', '_', $input['file_name'] ?? 'cv.pdf');
+
+        // Jika ada berkas biner dikirim, upload langsung ke Cloudflare R2
+        if (!empty($file_base64)) {
+            $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION) ?: 'pdf');
+            if (preg_match('#^data:([^;]+);base64,(.+)$#s', $file_base64, $matches)) {
+                $mime = $matches[1];
+                $binary = base64_decode($matches[2]);
+            } else {
+                $mime = 'application/pdf';
+                $binary = base64_decode($file_base64);
+            }
+
+            if ($binary !== false) {
+                $objectKey = "cv/user_{$user_id}_" . time() . "_{$file_name}";
+                $uploadRes = r2_upload_bytes($objectKey, $binary, $mime);
+                if (!empty($uploadRes['url'])) {
+                    $url = $uploadRes['url'];
+                }
+            }
+        }
         $skill_ids = $input['skill_ids'] ?? [];
 
         if (!$title || !$content) {
@@ -128,7 +173,7 @@ try {
             ':user_id' => $user_id,
             ':source_type' => 'cv',
             ':title' => $title,
-            ':file_url' => $url,
+            ':file_url' => $url ?: ($_SESSION['cv_upload_data']['url'] ?? ''),
             ':metadata' => json_encode([
                 'description' => 'CV uploaded and processed for skill extraction',
                 'content_summary' => mb_substr($content, 0, 500)
