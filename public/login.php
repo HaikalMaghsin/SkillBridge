@@ -113,6 +113,14 @@ require_once __DIR__ . '/../includes/layouts/head.php';
           Don't have an account?
           <a href="register.php" style="color: var(--primary); font-weight: 700; text-decoration: none">Register now</a>
         </p>
+
+        <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-light, #e2e8f0); text-align: center;">
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Ingin bergabung sebagai mitra rekrutmen?</p>
+          <a href="register-hr.php" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: var(--primary); font-weight: 600; font-size: 13px; text-decoration: none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M9 8h1M9 12h1M9 16h1M14 8h1M14 12h1M14 16h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/></svg>
+            Daftar Akun Perusahaan / HR &rarr;
+          </a>
+        </div>
       </article>
     </main>
 
