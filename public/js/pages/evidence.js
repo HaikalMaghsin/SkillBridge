@@ -39,6 +39,7 @@
   let currentType = "cv";
   let editEvidenceId = null;
   let currentUploadedFile = null;
+  let selectedAttachmentFile = null;
   let currentUploadedFileDataUrl = null;
   let detectedCvSummary = "";
 
@@ -234,8 +235,9 @@
         linkA.href = UI.safeUrl(ev.file_url) || "#";
         linkA.target = "_blank";
         linkA.rel = "noopener noreferrer";
-        linkA.style.cssText = "font-size: 12.5px; font-weight: 600; color: var(--primary, #6366F1); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 2px;";
-        linkA.textContent = "Buka Tautan ↗";
+        linkA.className = "btn btn-secondary btn-sm";
+        linkA.style.cssText = "font-size: 12px; font-weight: 600; color: #4338ca; background: #e0e7ff; border: 1px solid #c7d2fe; border-radius: 6px; padding: 4px 10px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; width: fit-content;";
+        linkA.textContent = "📄 Buka / Unduh Dokumen";
         leftMeta.appendChild(linkA);
       } else {
         const fileSpan = document.createElement("span");
@@ -423,6 +425,7 @@
       fileInput.onchange = async () => {
         if (fileInput.files && fileInput.files[0]) {
           const file = fileInput.files[0];
+          selectedAttachmentFile = file;
           hiddenAttachment.value = file.name;
           currentUploadedFile = file;
           urlInput.value = ""; // Bersihkan url jika memilih file
@@ -467,6 +470,7 @@
           hiddenAttachment.value = urlInput.value.trim();
           fileInput.value = ""; // Bersihkan file jika mengisi URL
           currentUploadedFile = null;
+          selectedAttachmentFile = null;
         }
       };
 
@@ -482,6 +486,7 @@
       return;
     }
 
+    selectedAttachmentFile = file;
     currentUploadedFile = file;
     hiddenAttachment.value = file.name;
     if (labelElement) labelElement.textContent = `Berkas terpilih: ${file.name}`;
@@ -1081,6 +1086,7 @@
     skillsInput.value = "";
     hiddenAttachment.value = "";
     currentUploadedFile = null;
+    selectedAttachmentFile = null;
     currentUploadedFileDataUrl = null;
     detectedCvSummary = "";
     btnApplySummaryCv.style.display = "none";
@@ -1167,7 +1173,78 @@
       }
     };
 
-    // Pastikan berkas terbaca sebelum payload dikirim
+    // Jika user memilih file fisik, kirim menggunakan FormData ke Cloudflare R2
+    if (selectedAttachmentFile) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Mengunggah ke R2...";
+
+      const formData = new FormData();
+      formData.append("attachment_file", selectedAttachmentFile);
+      formData.append("title", titleVal);
+      formData.append("source_type", typeInput.value);
+      formData.append("description", summaryInput.value.trim());
+      formData.append("level", levelSelect.value);
+      formData.append("skill_ids", JSON.stringify(selectedSkillIds));
+      formData.append("metadata", JSON.stringify({
+        date: new Date().toISOString().split("T")[0],
+        level: levelSelect.value,
+        skills: selectedSkillNames,
+        description: summaryInput.value.trim(),
+        fileName: selectedAttachmentFile.name
+      }));
+
+      try {
+        if (editEvidenceId) {
+          formData.append("id", editEvidenceId);
+          await API.updateEvidence(editEvidenceId, formData);
+        } else {
+          await API.addEvidence(formData);
+        }
+
+        // SINKRONISASI OTOMATIS KE MY SKILLS
+        const existingMySkillIds = new Set(mySkills.map((s) => s.skill_id));
+        const newlyAddedSkills = [];
+
+        for (const sId of selectedSkillIds) {
+          if (!existingMySkillIds.has(sId)) {
+            try {
+              await API.addMySkill(sId);
+              newlyAddedSkills.push(sId);
+            } catch (syncErr) {
+              console.warn(`Gagal sinkronisasi skill ${sId} ke mySkills:`, syncErr);
+            }
+          }
+        }
+
+        // Ambil data terbaru & render ulang tanpa reload halaman
+        const [updatedEvidence, updatedMySkills] = await Promise.all([
+          API.getEvidence(),
+          API.getMySkills().catch(() => mySkills)
+        ]);
+
+        evidenceList = updatedEvidence;
+        mySkills = updatedMySkills;
+
+        renderEvidenceGrid();
+        closeModal();
+
+        if (newlyAddedSkills.length > 0) {
+          UI.toast(`Bukti berhasil disimpan dan ${newlyAddedSkills.length} skill baru disinkronkan ke My Skills!`);
+        } else {
+          UI.toast(editEvidenceId ? "Bukti kompetensi berhasil diperbarui!" : "Bukti kompetensi berhasil disimpan!");
+        }
+
+      } catch (err) {
+        console.error("Gagal menyimpan bukti:", err);
+        UI.toast(`Gagal menyimpan: ${err.message}`, "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = editEvidenceId ? "Perbarui Bukti" : "Simpan Bukti";
+      }
+      return;
+    }
+
+    // Pastikan berkas terbaca sebelum payload dikirim jika ada file non-multipart
     if (currentUploadedFile && !currentUploadedFileDataUrl) {
       try {
         currentUploadedFileDataUrl = await new Promise((resolve, reject) => {

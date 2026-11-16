@@ -18,9 +18,15 @@ const API = (() => {
     const url = `${base}/api/${endpoint}`;
 
     const headers = {
-      'Content-Type': 'application/json',
       ...options.headers
     };
+
+    // Jangan set Content-Type jika body adalah FormData (biarkan browser mengatur boundary multipart/form-data)
+    if (!(options.body instanceof FormData)) {
+      if (!headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+      }
+    }
 
     // Tambahkan CSRF token untuk POST/PUT/DELETE
     if (options.method && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method.toUpperCase())) {
@@ -112,8 +118,15 @@ const API = (() => {
     return await fetchAPI('evidence.php');
   }
 
-  // POST api/evidence.php { source_type, title, description, file_url, metadata, skill_ids }
+  // POST api/evidence.php { source_type, title, description, file_url, metadata, skill_ids } atau FormData
   async function addEvidence(data) {
+    if (data instanceof FormData) {
+      return await fetchAPI('evidence.php', {
+        method: 'POST',
+        body: data
+      });
+    }
+
     const rawSkills = data.skill_ids || data.skillIds || data.skills || data.metadata?.skills || [];
     const payload = {
       source_type: data.source_type || data.type,
@@ -141,11 +154,40 @@ const API = (() => {
     });
   }
 
-  // PUT api/evidence.php { id, source_type, title, description, file_url, metadata, skill_ids }
-  async function updateEvidence(data) {
+  // PUT api/evidence.php { id, source_type, title, description, file_url, metadata, skill_ids } atau (id, FormData)
+  async function updateEvidence(idOrData, maybeFormData) {
+    let id;
+    let payload;
+
+    if (idOrData instanceof FormData) {
+      payload = idOrData;
+      id = payload.get('id');
+    } else if (typeof idOrData === 'object' && idOrData !== null && !(maybeFormData instanceof FormData)) {
+      id = idOrData.id;
+      payload = idOrData;
+    } else {
+      id = idOrData;
+      payload = maybeFormData || idOrData;
+    }
+
+    if (payload instanceof FormData) {
+      if (id && !payload.has('id')) {
+        payload.append('id', String(id));
+      }
+      if (!payload.has('_method')) {
+        payload.append('_method', 'PUT');
+      }
+      return await fetchAPI('evidence.php', {
+        method: 'POST',
+        headers: { 'X-HTTP-Method-Override': 'PUT' },
+        body: payload
+      });
+    }
+
+    const data = payload;
     const rawSkills = data.skill_ids || data.skillIds || data.skills || data.metadata?.skills || [];
-    const payload = {
-      id: data.id,
+    const jsonPayload = {
+      id: data.id || id,
       source_type: data.source_type || data.type,
       title: data.title,
       description: data.description || data.summary || '',
@@ -158,15 +200,15 @@ const API = (() => {
     };
 
     if (data.file_base64) {
-      payload.file_base64 = data.file_base64;
+      jsonPayload.file_base64 = data.file_base64;
     }
     if (data.file_name) {
-      payload.file_name = data.file_name;
+      jsonPayload.file_name = data.file_name;
     }
 
     return await fetchAPI('evidence.php', {
       method: 'PUT',
-      body: JSON.stringify(payload)
+      body: JSON.stringify(jsonPayload)
     });
   }
 

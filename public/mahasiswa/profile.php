@@ -36,10 +36,18 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
             <!-- Avatar + identity -->
             <div class="profile-identity">
               <div class="profile-avatar-lg" id="profile-avatar">
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <circle cx="12" cy="8" r="5"/>
-                  <path d="M20 21a8 8 0 0 0-16 0"/>
-                </svg>
+                <?php if (!empty($user['avatar_url'])): ?>
+                  <img src="<?= e(r2_display_url($user['avatar_url'])) ?>" alt="<?= e($user['name'] ?? 'Avatar') ?>" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display: none;">
+                    <circle cx="12" cy="8" r="5"/>
+                    <path d="M20 21a8 8 0 0 0-16 0"/>
+                  </svg>
+                <?php else: ?>
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="8" r="5"/>
+                    <path d="M20 21a8 8 0 0 0-16 0"/>
+                  </svg>
+                <?php endif; ?>
               </div>
               <div class="profile-identity-text">
                 <p class="profile-name" id="profile-display-name"><?= e($user['name']) ?></p>

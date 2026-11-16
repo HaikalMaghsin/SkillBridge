@@ -128,6 +128,7 @@ const UI = (() => {
       document.removeEventListener("keydown", onKeydown);
       overlay.remove();
       if (!document.querySelector(".modal-overlay") && !document.querySelector(".modal-backdrop.is-open")) {
+        document.documentElement.classList.remove("modal-open");
         document.body.classList.remove("modal-open");
       }
       if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
@@ -168,6 +169,7 @@ const UI = (() => {
     });
 
     document.addEventListener("keydown", onKeydown);
+    document.documentElement.classList.add("modal-open");
     document.body.classList.add("modal-open");
     document.body.append(overlay);
     (focusables()[0] || dialog).focus();

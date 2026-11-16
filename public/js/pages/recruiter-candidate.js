@@ -69,15 +69,28 @@ function render(data) {
   } else {
     for (const item of evidence) {
       const safe = UI.safeUrl(item.url);
-      const linkCell = safe
-        ? el("a", {
-            href: safe,
-            target: "_blank",
-            rel: "noopener noreferrer",
-            class: "rec-pager-link",
-            text: "Buka tautan",
-          })
-        : el("span", { text: "—" });
+      const isHttp = /^https?:\/\//i.test(item.url || "");
+      let linkCell;
+      if (safe && isHttp) {
+        linkCell = el("a", {
+          href: safe,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          class: "rec-pager-link",
+          style: "display: inline-flex; align-items: center; gap: 4px; font-weight: 600; color: #4338ca; text-decoration: none; background: #e0e7ff; padding: 4px 10px; border-radius: 6px; border: 1px solid #c7d2fe; font-size: 12px;",
+          text: "📄 Buka / Unduh Dokumen",
+        });
+      } else if (safe) {
+        linkCell = el("a", {
+          href: safe,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          class: "rec-pager-link",
+          text: "Buka tautan",
+        });
+      } else {
+        linkCell = el("span", { text: "—" });
+      }
       body.append(el("tr", {}, [
         el("td", { text: item.title || "—" }),
         el("td", {}, [el("span", { class: "rec-badge rec-badge--indigo", text: item.type || "—" })]),

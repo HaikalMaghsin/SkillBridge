@@ -3,6 +3,7 @@
 // Halaman Portofolio Publik Mahasiswa (FR-PUB-01)
 // URL: p.php?token=<public_token>
 require_once __DIR__ . '/../includes/config/app.php';
+require_once __DIR__ . '/../includes/config/r2.php';
 require_once __DIR__ . '/../includes/config/database.php';
 require_once __DIR__ . '/../includes/layouts/head.php';
 
@@ -42,6 +43,7 @@ $stmt = $pdo->prepare('
         sp.is_public,
         u.name,
         u.email,
+        u.avatar_url,
         c.name AS target_career_name,
         c.description AS target_career_desc
     FROM student_profiles sp
@@ -82,6 +84,7 @@ if (!$profile || !$profile['is_public']) {
 $user_id = (int)$profile['user_id'];
 $student_name = $profile['name'];
 $student_email = $profile['email'];
+$student_avatar = $profile['avatar_url'] ?? '';
 $target_career = $profile['target_career_name'] ?? 'No Target Set';
 $target_career_desc = $profile['target_career_desc'] ?? '';
 
@@ -264,6 +267,11 @@ $evidence = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body>
     <div class="portfolio-header">
+        <?php if (!empty($student_avatar)): ?>
+            <img src="<?= e(r2_display_url($student_avatar)) ?>" alt="<?= e($student_name) ?>"
+                 style="width: 96px; height: 96px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.65); margin: 0 auto 16px; display: block;"
+                 onerror="this.style.display='none';">
+        <?php endif; ?>
         <h1><?= e($student_name) ?></h1>
         <p><?= e($student_email) ?></p>
         <p style="margin-top: 16px; font-size: 16px;">

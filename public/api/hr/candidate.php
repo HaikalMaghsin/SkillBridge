@@ -3,6 +3,7 @@
 // GET: Detail kandidat publik untuk HR (read-only).
 require_once __DIR__ . '/../../../includes/auth/auth.php';
 require_once __DIR__ . '/../../../includes/config/database.php';
+require_once __DIR__ . '/../../../includes/config/r2.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -100,6 +101,7 @@ try {
             'id'          => (int) $candidate['id'],
             'name'        => $candidate['name'],
             'email'       => $candidate['email'],
+            'avatar_url'  => r2_display_url($candidate['avatar_url'] ?? null),
             'target_role' => $candidate['target_role'],
         ],
         'skills'   => $skills,

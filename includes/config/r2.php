@@ -166,3 +166,117 @@ function r2_upload_bytes(string $objectKey, string $binaryBody, string $contentT
         'error'    => "R2 HTTP {$httpCode}: {$curlErr}",
     ];
 }
+
+/**
+ * Ambil objek dari R2 (dipakai oleh proxy media.php agar gambar/berkas tetap
+ * bisa diakses walau domain publik r2.dev diblokir jaringan pengguna).
+ * Returns: ok (bool), body (string), error (string).
+ */
+function r2_get_object(string $objectKey): array {
+    if (!r2_is_configured()) {
+        return ['ok' => false, 'error' => 'R2 not configured'];
+    }
+
+    $cfg = r2_get_config();
+    $rawAccount = preg_replace('#^https?://#i', '', trim($cfg['account_id']));
+    $accountId = trim(explode('.', $rawAccount)[0], '/');
+    $accessKey = trim($cfg['access_key']);
+    $secretKey = trim($cfg['secret_key']);
+    $bucket    = trim($cfg['bucket']);
+
+    $objectKey = ltrim($objectKey, '/');
+    $host = "{$accountId}.r2.cloudflarestorage.com";
+    $uriPath = "/{$bucket}/{$objectKey}";
+
+    $payloadHash = hash('sha256', '');
+    $amzDate = gmdate('Ymd\THis\Z');
+    $dateStamp = gmdate('Ymd');
+
+    $canonicalHeaders = "host:{$host}\n" .
+                        "x-amz-content-sha256:{$payloadHash}\n" .
+                        "x-amz-date:{$amzDate}\n";
+    $signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
+
+    $canonicalRequest = "GET\n" .
+                        $uriPath . "\n" .
+                        "\n" .
+                        $canonicalHeaders . "\n" .
+                        $signedHeaders . "\n" .
+                        $payloadHash;
+
+    $credentialScope = "{$dateStamp}/auto/s3/aws4_request";
+    $stringToSign = "AWS4-HMAC-SHA256\n" .
+                    $amzDate . "\n" .
+                    $credentialScope . "\n" .
+                    hash('sha256', $canonicalRequest);
+
+    $kDate    = hash_hmac('sha256', $dateStamp, 'AWS4' . $secretKey, true);
+    $kRegion  = hash_hmac('sha256', 'auto', $kDate, true);
+    $kService = hash_hmac('sha256', 's3', $kRegion, true);
+    $kSigning = hash_hmac('sha256', 'aws4_request', $kService, true);
+    $signature = hash_hmac('sha256', $stringToSign, $kSigning);
+
+    $authHeader = "AWS4-HMAC-SHA256 Credential={$accessKey}/{$credentialScope}, SignedHeaders={$signedHeaders}, Signature={$signature}";
+
+    if (!function_exists('curl_init')) {
+        return ['ok' => false, 'error' => 'cURL not available'];
+    }
+
+    $ch = curl_init("https://{$host}{$uriPath}");
+    curl_setopt_array($ch, [
+        CURLOPT_CUSTOMREQUEST  => 'GET',
+        CURLOPT_HTTPHEADER     => [
+            'Host: ' . $host,
+            'x-amz-date: ' . $amzDate,
+            'x-amz-content-sha256: ' . $payloadHash,
+            'Authorization: ' . $authHeader,
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 20,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_SSL_VERIFYHOST => 0,
+    ]);
+
+    $body = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlErr  = curl_error($ch);
+    curl_close($ch);
+
+    if ($httpCode !== 200 || $body === false || !empty($curlErr)) {
+        return ['ok' => false, 'error' => "R2 HTTP {$httpCode}: {$curlErr}"];
+    }
+
+    return ['ok' => true, 'body' => $body];
+}
+
+/**
+ * Ubah URL publik R2 menjadi URL proxy same-origin (media.php) supaya tidak
+ * bergantung pada domain r2.dev yang bisa diblokir ISP.
+ */
+function r2_display_url($url) {
+    if (!is_string($url) || $url === '' || strpos($url, 'data:') === 0) {
+        return $url;
+    }
+
+    $cfg = r2_get_config();
+    $base = rtrim((string) ($cfg['public_url'] ?? ''), '/');
+    if ($base === '') {
+        return $url;
+    }
+
+    $prefix = $base . '/';
+    if (strpos($url, $prefix) !== 0) {
+        return $url;
+    }
+
+    $key = substr($url, strlen($prefix));
+    if ($key === '') {
+        return $url;
+    }
+
+    if (!function_exists('base_url')) {
+        require_once __DIR__ . '/app.php';
+    }
+
+    return base_url('media.php?key=' . rawurlencode($key));
+}

@@ -5,6 +5,7 @@
 require_once __DIR__ . '/../../../includes/auth/auth.php';
 require_once __DIR__ . '/../../../includes/config/database.php';
 require_once __DIR__ . '/../../../includes/config/app.php';
+require_once __DIR__ . '/../../../includes/config/r2.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -175,7 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'user_id' => $candidate_user_id,
                 'name' => $candidate['candidate_name'],
                 'email' => $candidate['candidate_email'],
-                'avatar_url' => $candidate['avatar_url'] ?? null,
+                'avatar_url' => r2_display_url($candidate['avatar_url'] ?? null),
                 'target_role' => $candidate['target_career_name'] ?: 'Belum Ditentukan',
                 'target_career_name' => $candidate['target_career_name'] ?: 'Belum Ditentukan',
                 'target_career_id' => $candidate['target_career_id'] ? (int)$candidate['target_career_id'] : null,
@@ -211,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     'user_id' => $candidate_user_id,
                     'name' => $candidate['candidate_name'],
                     'email' => $candidate['candidate_email'],
-                    'avatar_url' => $candidate['avatar_url'] ?? null,
+                    'avatar_url' => r2_display_url($candidate['avatar_url'] ?? null),
                     'target_career_id' => $candidate['target_career_id'] ? (int)$candidate['target_career_id'] : null,
                     'target_career_name' => $candidate['target_career_name'],
                     'public_token' => $candidate['public_token'],

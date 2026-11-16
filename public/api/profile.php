@@ -46,7 +46,7 @@ try {
             'name' => $userRow['name'],
             'email' => $userRow['email'],
             'role' => db_role_to_app_role($userRow['role']),
-            'avatar_url' => $userRow['avatar_url'],
+            'avatar_url' => r2_display_url($userRow['avatar_url']),
             'created_at' => $userRow['created_at']
         ];
 
@@ -197,7 +197,7 @@ try {
             echo json_encode([
                 'success'    => true,
                 'message'    => 'Avatar updated successfully',
-                'avatar_url' => $avatarUrl,
+                'avatar_url' => r2_display_url($avatarUrl),
                 'storage'    => $uploadRes['storage'] ?? 'data_uri'
             ]);
             exit;

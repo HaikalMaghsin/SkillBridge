@@ -2,6 +2,7 @@
 // includes/layouts/admin_header.php
 // Header Konsol Admin Platform
 require_once __DIR__ . '/../config/app.php';
+require_once __DIR__ . '/../config/r2.php';
 
 $user = current_user() ?? [];
 $admin_header_title = $admin_header_title ?? 'Admin SkillBridge';
@@ -24,7 +25,7 @@ $admin_header_title = $admin_header_title ?? 'Admin SkillBridge';
     </div>
     <div class="admin-avatar" style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
       <?php if (!empty($user['avatar_url'])): ?>
-        <img src="<?= e($user['avatar_url']) ?>" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;">
+        <img src="<?= e(r2_display_url($user['avatar_url'])) ?>" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;" onerror="this.style.display='none'; this.parentElement.textContent='<?= e($user['initials'] ?? 'AP') ?>';">
       <?php else: ?>
         <?= htmlspecialchars($user['initials'] ?? 'AP') ?>
       <?php endif; ?>

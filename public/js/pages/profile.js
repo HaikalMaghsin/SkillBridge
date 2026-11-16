@@ -61,7 +61,12 @@
     const box = $("profile-avatar");
     UI.clear(box);
     if (profile.photo) {
-      box.append(el("img", { src: profile.photo, alt: profile.name }));
+      const img = el("img", { src: profile.photo, alt: profile.name });
+      img.onerror = () => {
+        UI.clear(box);
+        box.innerHTML = USER_ICON;
+      };
+      box.append(img);
     } else {
       box.innerHTML = USER_ICON;
     }
@@ -266,7 +271,7 @@
           const isPublic = chosen[0] === "Public";
 
           try {
-            const result = await API.updateProfile({ is_public: isPublic });
+            const result = await API.updateVisibility(isPublic);
 
             profile.is_public = isPublic;
             if (result.public_url) {
@@ -381,7 +386,7 @@
           // Sync navbar avatar image
           const navAvatar = document.querySelector(".navbar-avatar");
           if (navAvatar) {
-            navAvatar.innerHTML = `<img src="${res.avatar_url}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;">`;
+            navAvatar.innerHTML = `<img src="${res.avatar_url}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;" onerror="this.style.display='none';">`;
           }
 
           UI.toast("Foto profil berhasil diperbarui!");

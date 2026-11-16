@@ -68,12 +68,11 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
     </main>
 
     <!-- Modal: Vacancy Detail -->
-    <div id="vacancy-detail-modal" style="display: none; position: fixed; inset: 0; z-index: 1000; overflow-y: auto">
+    <div id="vacancy-detail-modal" style="display: none; position: fixed; inset: 0; z-index: 1000; padding: 24px; align-items: center; justify-content: center; overscroll-behavior: contain">
       <div style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(3px)" id="vacancy-modal-backdrop"></div>
-      <div style="position: relative; max-width: 900px; margin: 40px auto; padding: 0 24px">
-        <div style="background: var(--surface); border-radius: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); overflow: hidden">
+      <div style="position: relative; z-index: 1; width: 100%; max-width: 900px; max-height: calc(100dvh - 48px); display: flex; flex-direction: column; background: var(--surface); border-radius: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); overflow: hidden">
           <!-- Modal Header -->
-          <div style="display: flex; justify-content: space-between; align-items: start; padding: 32px 32px 24px; border-bottom: 1px solid var(--border-light)">
+          <div style="display: flex; justify-content: space-between; align-items: start; padding: 32px 32px 24px; border-bottom: 1px solid var(--border-light); flex-shrink: 0">
             <div style="flex: 1; min-width: 0">
               <h2 id="modal-vacancy-title" style="font-size: 26px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px"></h2>
               <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
@@ -102,7 +101,7 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
           </div>
 
           <!-- Modal Body -->
-          <div style="padding: 32px; max-height: 600px; overflow-y: auto">
+          <div style="padding: 32px; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain">
             <!-- Company Profile -->
             <section style="margin-bottom: 32px">
               <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px">
@@ -159,7 +158,7 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
           </div>
 
           <!-- Modal Footer Actions -->
-          <div style="padding: 24px 32px; border-top: 1px solid var(--border-light); background: var(--surface-secondary); display: flex; gap: 12px; justify-content: flex-end">
+          <div style="padding: 24px 32px; border-top: 1px solid var(--border-light); background: var(--surface-secondary); display: flex; gap: 12px; justify-content: flex-end; flex-shrink: 0">
             <button id="modal-btn-focus-gap" class="btn btn-primary" style="gap: 6px">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
                 <circle cx="8" cy="8" r="6"/>
@@ -175,15 +174,13 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
             </button>
           </div>
         </div>
-      </div>
     </div>
 
     <!-- Modal: Role Selection -->
-    <div id="role-selection-modal" style="display: none; position: fixed; inset: 0; z-index: 1000; overflow-y: auto">
+    <div id="role-selection-modal" style="display: none; position: fixed; inset: 0; z-index: 1000; padding: 24px; align-items: center; justify-content: center; overscroll-behavior: contain">
       <div style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(2px)" id="modal-backdrop"></div>
-      <div style="position: relative; max-width: 1100px; margin: 40px auto; padding: 0 24px">
-        <div style="background: var(--surface); border-radius: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15); overflow: hidden">
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 24px 32px; border-bottom: 1px solid var(--border-light)">
+      <div style="position: relative; z-index: 1; width: 100%; max-width: 1100px; max-height: calc(100dvh - 48px); display: flex; flex-direction: column; background: var(--surface); border-radius: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15); overflow: hidden">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 24px 32px; border-bottom: 1px solid var(--border-light); flex-shrink: 0">
             <div>
               <h2 style="font-size: 22px; font-weight: 700; color: var(--text-primary)">Pilih Target Karier</h2>
               <p style="font-size: 14px; color: var(--text-muted); margin-top: 4px">Pilih satu role untuk fokus pengembangan skill</p>
@@ -194,10 +191,9 @@ require_once __DIR__ . '/../../includes/layouts/mahasiswa_header.php';
               </svg>
             </button>
           </div>
-          <div style="padding: 32px">
+          <div style="padding: 32px; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain">
             <div class="career-grid" id="modal-career-grid"></div>
           </div>
-        </div>
       </div>
     </div>
 

@@ -2,6 +2,7 @@
 // includes/layouts/mahasiswa_header.php
 // Top Navigation Bar Pill Mahasiswa
 require_once __DIR__ . '/../config/app.php';
+require_once __DIR__ . '/../config/r2.php';
 
 $nav_active = $nav_active ?? '';
 $user = current_user() ?? [];
@@ -41,7 +42,7 @@ $nav_items = [
     <?php endforeach; ?>
   </div>
 
-  <div class="navbar-profile" style="position: relative; display: flex; align-items: center; gap: 12px;">
+  <div class="navbar-profile" style="position: relative;">
     <a href="<?= e(base_url('mahasiswa/profile.php')) ?>" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px;">
       <div class="navbar-profile-text">
         <div class="navbar-profile-name"><?= htmlspecialchars($user['name'] ?? 'Jhon Doe') ?></div>
@@ -49,7 +50,7 @@ $nav_items = [
       </div>
       <div class="navbar-avatar" style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
         <?php if (!empty($user['avatar_url'])): ?>
-          <img src="<?= e($user['avatar_url']) ?>" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;">
+          <img src="<?= e(r2_display_url($user['avatar_url'])) ?>" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;" onerror="this.style.display='none'; this.parentElement.textContent='<?= e($user['initials'] ?? 'SB') ?>';">
         <?php else: ?>
           <?= htmlspecialchars($user['initials'] ?? 'JD') ?>
         <?php endif; ?>
