@@ -19,7 +19,7 @@ logout();
     localStorage.removeItem('sb.targetCareer');
     localStorage.removeItem('sb.profile');
     localStorage.removeItem('sb.portfolioVisibility');
-    window.location.href = 'login.php';
+    window.location.href = <?= json_encode(base_url('index.php')) ?>;
   </script>
 </body>
 </html>
