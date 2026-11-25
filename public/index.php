@@ -3,10 +3,6 @@
 // Landing Page Publik SkillBridge
 require_once __DIR__ . '/../includes/auth/auth.php';
 
-if (demo_mode() && ($_GET['demo'] ?? '') === 'javier') {
-    login_demo_user('javier');
-}
-
 $page_title = 'SkillBridge · Discover Your Skills. Build Your Future.';
 $role = 'public';
 $path_prefix = '';

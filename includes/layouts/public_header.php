@@ -52,8 +52,8 @@ require_once __DIR__ . '/../config/r2.php';
           <?php endif; ?>
         </div>
       </a>
-      <a class="navbar-logout-btn" href="<?= e(base_url('logout.php')) ?>" title="Keluar / Logout" aria-label="Logout">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <a href="<?= e(base_url('logout.php')) ?>" title="Keluar / Logout" aria-label="Logout" style="color: var(--text-muted); display: grid; place-items: center; padding: 4px; border-radius: 6px; transition: color 0.15s ease;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-muted)'">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M6.75 15.75H3.375A1.125 1.125 0 012.25 14.625V3.375A1.125 1.125 0 013.375 2.25h3.375M12.375 12.375L15.75 9l-3.375-3.375M15.75 9H6.75"/>
         </svg>
       </a>

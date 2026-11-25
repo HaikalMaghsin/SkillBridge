@@ -175,10 +175,6 @@ function login_demo_user($role = 'mahasiswa') {
             'id' => 1, 'name' => 'Jhon Doe', 'email' => 'jhondoe@gmail.com',
             'role' => 'mahasiswa', 'role_label' => 'Student', 'initials' => 'JD',
         ],
-        'javier' => [
-            'id' => 1, 'name' => 'M. Javier thufail', 'email' => 'javierrthufail@gmail.com',
-            'role' => 'mahasiswa', 'role_label' => 'Student', 'initials' => 'MJ',
-        ],
         'hr' => [
             'id' => 2, 'name' => 'Aditya Pratama', 'email' => 'aditya@techindonesia.com',
             'role' => 'hr', 'role_label' => 'Company Admin · PT Tech Indonesia',
@@ -242,13 +238,12 @@ function attempt_login($email, $password) {
             'admin@skillbridge.id'      => 'admin',
             'hr@techindonesia.com'      => 'hr',
             'jhondoe@gmail.com'         => 'mahasiswa',
-            'javierrthufail@gmail.com'  => 'javier',
             'mahasiswa@skillbridge.id'  => 'mahasiswa',
         ];
         if (isset($demo_creds[$email]) && $password === 'password123') {
             session_regenerate_id(true);
-            $user = login_demo_user($demo_creds[$email]);
-            return ['success' => true, 'role' => $user['role'] ?? $demo_creds[$email]];
+            login_demo_user($demo_creds[$email]);
+            return ['success' => true, 'role' => $demo_creds[$email]];
         }
         return ['success' => false, 'error' => 'invalid'];
     }
