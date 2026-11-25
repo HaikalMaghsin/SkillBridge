@@ -1387,10 +1387,15 @@ body.landing {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .navbar-login:hover {
   color: var(--accent);
+  background: var(--surface-secondary, #f8fafc);
 }
 
 /* --- 12b. Shared section furniture --- */
@@ -3176,8 +3181,29 @@ body.landing {
     padding-top: 12px;
   }
 
-  .navbar .navbar-actions .btn {
+  .navbar .navbar-actions .btn,
+  .navbar .navbar-actions .navbar-login {
     width: 100%;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .navbar .navbar-actions .navbar-login {
+    border: 1px solid var(--border, #e2e8f0);
+    background: var(--surface, #ffffff);
+    color: var(--text-primary);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    box-sizing: border-box;
+  }
+
+  .navbar .navbar-actions .navbar-login:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--surface-secondary, #f8fafc);
   }
 
   .navbar .navbar-profile {
