@@ -16,6 +16,7 @@ const STATUS_LABEL = {
 
 const ACTIVITY_BADGE = {
   candidate_status_update: "rec-badge--indigo",
+  status_update: "rec-badge--indigo",
   candidate_shortlist: "rec-badge--indigo",
   candidate_interview: "rec-badge--pink",
   vacancy_created: "rec-badge--pink",
@@ -23,6 +24,7 @@ const ACTIVITY_BADGE = {
 
 const ACTIVITY_LABEL = {
   candidate_status_update: "Kandidat",
+  status_update: "Kandidat",
   candidate_shortlist: "Kandidat",
   candidate_interview: "Interview",
   vacancy_created: "Target Role",
@@ -190,7 +192,7 @@ async function renderActivity() {
 
     body.appendChild(
       el("div", { class: "rec-activity-item" }, [
-        el("span", { class: "rec-activity-time", text: typeof time === 'string' && time.includes('T') ? time.split('T')[0] : time }),
+        el("span", { class: "rec-activity-time", text: UI.formatDateTime(time) }),
         el("div", { class: "rec-activity-content" }, [
           el("span", { class: "rec-activity-text", text }),
           el("span", {

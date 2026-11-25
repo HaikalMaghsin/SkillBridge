@@ -323,7 +323,19 @@ const UI = (() => {
     return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
   }
 
-  return { el, clear, safeUrl, toast, formatDate, modal };
+  function formatDateTime(raw) {
+    if (!raw) return "—";
+    const str = String(raw).trim();
+    if (!/^\d{4}-\d{2}-\d{2}/.test(str)) return str;
+    const normalized = str.replace(" ", "T").replace(/([+-]\d{2})$/, "$1:00");
+    const d = new Date(normalized);
+    if (Number.isNaN(d.getTime())) return str.slice(0, 16);
+    const datePart = d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+    const timePart = d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", hour12: false });
+    return `${datePart}, ${timePart}`;
+  }
+
+  return { el, clear, safeUrl, toast, formatDate, formatDateTime, modal };
 })();
 
 window.UI = UI;

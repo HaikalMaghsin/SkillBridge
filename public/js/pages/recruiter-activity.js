@@ -3,6 +3,7 @@ const { el, clear } = UI;
 
 const TYPE_BADGE = {
   candidate_status_update: "rec-badge--indigo",
+  status_update: "rec-badge--indigo",
   candidate_shortlist: "rec-badge--indigo",
   candidate_interview: "rec-badge--pink",
   vacancy_created: "rec-badge--pink",
@@ -10,6 +11,7 @@ const TYPE_BADGE = {
 
 const TYPE_LABEL = {
   candidate_status_update: "Kandidat",
+  status_update: "Kandidat",
   candidate_shortlist: "Kandidat",
   candidate_interview: "Interview",
   vacancy_created: "Target Role",
@@ -54,7 +56,7 @@ function render() {
     const text = `${a.recruiter || "—"} ${a.description || ""}`.trim();
     body.append(
       el("div", { class: "rec-activity-item" }, [
-        el("span", { class: "rec-activity-time", text: a.timestamp || "—" }),
+        el("span", { class: "rec-activity-time", text: UI.formatDateTime(a.timestamp) }),
         el("div", { class: "rec-activity-content" }, [
           el("span", { class: "rec-activity-text", text }),
           el("span", {
