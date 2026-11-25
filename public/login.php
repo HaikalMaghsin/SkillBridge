@@ -102,7 +102,10 @@ require_once __DIR__ . '/../includes/layouts/head.php';
           </div>
 
           <div class="field">
-            <label for="password">Password</label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label for="password" style="margin-bottom: 0;">Password</label>
+              <a href="forgot-password.php" style="font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 500;">Lupa password?</a>
+            </div>
             <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password" />
           </div>
 
