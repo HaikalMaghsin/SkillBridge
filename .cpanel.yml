@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/ambecpol/skillsbridge.my.id/
+    - /bin/cp -rf data db docker docs includes public tools $DEPLOYPATH
