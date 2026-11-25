@@ -3658,3 +3658,56 @@ body.landing {
     min-height: 44px;
   }
 }
+
+/* ============ Password Visibility Toggle ============ */
+.password-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input-wrap input {
+  padding-right: 42px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.password-toggle-btn:hover {
+  color: var(--text-primary, #0f172a);
+  background: var(--surface-subtle, #f1f5f9);
+}
+
+.password-toggle-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.password-toggle-btn .icon-eye-off {
+  display: none;
+}
+
+.password-toggle-btn[aria-pressed="true"] .icon-eye {
+  display: none;
+}
+
+.password-toggle-btn[aria-pressed="true"] .icon-eye-off {
+  display: block;
+}

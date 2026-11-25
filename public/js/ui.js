@@ -281,6 +281,21 @@ const UI = (() => {
         if (backdrop) backdrop.classList.remove("is-open");
         return;
       }
+
+      const passToggle = e.target.closest("[data-password-toggle]");
+      if (passToggle) {
+        const targetId = passToggle.getAttribute("data-password-toggle");
+        const input = targetId
+          ? document.getElementById(targetId)
+          : passToggle.closest(".password-input-wrap")?.querySelector("input");
+        if (!input) return;
+
+        const isHidden = input.type === "password";
+        input.type = isHidden ? "text" : "password";
+        passToggle.setAttribute("aria-pressed", isHidden ? "true" : "false");
+        passToggle.setAttribute("aria-label", isHidden ? "Sembunyikan kata sandi" : "Tampilkan kata sandi");
+        return;
+      }
     });
 
     // Close mobile menus on Escape key

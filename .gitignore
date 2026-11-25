@@ -1,3 +1,4 @@
 .env
 tools/*.php
 !tools/migrate.php
+Agents.md
