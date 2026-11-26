@@ -16,12 +16,19 @@ const UI = (() => {
     { key: "profile", label: "Profile", href: "mahasiswa/profile.php" },
   ];
 
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const SVG_TAGS = new Set(["svg", "path", "circle", "rect", "line", "polyline", "polygon", "g", "defs", "linearGradient", "stop"]);
+
   // el("span", { class: "tag" }, ["PHP"]) -> <span class="tag">PHP</span>
   function el(tag, props = {}, children = []) {
-    const node = document.createElement(tag);
+    const isSvg = SVG_TAGS.has(tag);
+    const node = isSvg ? document.createElementNS(SVG_NS, tag) : document.createElement(tag);
     for (const [key, value] of Object.entries(props)) {
       if (value === undefined || value === null) continue;
-      if (key === "class") node.className = value;
+      if (key === "class") {
+        if (isSvg) node.setAttribute("class", value);
+        else node.className = value;
+      }
       else if (key === "text") node.textContent = value;
       else if (key === "onClick") node.addEventListener("click", value);
       // HANYA untuk markup statis tepercaya (mis. ikon SVG). Jangan isi dengan data pengguna/API.
