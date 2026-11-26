@@ -1948,6 +1948,9 @@ table.rec-native-table tbody tr:hover {
   .rec-workspace {
     margin-left: 0 !important;
     width: 100% !important;
+    min-width: 0;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
 
   .rec-header {
@@ -1965,25 +1968,139 @@ table.rec-native-table tbody tr:hover {
 }
 
 @media (max-width: 767px) {
+  .rec-header {
+    height: 68px;
+    padding: 0 16px;
+    gap: 8px;
+  }
+
+  .rec-header-left {
+    min-width: 0;
+    flex: 1;
+    gap: 8px;
+  }
+
+  .sidebar-toggle {
+    margin-right: 0;
+    flex-shrink: 0;
+  }
+
+  .rec-workspace-title {
+    padding: 6px 10px;
+    min-width: 0;
+  }
+
+  .rec-workspace-title span {
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .rec-role-pill {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .rec-header-right {
+    gap: 8px !important;
+    flex-shrink: 0;
+  }
+
   .rec-stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px;
+  }
+
+  .rec-stats-grid > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 
   .rec-page-content {
-    padding: 20px;
+    padding: 16px;
+    gap: 16px;
   }
 
   .rec-page-title {
-    font-size: 24px;
+    font-size: 22px;
+  }
+
+  .rec-card {
+    min-width: 0;
+    padding: 16px;
+  }
+
+  .rec-card-head {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .rec-company-strip {
     flex-wrap: wrap;
     height: auto;
+    padding: 16px;
+    gap: 12px;
   }
 
   .rec-header-right .rec-header-profile-text {
     display: none;
+  }
+
+  /* Responsive Team / Generic Table Rows */
+  .rec-table-head {
+    display: none;
+  }
+
+  .rec-row {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 12px;
+    min-height: auto;
+  }
+
+  .rec-row-name {
+    flex: 1 1 100%;
+  }
+
+  .rec-col-role,
+  .rec-col-status,
+  .rec-col-actions {
+    width: auto;
+    flex: 0 0 auto;
+  }
+
+  .rec-col-actions {
+    margin-left: auto;
+  }
+
+  /* Responsive Target Role & Skill Mapping Rows */
+  .rec-role-head {
+    display: none;
+  }
+
+  .rec-role-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    min-height: auto;
+    padding: 14px 12px;
+  }
+
+  .rec-role-identity,
+  .rec-role-skills {
+    width: 100%;
+  }
+
+  .rec-skill-chip {
+    white-space: nowrap;
+  }
+
+  .rec-role-match {
+    width: auto;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 6px;
+    text-align: left;
   }
 
   .rec-field-grid {
@@ -1992,6 +2109,18 @@ table.rec-native-table tbody tr:hover {
 
   .rec-role-cards {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .rec-role-pill {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .rec-stats-grid {
+    grid-template-columns: 1fr !important;
   }
 }
 
