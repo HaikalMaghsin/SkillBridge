@@ -3812,53 +3812,76 @@ body.landing {
 
 /* ============ Password Visibility Toggle ============ */
 .password-input-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
 }
 
 .password-input-wrap input {
-  padding-right: 42px;
+  width: 100% !important;
+  padding-right: 44px !important;
 }
 
 .password-toggle-btn {
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-muted, #64748b);
-  cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  position: absolute !important;
+  right: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  outline: none !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  color: var(--text-muted, #64748b) !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  z-index: 2 !important;
+  transition: color 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;
 }
 
 .password-toggle-btn:hover {
-  color: var(--text-primary, #0f172a);
-  background: var(--surface-subtle, #f1f5f9);
+  color: var(--text-primary, #0f172a) !important;
+  background: var(--surface-subtle, #f1f5f9) !important;
+}
+
+.password-toggle-btn:hover img {
+  filter: brightness(0.65);
 }
 
 .password-toggle-btn:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 1px;
+  outline: 2px solid var(--primary, #1e3a8a) !important;
+  outline-offset: 1px !important;
+}
+
+.password-toggle-btn .icon-eye,
+.password-toggle-btn .icon-eye-off {
+  width: 20px !important;
+  height: 20px !important;
+  pointer-events: none !important;
+  display: block;
+  flex-shrink: 0;
+}
+
+.password-toggle-btn .icon-eye {
+  display: block !important;
 }
 
 .password-toggle-btn .icon-eye-off {
-  display: none;
+  display: none !important;
 }
 
 .password-toggle-btn[aria-pressed="true"] .icon-eye {
-  display: none;
+  display: none !important;
 }
 
 .password-toggle-btn[aria-pressed="true"] .icon-eye-off {
-  display: block;
+  display: block !important;
 }

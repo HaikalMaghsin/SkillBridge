@@ -16,7 +16,7 @@ if ($key === '' || strpos($key, '..') !== false || !preg_match('#^[A-Za-z0-9._\-
     exit;
 }
 
-$allowedPrefixes = ['avatars/', 'evidence/', 'cv/'];
+$allowedPrefixes = ['avatars/', 'evidence/', 'cv/', 'company_logos/'];
 $allowed = false;
 foreach ($allowedPrefixes as $prefix) {
     if (strpos($key, $prefix) === 0) {

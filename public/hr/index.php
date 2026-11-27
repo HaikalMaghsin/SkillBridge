@@ -4,6 +4,7 @@
 require_once __DIR__ . '/../../includes/auth/auth.php';
 check_auth('hr');
 
+$user = current_user() ?? [];
 $page_title = 'Panel Perusahaan & Recruiter · SkillBridge';
 $role = 'hr';
 $path_prefix = '../';
@@ -37,17 +38,37 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
           </p>
         </div>
 
+        <?php
+        $currComp = function_exists('current_user_company') ? current_user_company() : null;
+        $compName = $currComp['name'] ?? ($user['company_name'] ?? 'Profil Perusahaan Aktif');
+        $compSub = $currComp ? ($currComp['name'] . ' · ' . ($currComp['industry'] ?: 'Mitra Resmi SkillBridge')) : ($user['company_name'] ? ($user['company_name'] . ' · Mitra Resmi SkillBridge') : 'Memuat data perusahaan...');
+        $compLogo = !empty($currComp['logo_url']) ? r2_display_url($currComp['logo_url']) : '';
+        ?>
         <!-- Profil perusahaan aktif -->
-        <section class="rec-company-strip">
-          <div class="rec-company-emblem">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5.5A1.5 1.5 0 015.5 4h7A1.5 1.5 0 0114 5.5V21"/><path d="M14 10h4.5A1.5 1.5 0 0120 11.5V21"/><path d="M2.5 21h19"/><path d="M7 8h4M7 12h4M7 16h4M16.5 14h1M16.5 17.5h1"/></svg>
-          </div>
-          <div class="rec-company-summary">
-            <div class="rec-company-title-row">
-              <span class="rec-company-title" id="company-title">Profil Perusahaan Aktif.</span>
-              <span class="rec-badge-verified" id="company-badge">Terverifikasi</span>
+        <section class="rec-company-strip" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div class="rec-company-emblem" style="overflow: hidden; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border: 1px solid var(--border-light, #cbd5e1); border-radius: 12px;">
+              <?php if ($compLogo): ?>
+                <img id="company-strip-logo" src="<?= e($compLogo) ?>" alt="<?= e($compName) ?>" style="width: 100%; height: 100%; object-fit: contain; padding: 4px;" />
+              <?php else: ?>
+                <svg id="company-strip-default-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5.5A1.5 1.5 0 015.5 4h7A1.5 1.5 0 0114 5.5V21"/><path d="M14 10h4.5A1.5 1.5 0 0120 11.5V21"/><path d="M2.5 21h19"/><path d="M7 8h4M7 12h4M7 16h4M16.5 14h1M16.5 17.5h1"/></svg>
+                <img id="company-strip-logo" src="" alt="<?= e($compName) ?>" style="width: 100%; height: 100%; object-fit: contain; padding: 4px; display: none;" />
+              <?php endif; ?>
             </div>
-            <p class="rec-company-sub" id="company-sub">PT Tech Indonesia · Mitra Resmi SkillBridge</p>
+            <div class="rec-company-summary">
+              <div class="rec-company-title-row" style="display: flex; align-items: center; gap: 10px;">
+                <span class="rec-company-title" id="company-title"><?= e($compName) ?></span>
+                <span class="rec-badge-verified" id="company-badge"><?= $currComp ? 'Terverifikasi' : 'Belum terhubung' ?></span>
+              </div>
+              <p class="rec-company-sub" id="company-sub"><?= e($compSub) ?></p>
+            </div>
+          </div>
+
+          <div>
+            <a href="settings.php" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; text-decoration: none;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              Edit Profil Perusahaan
+            </a>
           </div>
         </section>
 
@@ -112,12 +133,12 @@ require_once __DIR__ . '/../../includes/layouts/hr_sidebar.php';
           </div>
         </section>
 
-        <!-- Notice -->
-        <section class="rec-info-strip rec-info-strip--pink">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M10 6.5v4.5M10 13.5h.01"/></svg>
+        <!-- Ruang Kerja Info -->
+        <section class="rec-info-strip rec-info-strip--indigo" style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; gap: 14px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#2563eb" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M10 6.5v4.5M10 13.5h.01"/></svg>
           <div class="rec-info-strip-text">
-            <span class="rec-info-strip-title">Akses baca saja</span>
-            <span class="rec-info-strip-sub">Data recruiter, target role, dan kandidat hanya dapat dilihat. Hubungi admin SkillBridge untuk perubahan data.</span>
+            <span class="rec-info-strip-title" style="font-weight: 700; color: #1e40af; display: block; font-size: 13px;">Pusat Manajemen Rekrutmen Mitra</span>
+            <span class="rec-info-strip-sub" style="color: #3b82f6; font-size: 13px;">Kelola profil resmi perusahaan, unggah logo, undang anggota tim rekruter, dan buka target lowongan langsung dari panel kerja ini.</span>
           </div>
         </section>
 

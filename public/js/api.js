@@ -503,14 +503,81 @@ const API = (() => {
     return seeded;
   }
 
-  // ============ RECRUITER: Company & Team (read-only) ============
+  // ============ RECRUITER: Company & Team ============
 
   async function getRecruiterCompany() {
     return await fetchAPI('hr/company.php');
   }
 
+  async function updateRecruiterCompany(data) {
+    return await fetchAPI('hr/company.php', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
   async function getRecruiterTeam() {
     return await fetchAPI('hr/team.php');
+  }
+
+  async function addRecruiterTeamMember(data) {
+    return await fetchAPI('hr/team.php', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async function updateRecruiterTeamMember(data) {
+    return await fetchAPI('hr/team.php', {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async function deleteRecruiterTeamMember(id) {
+    return await fetchAPI('hr/team.php', {
+      method: 'DELETE',
+      body: JSON.stringify({ id })
+    });
+  }
+
+  async function getEmailSettings() {
+    return await fetchAPI('hr/email_settings.php');
+  }
+
+  async function updateEmailSettings(data) {
+    return await fetchAPI('hr/email_settings.php', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'update_preferences', ...data })
+    });
+  }
+
+  async function sendTestEmail(email) {
+    return await fetchAPI('hr/email_settings.php', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'send_test', email })
+    });
+  }
+
+  async function updateUserProfile(data) {
+    return await fetchAPI('profile.php', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'update_info', ...data })
+    });
+  }
+
+  async function changeUserPassword(current_password, new_password) {
+    return await fetchAPI('profile.php', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'change_password', current_password, new_password })
+    });
+  }
+
+  async function uploadAvatar(avatar_base64) {
+    return await fetchAPI('profile.php', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'upload_avatar', avatar_base64 })
+    });
   }
 
   async function getRecruiterRoles() {
@@ -635,7 +702,17 @@ const API = (() => {
 
     // Recruiter
     getRecruiterCompany,
+    updateRecruiterCompany,
     getRecruiterTeam,
+    addRecruiterTeamMember,
+    updateRecruiterTeamMember,
+    deleteRecruiterTeamMember,
+    getEmailSettings,
+    updateEmailSettings,
+    sendTestEmail,
+    updateUserProfile,
+    changeUserPassword,
+    uploadAvatar,
     getRecruiterRoles,
     createRecruiterRole,
     updateRecruiterRole,

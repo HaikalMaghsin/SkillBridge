@@ -30,7 +30,15 @@ function base_url($path = '') {
 }
 
 function asset($path = '') {
-    return base_url($path);
+    $url = base_url($path);
+    $cleanPath = ltrim(preg_replace('/\?.*$/', '', (string)$path), '/');
+    $realPath = __DIR__ . '/../../public/' . $cleanPath;
+    if (file_exists($realPath)) {
+        $mtime = filemtime($realPath);
+        $sep = (strpos($url, '?') !== false) ? '&' : '?';
+        return $url . $sep . 'v=' . $mtime;
+    }
+    return $url;
 }
 
 function app_url($path = '') {

@@ -26,9 +26,17 @@ $rec_title = $rec_title ?? 'Perusahaan Partner';
       <span id="hr-notif-badge" style="display: none; position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; border-radius: 9px; background: #ef4444; color: white; font-size: 10px; font-weight: 800; display: none; align-items: center; justify-content: center; padding: 0 4px; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4)">0</span>
     </a>
 
+    <?php
+    $header_comp = $user['company_name'] ?? null;
+    if (!$header_comp && function_exists('current_user_company')) {
+        $c = current_user_company();
+        $header_comp = $c['name'] ?? null;
+    }
+    $header_role = $header_comp ? ('Admin Perusahaan · ' . $header_comp) : ($user['role_label'] ?? 'Admin Perusahaan');
+    ?>
     <div class="rec-header-profile-text">
-      <span class="rec-header-name"><?= htmlspecialchars($user['name'] ?? 'Aditya Pratama') ?></span>
-      <span class="rec-header-role"><?= htmlspecialchars($user['role_label'] ?? 'Admin Perusahaan · PT Tech Indonesia') ?></span>
+      <span class="rec-header-name"><?= htmlspecialchars($user['name'] ?? 'Recruiter') ?></span>
+      <span class="rec-header-role"><?= htmlspecialchars($header_role) ?></span>
     </div>
     <div class="rec-avatar" style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
       <?php if (!empty($user['avatar_url'])): ?>

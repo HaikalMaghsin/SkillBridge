@@ -2,3 +2,7 @@
 tools/*.php
 !tools/migrate.php
 Agents.md
+*.docx
+tools/*.py
+docs/LAPORAN_TRACKING_KONTRIBUSI_TIM.md
+docs/design/*.json

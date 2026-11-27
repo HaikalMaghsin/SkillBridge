@@ -217,11 +217,13 @@ function renderDate() {
 
 async function load() {
   renderDate();
-  try {
-    await Promise.all([renderCompany(), renderStats(), renderTeam(), renderRoles(), renderActivity()]);
-  } catch (err) {
-    UI.toast("Gagal memuat data perusahaan: " + err.message);
-  }
+  await Promise.allSettled([
+    renderCompany().catch(e => console.error("renderCompany err:", e)),
+    renderStats().catch(e => console.error("renderStats err:", e)),
+    renderTeam().catch(e => console.error("renderTeam err:", e)),
+    renderRoles().catch(e => console.error("renderRoles err:", e)),
+    renderActivity().catch(e => console.error("renderActivity err:", e))
+  ]);
 }
 
 load();

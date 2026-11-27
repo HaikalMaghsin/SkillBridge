@@ -91,7 +91,12 @@ try {
         $input = json_decode(file_get_contents('php://input'), true) ?: [];
         $action = $input['action'] ?? '';
 
-        // Update info (name, email, profiling)
+        // Default action ke update_info jika tidak spesifik namun name/email dikirim
+        if (empty($action) && (!empty($input['name']) || !empty($input['email']))) {
+            $action = 'update_info';
+        }
+
+        // Update info (name, email, profiling, password)
         if ($action === 'update_info') {
             $name = trim($input['name'] ?? '');
             $email = trim($input['email'] ?? '');
@@ -104,7 +109,7 @@ try {
 
             if (!$name || !$email) {
                 http_response_code(400);
-                echo json_encode(['error' => 'Name and email are required']);
+                echo json_encode(['error' => 'Nama dan email wajib diisi']);
                 exit;
             }
 
@@ -113,7 +118,7 @@ try {
             $stmt->execute([':email' => $email, ':user_id' => $user_id]);
             if ($stmt->fetch()) {
                 http_response_code(400);
-                echo json_encode(['error' => 'Email already taken']);
+                echo json_encode(['error' => 'Email sudah digunakan oleh akun lain']);
                 exit;
             }
 
@@ -127,6 +132,19 @@ try {
                 ':email' => $email,
                 ':user_id' => $user_id
             ]);
+
+            // Jika dikirim password baru bersamaan (misal di halaman admin settings)
+            if (!empty($input['password'])) {
+                $rawPass = trim($input['password']);
+                if (strlen($rawPass) < 8) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Password baru minimal 8 karakter']);
+                    exit;
+                }
+                $newHash = password_hash($rawPass, PASSWORD_DEFAULT);
+                $stmtPass = $pdo->prepare('UPDATE users SET password_hash = :hash, updated_at = CURRENT_TIMESTAMP WHERE id = :user_id');
+                $stmtPass->execute([':hash' => $newHash, ':user_id' => $user_id]);
+            }
 
             // Update session
             $_SESSION['user']['name'] = $name;

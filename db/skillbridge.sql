@@ -234,6 +234,7 @@ CREATE TABLE public.companies (
     industry character varying(100),
     website character varying(255),
     description text,
+    logo_url text,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );

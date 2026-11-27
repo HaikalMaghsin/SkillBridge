@@ -289,8 +289,9 @@ const UI = (() => {
         return;
       }
 
-      const passToggle = e.target.closest("[data-password-toggle]");
+      const passToggle = e.target.closest("[data-password-toggle], .password-toggle-btn");
       if (passToggle) {
+        e.preventDefault();
         const targetId = passToggle.getAttribute("data-password-toggle");
         const input = targetId
           ? document.getElementById(targetId)
@@ -299,8 +300,13 @@ const UI = (() => {
 
         const isHidden = input.type === "password";
         input.type = isHidden ? "text" : "password";
+        const eye = passToggle.querySelector(".icon-eye");
+        const eyeOff = passToggle.querySelector(".icon-eye-off");
+        if (eye) eye.style.display = isHidden ? "none" : "block";
+        if (eyeOff) eyeOff.style.display = isHidden ? "block" : "none";
         passToggle.setAttribute("aria-pressed", isHidden ? "true" : "false");
         passToggle.setAttribute("aria-label", isHidden ? "Sembunyikan kata sandi" : "Tampilkan kata sandi");
+        passToggle.setAttribute("title", isHidden ? "Sembunyikan kata sandi" : "Tampilkan kata sandi");
         return;
       }
     });

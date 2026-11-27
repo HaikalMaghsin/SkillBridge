@@ -88,14 +88,38 @@ function sync_session_user() {
     }
 
     $role = db_role_to_app_role($row['role']);
+    $company_name = null;
+    $company_id = null;
+    if ($role === 'hr') {
+        try {
+            $cStmt = $pdo->prepare('
+                SELECT c.id, c.name
+                FROM company_recruiters cr
+                JOIN companies c ON c.id = cr.company_id
+                WHERE cr.user_id = :user_id
+                LIMIT 1
+            ');
+            $cStmt->execute([':user_id' => $row['id']]);
+            $comp = $cStmt->fetch(PDO::FETCH_ASSOC);
+            if ($comp) {
+                $company_name = $comp['name'];
+                $company_id = (int) $comp['id'];
+            }
+        } catch (Exception $e) {
+            // Silently ignore if table unavailable
+        }
+    }
+
     $_SESSION['user'] = [
-        'id'         => (int) $row['id'],
-        'name'       => $row['name'],
-        'email'      => $row['email'],
-        'role'       => $role,
-        'role_label' => role_label($role),
-        'initials'   => make_initials($row['name']),
-        'avatar_url' => $row['avatar_url'] ?? null,
+        'id'           => (int) $row['id'],
+        'name'         => $row['name'],
+        'email'        => $row['email'],
+        'role'         => $role,
+        'role_label'   => $company_name ? ('Company Admin · ' . $company_name) : role_label($role),
+        'company_name' => $company_name,
+        'company_id'   => $company_id,
+        'initials'     => make_initials($row['name']),
+        'avatar_url'   => $row['avatar_url'] ?? null,
     ];
 
     return true;
@@ -214,14 +238,39 @@ function attempt_login($email, $password) {
             if ($user && $valid && db_is_true($user['is_active'])) {
                 session_regenerate_id(true);
                 $role = db_role_to_app_role($user['role']);
+
+                $company_name = null;
+                $company_id = null;
+                if ($role === 'hr') {
+                    try {
+                        $cStmt = $pdo->prepare('
+                            SELECT c.id, c.name
+                            FROM company_recruiters cr
+                            JOIN companies c ON c.id = cr.company_id
+                            WHERE cr.user_id = :user_id
+                            LIMIT 1
+                        ');
+                        $cStmt->execute([':user_id' => $user['id']]);
+                        $comp = $cStmt->fetch(PDO::FETCH_ASSOC);
+                        if ($comp) {
+                            $company_name = $comp['name'];
+                            $company_id = (int) $comp['id'];
+                        }
+                    } catch (Exception $e) {
+                        // Silently ignore
+                    }
+                }
+
                 $_SESSION['user'] = [
-                    'id'         => (int) $user['id'],
-                    'name'       => $user['name'],
-                    'email'      => $user['email'],
-                    'role'       => $role,
-                    'role_label' => role_label($role),
-                    'initials'   => make_initials($user['name']),
-                    'avatar_url' => $user['avatar_url'] ?? null,
+                    'id'           => (int) $user['id'],
+                    'name'         => $user['name'],
+                    'email'        => $user['email'],
+                    'role'         => $role,
+                    'role_label'   => $company_name ? ('Company Admin · ' . $company_name) : role_label($role),
+                    'company_name' => $company_name,
+                    'company_id'   => $company_id,
+                    'initials'     => make_initials($user['name']),
+                    'avatar_url'   => $user['avatar_url'] ?? null,
                 ];
                 return ['success' => true, 'role' => $role];
             }
@@ -276,4 +325,62 @@ function logout() {
         );
     }
     session_destroy();
+}
+
+/**
+ * Ambil data profil perusahaan untuk pengguna HR yang sedang login.
+ */
+function current_user_company() {
+    $user = current_user();
+    if (!$user || ($user['role'] ?? '') !== 'hr') {
+        return null;
+    }
+    $pdo = get_db_connection();
+    if ($pdo) {
+        try {
+            $stmt = $pdo->prepare('
+                SELECT c.id, c.name, c.industry, c.website, c.description, c.logo_url, cr.role_title
+                FROM company_recruiters cr
+                JOIN companies c ON c.id = cr.company_id
+                WHERE cr.user_id = :user_id
+                LIMIT 1
+            ');
+            $stmt->execute([':user_id' => $user['id']]);
+            $comp = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($comp) {
+                return $comp;
+            }
+        } catch (Exception $e) {
+            // Fallback jika logo_url belum ada di DB
+            try {
+                $stmt = $pdo->prepare('
+                    SELECT c.id, c.name, c.industry, c.website, c.description, cr.role_title
+                    FROM company_recruiters cr
+                    JOIN companies c ON c.id = cr.company_id
+                    WHERE cr.user_id = :user_id
+                    LIMIT 1
+                ');
+                $stmt->execute([':user_id' => $user['id']]);
+                $comp = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($comp) {
+                    $comp['logo_url'] = null;
+                    return $comp;
+                }
+            } catch (Exception $e2) {
+                error_log('current_user_company error: ' . $e2->getMessage());
+            }
+        }
+    }
+    if (!empty($user['company_name'])) {
+        return [
+            'id' => $user['company_id'] ?? null,
+            'name' => $user['company_name'],
+            'industry' => 'Technology',
+            'website' => null,
+            'description' => null,
+            'logo_url' => null,
+            'role_title' => 'Recruiter'
+        ];
+    }
+    return null;
 }

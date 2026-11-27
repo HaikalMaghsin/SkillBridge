@@ -72,7 +72,7 @@ try {
         $stmt->execute([':company_id' => $company_id]);
         $team = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $formatted = array_map(function($t) {
+        $formatted = array_map(function($t) use ($user) {
             return [
                 'id' => (int)$t['id'],
                 'user_id' => (int)$t['user_id'],
@@ -80,7 +80,8 @@ try {
                 'email' => $t['email'],
                 'role' => $t['role_title'],
                 'status' => $t['status'],
-                'joined' => $t['created_at']
+                'joined' => $t['created_at'],
+                'is_self' => ((int)$t['user_id'] === (int)$user['id'])
             ];
         }, $team);
 
@@ -97,95 +98,193 @@ try {
         }
     }
 
-    // POST: Tambah anggota (simplified - hanya update jika user sudah ada)
+    // POST: Tambah anggota tim (buat user baru atau kaitkan user HR yang ada)
     if ($method === 'POST') {
-        $input = json_decode(file_get_contents('php://input'), true);
-        $target_user_id = isset($input['user_id']) ? (int)$input['user_id'] : null;
+        $input = json_decode(file_get_contents('php://input'), true) ?: [];
+        $name = trim($input['name'] ?? '');
+        $email = trim($input['email'] ?? '');
         $role_title = trim($input['role_title'] ?? 'Recruiter');
+        $password = trim($input['password'] ?? '');
 
-        if (!$target_user_id) {
+        if (!$name || !$email) {
             http_response_code(400);
-            echo json_encode(['error' => 'user_id is required']);
+            echo json_encode(['error' => 'Nama lengkap dan email perusahaan wajib diisi']);
             exit;
         }
 
-        // Cek apakah user adalah HR
-        $stmt = $pdo->prepare('SELECT role FROM users WHERE id = :user_id');
-        $stmt->execute([':user_id' => $target_user_id]);
-        $targetUser = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$targetUser || $targetUser['role'] !== 'hr') {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             http_response_code(400);
-            echo json_encode(['error' => 'User must have HR role']);
+            echo json_encode(['error' => 'Format email tidak valid']);
             exit;
         }
 
-        // Insert atau update
-        $stmt = $pdo->prepare('
+        // Cek apakah user sudah terdaftar di tabel users
+        $stmt = $pdo->prepare('SELECT id, role, is_active FROM users WHERE email = :email LIMIT 1');
+        $stmt->execute([':email' => $email]);
+        $existingUser = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existingUser) {
+            if ($existingUser['role'] !== 'hr') {
+                http_response_code(400);
+                echo json_encode(['error' => 'Email ini terdaftar sebagai role ' . $existingUser['role'] . '. Hanya akun HR yang dapat ditambahkan ke tim rekrutmen.']);
+                exit;
+            }
+
+            $target_user_id = (int)$existingUser['id'];
+
+            // Cek apakah sudah tergabung di perusahaan ini
+            $stmtCheck = $pdo->prepare('SELECT id, status FROM company_recruiters WHERE company_id = :comp_id AND user_id = :uid LIMIT 1');
+            $stmtCheck->execute([':comp_id' => $company_id, ':uid' => $target_user_id]);
+            $existingMember = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+            if ($existingMember) {
+                // Aktifkan kembali jika status sebelumnya inactive/pending
+                $stmtUp = $pdo->prepare('UPDATE company_recruiters SET status = :status, role_title = :role, updated_at = CURRENT_TIMESTAMP WHERE id = :id');
+                $stmtUp->execute([':status' => 'active', ':role' => $role_title, ':id' => $existingMember['id']]);
+
+                echo json_encode(['success' => true, 'message' => 'Status anggota tim diperbarui menjadi aktif']);
+                exit;
+            }
+        } else {
+            // Buat akun HR baru
+            if (empty($password)) {
+                $password = 'SkillBridge123!';
+            } elseif (strlen($password) < 8) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Password minimal 8 karakter']);
+                exit;
+            }
+
+            $password_hash = password_hash($password, PASSWORD_DEFAULT);
+            $stmtCreate = $pdo->prepare('
+                INSERT INTO users (name, email, password_hash, role, is_active)
+                VALUES (:name, :email, :password_hash, :role, :is_active)
+                RETURNING id
+            ');
+            $stmtCreate->execute([
+                ':name' => $name,
+                ':email' => $email,
+                ':password_hash' => $password_hash,
+                ':role' => 'hr',
+                ':is_active' => true
+            ]);
+            $createdUser = $stmtCreate->fetch(PDO::FETCH_ASSOC);
+            $target_user_id = (int)$createdUser['id'];
+        }
+
+        // Masukkan ke company_recruiters
+        $stmtLink = $pdo->prepare('
             INSERT INTO company_recruiters (company_id, user_id, role_title, status)
             VALUES (:company_id, :user_id, :role_title, :status)
-            ON CONFLICT (company_id, user_id)
-            DO UPDATE SET role_title = EXCLUDED.role_title, status = EXCLUDED.status, updated_at = CURRENT_TIMESTAMP
         ');
-        $stmt->execute([
+        $stmtLink->execute([
             ':company_id' => $company_id,
             ':user_id' => $target_user_id,
             ':role_title' => $role_title,
             ':status' => 'active'
         ]);
 
-        echo json_encode(['success' => true, 'message' => 'Team member added']);
+        echo json_encode([
+            'success' => true,
+            'message' => 'Anggota tim recruiter berhasil ditambahkan'
+        ]);
         exit;
     }
 
-    // PUT: Update status anggota
+    // PUT: Update status atau role_title anggota
     if ($method === 'PUT') {
-        $input = json_decode(file_get_contents('php://input'), true);
+        $input = json_decode(file_get_contents('php://input'), true) ?: [];
         $member_id = isset($input['id']) ? (int)$input['id'] : null;
-        $status = trim($input['status'] ?? 'active');
 
         if (!$member_id) {
             http_response_code(400);
-            echo json_encode(['error' => 'id is required']);
+            echo json_encode(['error' => 'ID anggota tim wajib disertakan']);
             exit;
         }
 
-        $stmt = $pdo->prepare('
-            UPDATE company_recruiters
-            SET status = :status, updated_at = CURRENT_TIMESTAMP
-            WHERE id = :id AND company_id = :company_id
-        ');
-        $stmt->execute([
-            ':status' => $status,
-            ':id' => $member_id,
-            ':company_id' => $company_id
-        ]);
+        // Cek anggota
+        $stmtCheck = $pdo->prepare('SELECT id, user_id FROM company_recruiters WHERE id = :id AND company_id = :comp_id');
+        $stmtCheck->execute([':id' => $member_id, ':comp_id' => $company_id]);
+        $targetMember = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
-        echo json_encode(['success' => true, 'message' => 'Team member updated']);
+        if (!$targetMember) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Anggota tim tidak ditemukan']);
+            exit;
+        }
+
+        $updates = [];
+        $params = [':id' => $member_id, ':company_id' => $company_id];
+
+        if (isset($input['status'])) {
+            $status = trim($input['status']);
+            if (!in_array($status, ['active', 'inactive', 'pending'])) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Status tidak valid']);
+                exit;
+            }
+            $updates[] = 'status = :status';
+            $params[':status'] = $status;
+        }
+
+        if (isset($input['role_title']) && !empty(trim($input['role_title']))) {
+            $updates[] = 'role_title = :role_title';
+            $params[':role_title'] = trim($input['role_title']);
+        }
+
+        if (empty($updates)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Tidak ada perubahan yang dikirim']);
+            exit;
+        }
+
+        $updates[] = 'updated_at = CURRENT_TIMESTAMP';
+        $sql = 'UPDATE company_recruiters SET ' . implode(', ', $updates) . ' WHERE id = :id AND company_id = :company_id';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Peran dan status anggota tim berhasil diperbarui'
+        ]);
         exit;
     }
 
-    // DELETE: Hapus anggota
+    // DELETE: Hapus anggota dari tim
     if ($method === 'DELETE') {
-        $input = json_decode(file_get_contents('php://input'), true);
+        $input = json_decode(file_get_contents('php://input'), true) ?: [];
         $member_id = isset($input['id']) ? (int)$input['id'] : null;
 
         if (!$member_id) {
             http_response_code(400);
-            echo json_encode(['error' => 'id is required']);
+            echo json_encode(['error' => 'ID anggota wajib disertakan']);
             exit;
         }
 
-        $stmt = $pdo->prepare('
-            DELETE FROM company_recruiters
-            WHERE id = :id AND company_id = :company_id
-        ');
-        $stmt->execute([
-            ':id' => $member_id,
-            ':company_id' => $company_id
-        ]);
+        // Cek anggota & larang hapus diri sendiri
+        $stmtCheck = $pdo->prepare('SELECT user_id FROM company_recruiters WHERE id = :id AND company_id = :comp_id');
+        $stmtCheck->execute([':id' => $member_id, ':comp_id' => $company_id]);
+        $member = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
-        echo json_encode(['success' => true, 'message' => 'Team member removed']);
+        if (!$member) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Anggota tim tidak ditemukan']);
+            exit;
+        }
+
+        if ((int)$member['user_id'] === (int)$user['id']) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Anda tidak dapat menghapus akun Anda sendiri']);
+            exit;
+        }
+
+        $stmt = $pdo->prepare('DELETE FROM company_recruiters WHERE id = :id AND company_id = :company_id');
+        $stmt->execute([':id' => $member_id, ':company_id' => $company_id]);
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Anggota tim berhasil dihapus'
+        ]);
         exit;
     }
 

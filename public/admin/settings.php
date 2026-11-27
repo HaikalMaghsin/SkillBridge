@@ -48,7 +48,13 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
           </div>
           <div class="field">
             <label for="set-password">Password baru</label>
-            <input type="password" id="set-password" name="password" placeholder="Biarkan kosong jika tidak diubah" minlength="8" />
+            <div class="password-input-wrap" style="position: relative; display: flex; align-items: center; width: 100%;">
+              <input type="password" id="set-password" name="password" placeholder="Biarkan kosong jika tidak diubah" minlength="8" style="width: 100%; padding-right: 44px; box-sizing: border-box;" />
+              <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('set-password', this)" data-password-toggle="set-password" aria-label="Tampilkan kata sandi" aria-pressed="false" title="Tampilkan kata sandi" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; margin: 0; border: none !important; outline: none !important; background: transparent !important; box-shadow: none !important; -webkit-appearance: none; appearance: none; cursor: pointer; color: #64748b; z-index: 2; border-radius: 6px;">
+                <svg class="icon-eye" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; pointer-events: none;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="icon-eye-off" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none; pointer-events: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
             <small style="color: #6b7280; font-size: 13px;">Minimal 8 karakter jika ingin diubah</small>
           </div>
         </form>
@@ -107,4 +113,29 @@ require_once __DIR__ . '/../../includes/layouts/admin_sidebar.php';
       </div>
     </main>
 
+    <script>
+      function togglePasswordVisibility(inputId, btn) {
+        var input = null;
+        if (btn && btn.closest) {
+          var wrap = btn.closest('.password-input-wrap');
+          if (wrap) input = wrap.querySelector('input');
+        }
+        if (!input && inputId) {
+          input = document.getElementById(inputId);
+        }
+        if (!input) return;
+        var isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        if (btn) {
+          var eye = btn.querySelector('.icon-eye');
+          var eyeOff = btn.querySelector('.icon-eye-off');
+          if (eye) eye.style.display = isPassword ? 'none' : 'block';
+          if (eyeOff) eyeOff.style.display = isPassword ? 'block' : 'none';
+          btn.setAttribute('aria-pressed', isPassword ? 'true' : 'false');
+          btn.setAttribute('aria-label', isPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
+          btn.setAttribute('title', isPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
+        }
+      }
+      window.togglePasswordVisibility = togglePasswordVisibility;
+    </script>
 <?php require_once __DIR__ . '/../../includes/layouts/admin_footer.php'; ?>

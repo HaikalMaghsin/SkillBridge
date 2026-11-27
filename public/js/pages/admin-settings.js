@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       try {
-        const payload = { name, email };
+        const payload = { action: 'update_info', name, email };
         if (password) {
           payload.password = password;
         }
